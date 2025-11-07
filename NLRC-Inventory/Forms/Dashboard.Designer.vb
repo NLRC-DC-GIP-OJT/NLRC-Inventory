@@ -170,7 +170,7 @@ Partial Class Dashboard
         Button2.Padding = New Padding(25, 0, 0, 0)
         Button2.Size = New Size(309, 86)
         Button2.TabIndex = 1
-        Button2.Text = "  DEVICES" & vbCrLf & "     COMPONENTS"
+        Button2.Text = "    DEVICES" & vbCrLf & "       COMPONENTS"
         Button2.UseVisualStyleBackColor = True
         ' 
         ' Button1

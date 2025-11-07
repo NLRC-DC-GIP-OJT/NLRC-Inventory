@@ -39,6 +39,10 @@ Partial Class AddUnits
         assigncb = New ComboBox()
         unitnametxt = New TextBox()
         unit2pnl = New Panel()
+        devicestocklbl = New Label()
+        checkstocklbl = New Label()
+        Label9 = New Label()
+        catecb = New ComboBox()
         Panel5 = New Panel()
         quantitxt = New TextBox()
         minusQuantityBtn = New Button()
@@ -52,12 +56,15 @@ Partial Class AddUnits
         Panel3 = New Panel()
         unitsdgv = New DataGridView()
         savebtn = New Button()
+        savepnl1 = New Panel()
+        savebtn1 = New Button()
         Panel1.SuspendLayout()
         unit1pnl.SuspendLayout()
         unit2pnl.SuspendLayout()
         Panel5.SuspendLayout()
         Panel3.SuspendLayout()
         CType(unitsdgv, ComponentModel.ISupportInitialize).BeginInit()
+        savepnl1.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -191,6 +198,10 @@ Partial Class AddUnits
         ' 
         ' unit2pnl
         ' 
+        unit2pnl.Controls.Add(devicestocklbl)
+        unit2pnl.Controls.Add(checkstocklbl)
+        unit2pnl.Controls.Add(Label9)
+        unit2pnl.Controls.Add(catecb)
         unit2pnl.Controls.Add(Panel5)
         unit2pnl.Controls.Add(Label6)
         unit2pnl.Controls.Add(addbtn1)
@@ -198,11 +209,51 @@ Partial Class AddUnits
         unit2pnl.Controls.Add(Label7)
         unit2pnl.Controls.Add(Label8)
         unit2pnl.Controls.Add(devicecb1)
+        unit2pnl.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         unit2pnl.Location = New Point(14, 73)
         unit2pnl.Name = "unit2pnl"
-        unit2pnl.Size = New Size(1136, 241)
+        unit2pnl.Size = New Size(1136, 258)
         unit2pnl.TabIndex = 18
         unit2pnl.Visible = False
+        ' 
+        ' devicestocklbl
+        ' 
+        devicestocklbl.AutoSize = True
+        devicestocklbl.ForeColor = Color.RoyalBlue
+        devicestocklbl.Location = New Point(26, 217)
+        devicestocklbl.Name = "devicestocklbl"
+        devicestocklbl.Size = New Size(160, 28)
+        devicestocklbl.TabIndex = 29
+        devicestocklbl.Text = "How many stock"
+        ' 
+        ' checkstocklbl
+        ' 
+        checkstocklbl.AutoSize = True
+        checkstocklbl.ForeColor = Color.RoyalBlue
+        checkstocklbl.Location = New Point(28, 92)
+        checkstocklbl.Name = "checkstocklbl"
+        checkstocklbl.Size = New Size(160, 28)
+        checkstocklbl.TabIndex = 28
+        checkstocklbl.Text = "How many stock"
+        ' 
+        ' Label9
+        ' 
+        Label9.AutoSize = True
+        Label9.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label9.Location = New Point(27, 13)
+        Label9.Name = "Label9"
+        Label9.Size = New Size(107, 23)
+        Label9.TabIndex = 27
+        Label9.Text = "Category:"
+        ' 
+        ' catecb
+        ' 
+        catecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        catecb.FormattingEnabled = True
+        catecb.Location = New Point(27, 45)
+        catecb.Name = "catecb"
+        catecb.Size = New Size(436, 39)
+        catecb.TabIndex = 26
         ' 
         ' Panel5
         ' 
@@ -210,7 +261,7 @@ Partial Class AddUnits
         Panel5.Controls.Add(quantitxt)
         Panel5.Controls.Add(minusQuantityBtn)
         Panel5.Controls.Add(addQuantityBtn)
-        Panel5.Location = New Point(108, 158)
+        Panel5.Location = New Point(711, 10)
         Panel5.Name = "Panel5"
         Panel5.Size = New Size(229, 57)
         Panel5.TabIndex = 25
@@ -253,7 +304,7 @@ Partial Class AddUnits
         ' 
         Label6.AutoSize = True
         Label6.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(28, 124)
+        Label6.Location = New Point(585, 26)
         Label6.Name = "Label6"
         Label6.Size = New Size(98, 23)
         Label6.TabIndex = 16
@@ -264,7 +315,7 @@ Partial Class AddUnits
         addbtn1.BackColor = Color.CornflowerBlue
         addbtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn1.ForeColor = Color.White
-        addbtn1.Location = New Point(1005, 170)
+        addbtn1.Location = New Point(998, 198)
         addbtn1.Name = "addbtn1"
         addbtn1.Size = New Size(113, 55)
         addbtn1.TabIndex = 15
@@ -275,17 +326,17 @@ Partial Class AddUnits
         ' 
         remarktxt1.BorderStyle = BorderStyle.FixedSingle
         remarktxt1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        remarktxt1.Location = New Point(590, 67)
+        remarktxt1.Location = New Point(590, 115)
         remarktxt1.Multiline = True
         remarktxt1.Name = "remarktxt1"
-        remarktxt1.Size = New Size(527, 97)
+        remarktxt1.Size = New Size(527, 77)
         remarktxt1.TabIndex = 14
         ' 
         ' Label7
         ' 
         Label7.AutoSize = True
         Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(590, 32)
+        Label7.Location = New Point(587, 77)
         Label7.Name = "Label7"
         Label7.Size = New Size(103, 23)
         Label7.TabIndex = 13
@@ -295,7 +346,7 @@ Partial Class AddUnits
         ' 
         Label8.AutoSize = True
         Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(28, 32)
+        Label8.Location = New Point(28, 134)
         Label8.Name = "Label8"
         Label8.Size = New Size(234, 23)
         Label8.TabIndex = 12
@@ -305,7 +356,7 @@ Partial Class AddUnits
         ' 
         devicecb1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         devicecb1.FormattingEnabled = True
-        devicecb1.Location = New Point(28, 67)
+        devicecb1.Location = New Point(28, 170)
         devicecb1.Name = "devicecb1"
         devicecb1.Size = New Size(436, 39)
         devicecb1.TabIndex = 9
@@ -359,19 +410,42 @@ Partial Class AddUnits
         savebtn.BackColor = Color.CornflowerBlue
         savebtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
-        savebtn.Location = New Point(1004, 727)
+        savebtn.Location = New Point(1016, 731)
         savebtn.Name = "savebtn"
         savebtn.Size = New Size(113, 55)
         savebtn.TabIndex = 16
         savebtn.Text = "Save"
         savebtn.UseVisualStyleBackColor = False
         ' 
+        ' savepnl1
+        ' 
+        savepnl1.BackColor = Color.Transparent
+        savepnl1.Controls.Add(savebtn1)
+        savepnl1.Location = New Point(997, 731)
+        savepnl1.Name = "savepnl1"
+        savepnl1.Size = New Size(135, 59)
+        savepnl1.TabIndex = 19
+        savepnl1.Visible = False
+        ' 
+        ' savebtn1
+        ' 
+        savebtn1.BackColor = Color.CornflowerBlue
+        savebtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        savebtn1.ForeColor = Color.White
+        savebtn1.Location = New Point(11, 2)
+        savebtn1.Name = "savebtn1"
+        savebtn1.Size = New Size(113, 55)
+        savebtn1.TabIndex = 20
+        savebtn1.Text = "Save"
+        savebtn1.UseVisualStyleBackColor = False
+        ' 
         ' AddUnits
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        Controls.Add(unit2pnl)
+        Controls.Add(savepnl1)
         Controls.Add(savebtn)
+        Controls.Add(unit2pnl)
         Controls.Add(Panel3)
         Controls.Add(unit1pnl)
         Controls.Add(Panel1)
@@ -387,6 +461,7 @@ Partial Class AddUnits
         Panel5.PerformLayout()
         Panel3.ResumeLayout(False)
         CType(unitsdgv, ComponentModel.ISupportInitialize).EndInit()
+        savepnl1.ResumeLayout(False)
         ResumeLayout(False)
     End Sub
 
@@ -416,5 +491,11 @@ Partial Class AddUnits
     Friend WithEvents Label7 As Label
     Friend WithEvents Label8 As Label
     Friend WithEvents devicecb1 As ComboBox
+    Friend WithEvents Label9 As Label
+    Friend WithEvents catecb As ComboBox
+    Friend WithEvents checkstocklbl As Label
+    Friend WithEvents devicestocklbl As Label
+    Friend WithEvents savepnl1 As Panel
+    Friend WithEvents savebtn1 As Button
 
 End Class

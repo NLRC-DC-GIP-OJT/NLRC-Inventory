@@ -103,29 +103,30 @@ Public Class Units
         End If
     End Sub
 
-    ' 🔹 Add Button
+    ' 🔹 Add Button (shows unit1pnl + savepnl1)
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
-        If unitpnl.Visible = False Then
-            unitpnl.Visible = True
-            unitpnl.BringToFront()
-            unitpnl.Controls.Clear()
+        unitpnl.Visible = True
+        unitpnl.BringToFront()
+        unitpnl.Controls.Clear()
 
-            Dim addUnitControl As New AddUnits()
-            addUnitControl.Dock = DockStyle.Fill
-            unitpnl.Controls.Add(addUnitControl)
+        Dim addUnitControl As New AddUnits()
+        addUnitControl.Dock = DockStyle.Fill
+        unitpnl.Controls.Add(addUnitControl)
 
-            ' ✅ Make the unit1pnl inside addUnitControl visible
-            addUnitControl.unit1pnl.Visible = True
+        ' ✅ Show the correct panels for ADD
+        addUnitControl.unit1pnl.Visible = True
 
-            AddHandler addUnitControl.UnitSaved, Sub()
-                                                     LoadAllUnits()
-                                                     unitpnl.Visible = False
-                                                 End Sub
-        Else
-            unitpnl.Visible = False
-            unitpnl.SendToBack()
-        End If
+
+        ' ❌ Hide the other set
+        addUnitControl.unit2pnl.Visible = False
+        addUnitControl.savepnl1.Visible = False
+
+        AddHandler addUnitControl.UnitSaved, Sub()
+                                                 LoadAllUnits()
+                                                 unitpnl.Visible = False
+                                             End Sub
     End Sub
+
 
 
     ' 🔹 Form Load
@@ -156,28 +157,23 @@ Public Class Units
         LoadAllUnits(filtertxt.Text.Trim())
     End Sub
 
+    ' 🔹 Unit Add Button (shows unit2pnl + savepnl)
     Private Sub unitaddbtn_Click(sender As Object, e As EventArgs) Handles unitaddbtn.Click
-        If unitpnl.Visible = False Then
-            unitpnl.Visible = True
-            unitpnl.BringToFront()
-            unitpnl.Controls.Clear()
+        unitpnl.Visible = True
+        unitpnl.BringToFront()
+        unitpnl.Controls.Clear()
 
-            Dim addUnitControl As New AddUnits()
-            addUnitControl.Dock = DockStyle.Fill
-            unitpnl.Controls.Add(addUnitControl)
+        Dim addUnitControl As New AddNew()
+        addUnitControl.Dock = DockStyle.Fill
+        unitpnl.Controls.Add(addUnitControl)
 
-            ' ✅ Make the unit1pnl inside addUnitControl visible
-            addUnitControl.unit2pnl.Visible = True
+        ' ✅ Show the correct panels for UNIT ADD
+        addUnitControl.unit2pnl.Visible = True
 
-            AddHandler addUnitControl.UnitSaved, Sub()
-                                                     LoadAllUnits()
-                                                     unitpnl.Visible = False
-                                                 End Sub
-        Else
-            unitpnl.Visible = False
-            unitpnl.SendToBack()
-        End If
+
+
     End Sub
+
 
 
 End Class
