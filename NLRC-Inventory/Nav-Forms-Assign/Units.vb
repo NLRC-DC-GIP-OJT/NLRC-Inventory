@@ -81,7 +81,6 @@ Public Class Units
     End Sub
 
     ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
-    ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
     Private Sub allunitsdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles allunitsdgv.CellContentClick
         If e.RowIndex < 0 Then Return
 
@@ -89,30 +88,55 @@ Public Class Units
         Dim unitPointer As Integer = CInt(allunitsdgv.Rows(e.RowIndex).Cells("unit_id").Value)
 
         If colName = "View" Then
-            ' Fetch devices for the selected unit
-            Dim dtDevices As DataTable = mdl.GetDevicesByUnitPointer(unitPointer)
+            ' Fetch unit details
+            Dim dtUnit As DataTable = mdl.GetUnitsSummary()  ' Fetch the unit summary
+            Dim unitRow As DataRow = dtUnit.AsEnumerable().FirstOrDefault(Function(r) CInt(r("unit_id")) = unitPointer)
+
+            ' Fetch device specs for the selected unit using the updated function
+            Dim dtDeviceSpecs As DataTable = mdl.GetDeviceSpecsByUnitPointer(unitPointer)
 
             ' Prepare the details message
             Dim details As New StringBuilder()
-            details.AppendLine($"Devices for Unit {unitPointer}")
-            details.AppendLine("")
 
-            ' If no devices are found, indicate that in the message box
-            If dtDevices.Rows.Count = 0 Then
-                details.AppendLine("No devices assigned to this unit.")
+            ' Show unit information (Unit Name and Assigned Personnel)
+            If unitRow IsNot Nothing Then
+                Dim unitName = If(unitRow("Unit Name") IsNot DBNull.Value, unitRow("Unit Name").ToString(), "None")
+                Dim assignedTo = If(unitRow("Assigned To") IsNot DBNull.Value, unitRow("Assigned To").ToString(), "None")
+
+                details.AppendLine($"Unit: {unitName}")
+                details.AppendLine($"Assigned To: {assignedTo}")
             Else
-                ' List devices assigned to the unit
-                For Each row As DataRow In dtDevices.Rows
-                    details.AppendLine($"• {row("Category")} | {row("Brand")} {row("Model")} | {row("Status")}")
+                details.AppendLine("Unit information not available.")
+            End If
+
+            details.AppendLine("") ' Add an empty line for spacing
+
+            ' Show devices and specs for the selected unit
+            details.AppendLine("Devices and Specs:")
+            details.AppendLine("") ' Add an empty line for spacing
+
+            If dtDeviceSpecs.Rows.Count = 0 Then
+                details.AppendLine("No devices assigned to this unit or no specs available.")
+            Else
+                ' List devices and their specs
+                For Each row As DataRow In dtDeviceSpecs.Rows
+                    details.AppendLine($"• {row("DeviceAndSpecs")}")
                 Next
             End If
 
-            ' Show the message box with device details
-            MessageBox.Show(details.ToString(), $"Devices for Unit {unitPointer}", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            ' Show the message box with unit, device, and specs details
+            MessageBox.Show(details.ToString(), "Unit and Devices", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
         ElseIf colName = "Edit" Then
             MessageBox.Show("Edit feature not implemented yet.")
         End If
     End Sub
+
+
+
+
+
+
 
 
 

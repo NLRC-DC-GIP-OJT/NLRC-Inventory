@@ -1003,6 +1003,52 @@ Public Class model
         Return dt
     End Function
 
+    Public Function GetDeviceSpecsByUnitPointer(unitPointer As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                ' Your exact query with brand name, device model, and specs
+                Dim query As String = "
+            SELECT 
+                u.pointer AS UnitID,                                          
+                ud.inv_devices_pointer AS DeviceID,                             
+                CONCAT(b.brand_name, ' ', d.model, ' - ', IFNULL(s.specs, 'No specs available')) AS DeviceAndSpecs 
+            FROM inv_units AS u
+            JOIN inv_unit_devices AS ud 
+                ON u.pointer = ud.inv_units_pointer                            
+            JOIN inv_devices AS d 
+                ON ud.inv_devices_pointer = d.pointer                          
+            LEFT JOIN inv_brands AS b   
+                ON d.brands = b.pointer                                      
+            LEFT JOIN inv_specs AS s 
+                ON d.specs = s.pointer                                        
+            WHERE u.pointer = @unitPointer                                      
+            ORDER BY d.pointer;
+            "
+
+                ' Set up the command with the query
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@unitPointer", unitPointer)
+
+                    ' Use DataAdapter to fill DataTable
+                    Using da As New MySqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error retrieving device specs: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
+
+
+
     Public Function GetDevicesByUnitPointer(unitPointer As Integer) As DataTable
         Dim dt As New DataTable()
 
