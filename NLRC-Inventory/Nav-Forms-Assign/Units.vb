@@ -12,23 +12,26 @@ Public Class Units
 
     Private isLoading As Boolean = True
 
-    ' 🔹 Load summarized data with pagination
+    '' This function loads the summarized data for units into the DataGridView
     Private Sub LoadAllUnits(Optional search As String = "")
         Try
+            ' Get all unit summaries
             Dim dt As DataTable = mdl.GetUnitsSummary()
 
-            ' Filter rows
+            ' Filter rows if search criteria is provided
             Dim filtered = dt.AsEnumerable()
             If Not String.IsNullOrWhiteSpace(search) AndAlso Not (filtertxt.ForeColor = Color.Gray AndAlso search = "Search") Then
                 Dim s = search.ToLower()
                 filtered = filtered.Where(Function(r) r.ItemArray.Any(Function(val) val IsNot Nothing AndAlso val.ToString().ToLower().Contains(s)))
             End If
 
+            ' Update pagination
             allFilteredRows = filtered.ToList()
             totalPages = Math.Ceiling(allFilteredRows.Count / pageSize)
             If currentPage > totalPages Then currentPage = totalPages
             If currentPage < 1 Then currentPage = 1
 
+            ' Load data for the current page
             Dim pageRows = allFilteredRows.Skip((currentPage - 1) * pageSize).Take(pageSize)
             If pageRows.Any() Then
                 allunitsdgv.DataSource = pageRows.CopyToDataTable()
@@ -36,39 +39,40 @@ Public Class Units
                 allunitsdgv.DataSource = Nothing
             End If
 
-            ' Appearance
+            ' Grid appearance settings
             allunitsdgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             allunitsdgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect
             allunitsdgv.AllowUserToAddRows = False
             allunitsdgv.ReadOnly = True
             allunitsdgv.RowHeadersVisible = False
 
-            ' Hide unit_id and personnel_id
+            ' Hide unit_id and personnel_id columns
             If allunitsdgv.Columns.Contains("unit_id") Then allunitsdgv.Columns("unit_id").Visible = False
             If allunitsdgv.Columns.Contains("personnel_id") Then allunitsdgv.Columns("personnel_id").Visible = False
 
-            ' Add Edit/View buttons if not exist
+            ' Add Edit/View buttons if not already present
             If Not allunitsdgv.Columns.Contains("Edit") Then
                 Dim editBtn As New DataGridViewButtonColumn() With {
-                    .HeaderText = "Edit",
-                    .Name = "Edit",
-                    .Text = "Edit",
-                    .UseColumnTextForButtonValue = True,
-                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
-                }
+                .HeaderText = "Edit",
+                .Name = "Edit",
+                .Text = "Edit",
+                .UseColumnTextForButtonValue = True,
+                .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
+            }
                 allunitsdgv.Columns.Add(editBtn)
             End If
             If Not allunitsdgv.Columns.Contains("View") Then
                 Dim viewBtn As New DataGridViewButtonColumn() With {
-                    .HeaderText = "View",
-                    .Name = "View",
-                    .Text = "View",
-                    .UseColumnTextForButtonValue = True,
-                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
-                }
+                .HeaderText = "View",
+                .Name = "View",
+                .Text = "View",
+                .UseColumnTextForButtonValue = True,
+                .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
+            }
                 allunitsdgv.Columns.Add(viewBtn)
             End If
 
+            ' Update pagination controls
             UpdatePaginationControls(allFilteredRows.Count)
 
         Catch ex As Exception
@@ -76,32 +80,44 @@ Public Class Units
         End Try
     End Sub
 
-    ' 🔹 DataGridView button clicks
+    ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
+    ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
     Private Sub allunitsdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles allunitsdgv.CellContentClick
         If e.RowIndex < 0 Then Return
-        Dim colName As String = allunitsdgv.Columns(e.ColumnIndex).Name
 
-        Dim unitName As String = allunitsdgv.Rows(e.RowIndex).Cells("Unit Name").Value.ToString()
-        Dim personnelID As Integer = CInt(allunitsdgv.Rows(e.RowIndex).Cells("personnel_id").Value)
-        Dim personnelName As String = allunitsdgv.Rows(e.RowIndex).Cells("Assigned To").Value.ToString()
+        Dim colName As String = allunitsdgv.Columns(e.ColumnIndex).Name
+        Dim unitPointer As Integer = CInt(allunitsdgv.Rows(e.RowIndex).Cells("unit_id").Value)
 
         If colName = "View" Then
-            Dim dtDevices As DataTable = mdl.GetDevicesByUnit(unitName, personnelID)
+            ' Fetch devices for the selected unit
+            Dim dtDevices As DataTable = mdl.GetDevicesByUnitPointer(unitPointer)
 
+            ' Prepare the details message
             Dim details As New StringBuilder()
-            details.AppendLine($"Devices under {personnelName}")
-            details.AppendLine($"Unit: {unitName}")
+            details.AppendLine($"Devices for Unit {unitPointer}")
             details.AppendLine("")
 
-            For Each row As DataRow In dtDevices.Rows
-                details.AppendLine($"• {row("Category")} | {row("Brand")} {row("Model")} | {row("Status")}")
-            Next
+            ' If no devices are found, indicate that in the message box
+            If dtDevices.Rows.Count = 0 Then
+                details.AppendLine("No devices assigned to this unit.")
+            Else
+                ' List devices assigned to the unit
+                For Each row As DataRow In dtDevices.Rows
+                    details.AppendLine($"• {row("Category")} | {row("Brand")} {row("Model")} | {row("Status")}")
+                Next
+            End If
 
-            MessageBox.Show(details.ToString(), $"{personnelName} Devices", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            ' Show the message box with device details
+            MessageBox.Show(details.ToString(), $"Devices for Unit {unitPointer}", MessageBoxButtons.OK, MessageBoxIcon.Information)
         ElseIf colName = "Edit" Then
             MessageBox.Show("Edit feature not implemented yet.")
         End If
     End Sub
+
+
+
+
+
 
     ' 🔹 Add Button (shows unit1pnl + savepnl1)
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
@@ -116,18 +132,11 @@ Public Class Units
         ' ✅ Show the correct panels for ADD
         addUnitControl.unit1pnl.Visible = True
 
-
-        ' ❌ Hide the other set
-        addUnitControl.unit2pnl.Visible = False
-        addUnitControl.savepnl1.Visible = False
-
         AddHandler addUnitControl.UnitSaved, Sub()
                                                  LoadAllUnits()
                                                  unitpnl.Visible = False
                                              End Sub
     End Sub
-
-
 
     ' 🔹 Form Load
     Private Sub Units_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -169,11 +178,6 @@ Public Class Units
 
         ' ✅ Show the correct panels for UNIT ADD
         addUnitControl.unit2pnl.Visible = True
-
-
-
     End Sub
-
-
 
 End Class

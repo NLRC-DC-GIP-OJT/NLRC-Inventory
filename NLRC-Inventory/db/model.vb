@@ -58,7 +58,7 @@ End Class
 
 Public Class model
 
-    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;"
+    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3306;Database=main_nlrc_db;Uid=root;Pwd=;"
 
     Public Function EncryptPassword(ByVal password As String) As String
         password = password.Trim()
@@ -560,7 +560,7 @@ Public Class model
     Public Function GetAssignments() As DataTable
         Dim dt As New DataTable()
         Try
-            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;")
+            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3306;Database=db_nlrc_intranet;Uid=root;Pwd=;")
                 conn.Open()
                 Dim query As String = "SELECT user_id, CONCAT(LAST_M, ', ', FIRST_M) AS `Full name` FROM user_info ORDER BY LAST_M, FIRST_M;"
                 Using cmd As New MySqlCommand(query, conn)
@@ -672,13 +672,29 @@ Public Class model
         End Try
     End Function
 
-    Public Function SaveInvUnitDevices(finalTable As DataTable, quantity As Integer, remark As String) As Boolean
-        Dim success As Boolean = False
 
-        If finalTable Is Nothing OrElse finalTable.Rows.Count = 0 Then
+
+    Public Function GetBrandPointerByName(brandName As String) As Integer
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim cmd As New MySqlCommand("SELECT pointer FROM inv_brands WHERE brand_name = @name LIMIT 1", conn)
+            cmd.Parameters.AddWithValue("@name", brandName)
+            Dim result = cmd.ExecuteScalar()
+            If result IsNot Nothing Then
+                Return Convert.ToInt32(result)
+            Else
+                Throw New Exception("Brand not found: " & brandName)
+            End If
+        End Using
+    End Function
+
+
+    Public Function SaveInvUnitDevices(selectedDevices As DataTable, quantity As Integer, remark As String) As Boolean
+        If selectedDevices Is Nothing OrElse selectedDevices.Rows.Count = 0 Then
             MessageBox.Show("No devices to save.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return False
         End If
+
         If quantity <= 0 Then
             MessageBox.Show("Quantity must be greater than zero.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return False
@@ -689,123 +705,102 @@ Public Class model
                 conn.Open()
                 Using trans As MySqlTransaction = conn.BeginTransaction()
                     Try
-                        ' 1) Build distinct device-type groups
-                        Dim groups = finalTable.AsEnumerable().
-                        GroupBy(Function(r) New With {
-                                    Key .BrandVal = r("brands").ToString().Trim(),
-                                    Key .Model = r("model").ToString().Trim()
-                                }).ToList()
-
-                        Dim deviceTypes As New List(Of (BrandPointer As Integer, BrandValue As String, Model As String, Available As Integer))()
-
-                        For Each g In groups
-                            Dim brandVal As String = g.Key.BrandVal
-                            Dim model As String = g.Key.Model
-                            Dim brandPtr As Integer
-
-                            ' Resolve brand pointer
-                            Dim parsed As Integer = 0
-                            If Integer.TryParse(brandVal, parsed) Then
-                                brandPtr = parsed
-                            Else
-                                Using getBrandCmd As New MySqlCommand("SELECT pointer FROM inv_brands WHERE brand_name = @name LIMIT 1;", conn, trans)
-                                    getBrandCmd.Parameters.AddWithValue("@name", brandVal)
-                                    Dim bObj = getBrandCmd.ExecuteScalar()
-                                    If bObj Is Nothing Then
-                                        Throw New Exception($"Brand '{brandVal}' not found in inv_brands.")
-                                    End If
-                                    brandPtr = Convert.ToInt32(bObj)
-                                End Using
-                            End If
-
-                            ' Count available devices
-                            Using cntCmd As New MySqlCommand("
-                            SELECT COUNT(*) FROM inv_devices
-                            WHERE brands = @brandPtr AND model = @model AND status = 'Working';
-                        ", conn, trans)
-                                cntCmd.Parameters.AddWithValue("@brandPtr", brandPtr)
-                                cntCmd.Parameters.AddWithValue("@model", model)
-                                Dim avail = Convert.ToInt32(cntCmd.ExecuteScalar())
-                                deviceTypes.Add((brandPtr, brandVal, model, avail))
-                            End Using
-                        Next
-
-                        ' Check stock
-                        For Each dt In deviceTypes
-                            If dt.Available < quantity Then
-                                Throw New Exception($"Only {dt.Available} available for '{dt.BrandValue} - {dt.Model}', but {quantity} needed.")
-                            End If
-                        Next
-
-                        ' Create units
-                        For i As Integer = 1 To quantity
-                            ' Insert unit
+                        ' Loop for the number of units to create
+                        For u As Integer = 1 To quantity
+                            ' 1️⃣ Insert a unit
                             Dim insertUnitCmd As New MySqlCommand("
                             INSERT INTO inv_units (unit_name, remarks, status, created_by, created_at)
-                            VALUES (NULL, @remarks, 'Active', @created_by, NOW());
+                            VALUES (NULL, @remark, 'Active', @created_by, NOW());
                             SELECT LAST_INSERT_ID();
                         ", conn, trans)
-                            insertUnitCmd.Parameters.AddWithValue("@remarks", If(String.IsNullOrWhiteSpace(remark), DBNull.Value, remark))
+                            insertUnitCmd.Parameters.AddWithValue("@remark", If(String.IsNullOrWhiteSpace(remark), DBNull.Value, remark))
                             insertUnitCmd.Parameters.AddWithValue("@created_by", 1)
                             Dim unitId As Integer = Convert.ToInt32(insertUnitCmd.ExecuteScalar())
 
-                            ' Attach devices
-                            For Each dt In deviceTypes
-                                ' Get one available device
+                            ' 2️⃣ Loop through selected devices to assign
+                            For Each row As DataRow In selectedDevices.Rows
+                                Dim brandPointer As Integer = Convert.ToInt32(row("brands"))
+                                Dim model As String = row("model").ToString().Trim()
+
+                                ' Get one available device of this brand/model
                                 Dim getDeviceCmd As New MySqlCommand("
-                                SELECT pointer FROM inv_devices
-                                WHERE brands = @brandPtr AND model = @model AND status = 'Working'
+                                SELECT pointer 
+                                FROM inv_devices 
+                                WHERE brands = @brand AND model = @model AND status = 'Working'
                                 LIMIT 1
                             ", conn, trans)
-                                getDeviceCmd.Parameters.AddWithValue("@brandPtr", dt.BrandPointer)
-                                getDeviceCmd.Parameters.AddWithValue("@model", dt.Model)
+                                getDeviceCmd.Parameters.AddWithValue("@brand", brandPointer)
+                                getDeviceCmd.Parameters.AddWithValue("@model", model)
                                 Dim deviceObj = getDeviceCmd.ExecuteScalar()
+
                                 If deviceObj Is Nothing Then
-                                    Throw New Exception($"No more available devices for '{dt.BrandValue} - {dt.Model}' while creating unit #{i}.")
+                                    ' Only show brand name in MsgBox
+                                    Dim brandName As String = GetBrandName(brandPointer)
+                                    Throw New Exception($"Not enough stock for Brand {brandName}, Model {model}.")
                                 End If
+
                                 Dim devicePointer As Integer = Convert.ToInt32(deviceObj)
 
-                                ' Insert into inv_unit_devices
-                                Using insLink As New MySqlCommand("
+                                ' 3️⃣ Insert into inv_unit_devices
+                                Dim insertLinkCmd As New MySqlCommand("
                                 INSERT INTO inv_unit_devices (inv_units_pointer, inv_devices_pointer, created_at, created_by)
                                 VALUES (@unitId, @devicePointer, NOW(), @created_by)
                             ", conn, trans)
-                                    insLink.Parameters.AddWithValue("@unitId", unitId)
-                                    insLink.Parameters.AddWithValue("@devicePointer", devicePointer)
-                                    insLink.Parameters.AddWithValue("@created_by", 1)
-                                    insLink.ExecuteNonQuery()
-                                End Using
+                                insertLinkCmd.Parameters.AddWithValue("@unitId", unitId)
+                                insertLinkCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
+                                insertLinkCmd.Parameters.AddWithValue("@created_by", 1)
+                                insertLinkCmd.ExecuteNonQuery()
 
-                                ' Mark device as Assigned
-                                Using upd As New MySqlCommand("
-                                UPDATE inv_devices
-                                SET status = 'Assigned', updated_by = @updated_by, updated_at = NOW()
+                                ' 4️⃣ Mark device as Assigned
+                                Dim updateDeviceCmd As New MySqlCommand("
+                                UPDATE inv_devices 
+                                SET status = 'Assigned', updated_by = @updated_by, updated_at = NOW() 
                                 WHERE pointer = @devicePointer
                             ", conn, trans)
-                                    upd.Parameters.AddWithValue("@updated_by", 1)
-                                    upd.Parameters.AddWithValue("@devicePointer", devicePointer)
-                                    upd.ExecuteNonQuery()
-                                End Using
+                                updateDeviceCmd.Parameters.AddWithValue("@updated_by", 1)
+                                updateDeviceCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
+                                updateDeviceCmd.ExecuteNonQuery()
                             Next
                         Next
 
                         trans.Commit()
-                        success = True
-
+                        Return True
                     Catch ex As Exception
                         trans.Rollback()
                         MessageBox.Show("Database error: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                        success = False
+                        Return False
                     End Try
                 End Using
             End Using
         Catch ex As Exception
             MessageBox.Show("Connection error: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            success = False
+            Return False
         End Try
-
-        Return success
     End Function
+
+    ' Helper to fetch brand name by ID
+    Private Function GetBrandName(brandId As Integer) As String
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim cmd As New MySqlCommand("SELECT brand_name FROM inv_brands WHERE pointer = @id LIMIT 1", conn)
+            cmd.Parameters.AddWithValue("@id", brandId)
+            Dim result = cmd.ExecuteScalar()
+            If result IsNot Nothing Then
+                Return result.ToString()
+            End If
+            Return brandId.ToString() ' fallback
+        End Using
+    End Function
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -981,20 +976,19 @@ Public Class model
                 conn.Open()
 
                 Dim query As String = "
-                    SELECT 
-    MAX(u.pointer) AS unit_id,
-    u.unit_name AS `Unit Name`,
-    COUNT(ud.inv_devices_pointer) AS `Device No`,
-    CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
-    i.user_id AS personnel_id,
-    DATE_FORMAT(MIN(u.created_at), '%Y-%m-%d') AS `Created Date`
-FROM inv_units AS u
-LEFT JOIN inv_unit_devices AS ud ON u.pointer = ud.inv_units_pointer
-LEFT JOIN db_nlrc_intranet.user_info AS i ON u.assigned_personnel = i.user_id
-GROUP BY u.unit_name, i.LAST_M, i.FIRST_M, i.user_id
-ORDER BY `Created Date` DESC;
-   
-                "
+                SELECT 
+                    u.pointer AS unit_id,
+                    u.unit_name AS `Unit Name`,
+                    COUNT(ud.inv_devices_pointer) AS `Device No`,
+                    CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
+                    i.user_id AS personnel_id,
+                    DATE_FORMAT(u.created_at, '%Y-%m-%d') AS `Created Date`
+                FROM inv_units AS u
+                LEFT JOIN inv_unit_devices AS ud ON u.pointer = ud.inv_units_pointer
+                LEFT JOIN db_nlrc_intranet.user_info AS i ON u.assigned_personnel = i.user_id
+                GROUP BY u.pointer
+                ORDER BY u.pointer ASC;
+            "
 
                 Using cmd As New MySqlCommand(query, conn)
                     Using da As New MySqlDataAdapter(cmd)
@@ -1008,6 +1002,39 @@ ORDER BY `Created Date` DESC;
 
         Return dt
     End Function
+
+    Public Function GetDevicesByUnitPointer(unitPointer As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                ' Adjust the query to fetch devices based on the unit pointer
+                Dim query As String = "
+                SELECT 
+                    d.device_id,
+                    d.device_name,
+                    d.device_category,
+                    d.device_brand,
+                    d.device_status
+                FROM inv_unit_devices AS d
+                WHERE d.unit_pointer = @unitPointer;"
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@unitPointer", unitPointer)
+                    Using da As New MySqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error fetching devices by unit pointer: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
 
 
     ' ✅ Update device status

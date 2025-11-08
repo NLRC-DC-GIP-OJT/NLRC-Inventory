@@ -138,7 +138,6 @@ Public Class AddNew
             Return
         End If
 
-        ' Validate quantity
         Dim quantity As Integer
         If Not Integer.TryParse(quantitxt.Text, quantity) OrElse quantity <= 0 Then
             MessageBox.Show("Please enter a valid quantity.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -147,36 +146,73 @@ Public Class AddNew
 
         Dim remark As String = remarktxt1.Text.Trim()
 
-        ' Prepare final table for insertion
-        Dim finalTable As New DataTable()
-        finalTable.Columns.Add("pointer", GetType(Integer))
-        finalTable.Columns.Add("brands", GetType(String))
-        finalTable.Columns.Add("model", GetType(String))
-        finalTable.Columns.Add("status", GetType(String))
-        finalTable.Columns.Add("total_devices", GetType(Integer))
-        finalTable.Columns.Add("remark", GetType(String))
+        ' Build confirmation message
+        Dim confirmMessage As String = "You are about to assign the following units:" & Environment.NewLine & Environment.NewLine
+        Dim totalUnits As Integer = 0
 
-        For Each deviceRow As DataRow In previewTable.Rows
-            Dim newRow As DataRow = finalTable.NewRow()
-            newRow("pointer") = deviceRow("pointer")
-            newRow("brands") = deviceRow("brands")
-            newRow("model") = deviceRow("model")
-            newRow("status") = deviceRow("status")
-            newRow("total_devices") = deviceRow("total_devices")
-            newRow("remark") = remark
-            finalTable.Rows.Add(newRow)
+        For Each row As DataRow In previewTable.Rows
+            ' Get brand name for display
+            Dim brandName As String
+            If IsNumeric(row("brands")) Then
+                brandName = mdl.GetBrandPointerByName(Convert.ToInt32(row("brands"))) ' <-- Make sure you have this function
+            Else
+                brandName = row("brands").ToString()
+            End If
+
+            Dim modelName As String = row("model").ToString()
+            confirmMessage &= $"{brandName} {modelName}: Quantity {quantity}" & Environment.NewLine
+            totalUnits += quantity
         Next
 
-        ' Save using robust function
-        If mdl.SaveInvUnitDevices(finalTable, quantity, remark) Then
+        confirmMessage &= Environment.NewLine & $"Total units to assign: {totalUnits}" & Environment.NewLine
+        confirmMessage &= "Do you want to proceed?"
+
+        ' Show confirmation dialog
+        Dim result As DialogResult = MessageBox.Show(confirmMessage, "Confirm Assignment", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result <> DialogResult.Yes Then
+            Return
+        End If
+
+        ' Prepare DataTable with correct types for saving
+        Dim selectedDevices As New DataTable()
+        selectedDevices.Columns.Add("pointer", GetType(Integer))
+        selectedDevices.Columns.Add("brands", GetType(Integer)) ' MUST BE INT
+        selectedDevices.Columns.Add("model", GetType(String))
+        selectedDevices.Columns.Add("status", GetType(String))
+
+        For Each row As DataRow In previewTable.Rows
+            Dim newRow As DataRow = selectedDevices.NewRow()
+            newRow("pointer") = Convert.ToInt32(row("pointer"))
+
+            ' Convert brand name to pointer if necessary
+            If IsNumeric(row("brands")) Then
+                newRow("brands") = Convert.ToInt32(row("brands"))
+            Else
+                newRow("brands") = mdl.GetBrandPointerByName(row("brands").ToString())
+            End If
+
+            newRow("model") = row("model")
+            newRow("status") = row("status")
+            selectedDevices.Rows.Add(newRow)
+        Next
+
+        ' Call Model to save
+        If mdl.SaveInvUnitDevices(selectedDevices, quantity, remark) Then
             MessageBox.Show("Units successfully saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             previewTable.Clear()
             quantitxt.Text = "1"
             remarktxt1.Text = ""
         Else
-            MessageBox.Show("Error saving units. Check stock or brand names.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Error saving units. Check stock.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
+
+
+
+
+
+
+
 
     ' Increment quantity
     Private Sub addQuantityBtn_Click(sender As Object, e As EventArgs) Handles addQuantityBtn.Click
