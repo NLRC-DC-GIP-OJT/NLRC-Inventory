@@ -317,6 +317,10 @@ Public Class AddUnits
         End If
     End Sub
 
-
+    Private Sub Panel2_Click(sender As Object, e As EventArgs) Handles Panel2.Click
+        Dim parentPanel As Panel = TryCast(Me.Parent, Panel)
+        If parentPanel Is Nothing Then parentPanel = TryCast(Me.Parent?.Parent, Panel)
+        If parentPanel IsNot Nothing Then parentPanel.Visible = False
+    End Sub
 
 End Class

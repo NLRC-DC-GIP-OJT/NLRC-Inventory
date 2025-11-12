@@ -58,7 +58,7 @@ End Class
 
 Public Class model
 
-    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3306;Database=main_nlrc_db;Uid=root;Pwd=;"
+    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;"
 
     Public Function EncryptPassword(ByVal password As String) As String
         password = password.Trim()
@@ -259,38 +259,46 @@ Public Class model
 
     Public Function GetDevicesByCategory2(categoryPointer As Integer) As DataTable
         Dim dt As New DataTable()
-        Try
-            Using conn As New MySqlConnection(connectionString)
-                conn.Open()
 
-                Dim query As String = "
-        SELECT 
-            MIN(d.pointer) AS pointer,        -- any pointer (just for reference)
+        Dim query As String = "
+                SELECT 
+            MIN(d.pointer) AS pointer,       -- pick one pointer for display
             b.brand_name AS brands,
             d.model,
             d.status,
             COUNT(*) AS total_devices,
-            CONCAT(b.brand_name, ' - ', d.model) AS display_name
+            d.dev_category_pointer,
+            d.specs                            -- Add the specs column here
         FROM inv_devices d
         LEFT JOIN inv_brands b ON d.brands = b.pointer
         WHERE d.dev_category_pointer = @categoryPointer
-        AND d.status = 'Working'
-        GROUP BY b.brand_name, d.model, d.status
-        ORDER BY b.brand_name, d.model;"
+          AND d.status = 'Working'            -- <-- only available devices
+        GROUP BY b.brand_name, d.model, d.status, d.dev_category_pointer, d.specs
+        ORDER BY b.brand_name, d.model;
 
+    "
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
                 Using cmd As New MySqlCommand(query, conn)
                     cmd.Parameters.AddWithValue("@categoryPointer", categoryPointer)
-                    Using da As New MySqlDataAdapter(cmd)
-                        da.Fill(dt)
+                    Using adapter As New MySqlDataAdapter(cmd)
+                        adapter.Fill(dt)
                     End Using
                 End Using
             End Using
+
         Catch ex As Exception
             MessageBox.Show("Error loading devices: " & ex.Message,
                     "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
+
         Return dt
     End Function
+
+
+
 
 
 
@@ -560,7 +568,7 @@ Public Class model
     Public Function GetAssignments() As DataTable
         Dim dt As New DataTable()
         Try
-            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3306;Database=db_nlrc_intranet;Uid=root;Pwd=;")
+            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;")
                 conn.Open()
                 Dim query As String = "SELECT user_id, CONCAT(LAST_M, ', ', FIRST_M) AS `Full name` FROM user_info ORDER BY LAST_M, FIRST_M;"
                 Using cmd As New MySqlCommand(query, conn)
@@ -674,19 +682,32 @@ Public Class model
 
 
 
-    Public Function GetBrandPointerByName(brandName As String) As Integer
+    Public Function GetBrandPointerByName(brandName As String, categoryPointer As Integer) As Integer
         Using conn As New MySqlConnection(connectionString)
             conn.Open()
-            Dim cmd As New MySqlCommand("SELECT pointer FROM inv_brands WHERE brand_name = @name LIMIT 1", conn)
-            cmd.Parameters.AddWithValue("@name", brandName)
-            Dim result = cmd.ExecuteScalar()
-            If result IsNot Nothing Then
-                Return Convert.ToInt32(result)
-            Else
-                Throw New Exception("Brand not found: " & brandName)
-            End If
+
+            Dim query As String = "
+            SELECT pointer 
+            FROM inv_brands 
+            WHERE brand_name = @name 
+              AND category_pointer = @category
+            LIMIT 1;
+        "
+
+            Using cmd As New MySqlCommand(query, conn)
+                cmd.Parameters.AddWithValue("@name", brandName)
+                cmd.Parameters.AddWithValue("@category", categoryPointer)
+
+                Dim result = cmd.ExecuteScalar()
+                If result IsNot Nothing Then
+                    Return Convert.ToInt32(result)
+                Else
+                    Throw New Exception($"Brand not found: {brandName} (Category ID {categoryPointer})")
+                End If
+            End Using
         End Using
     End Function
+
 
 
     Public Function SaveInvUnitDevices(selectedDevices As DataTable, quantity As Integer, remark As String) As Boolean
@@ -707,7 +728,7 @@ Public Class model
                     Try
                         ' Loop for the number of units to create
                         For u As Integer = 1 To quantity
-                            ' 1️⃣ Insert a unit
+                            ' Insert a unit
                             Dim insertUnitCmd As New MySqlCommand("
                             INSERT INTO inv_units (unit_name, remarks, status, created_by, created_at)
                             VALUES (NULL, @remark, 'Active', @created_by, NOW());
@@ -717,16 +738,20 @@ Public Class model
                             insertUnitCmd.Parameters.AddWithValue("@created_by", 1)
                             Dim unitId As Integer = Convert.ToInt32(insertUnitCmd.ExecuteScalar())
 
-                            ' 2️⃣ Loop through selected devices to assign
+                            ' Loop through selected devices
                             For Each row As DataRow In selectedDevices.Rows
                                 Dim brandPointer As Integer = Convert.ToInt32(row("brands"))
                                 Dim model As String = row("model").ToString().Trim()
 
-                                ' Get one available device of this brand/model
+                                ' Get one available device (matching brand, model, and category)
                                 Dim getDeviceCmd As New MySqlCommand("
-                                SELECT pointer 
-                                FROM inv_devices 
-                                WHERE brands = @brand AND model = @model AND status = 'Working'
+                                SELECT d.pointer
+                                FROM inv_devices d
+                                INNER JOIN inv_brands b ON d.brands = b.pointer
+                                WHERE d.brands = @brand 
+                                  AND d.model = @model 
+                                  AND d.status = 'Working'
+                                  AND d.dev_category_pointer = b.category_pointer
                                 LIMIT 1
                             ", conn, trans)
                                 getDeviceCmd.Parameters.AddWithValue("@brand", brandPointer)
@@ -734,14 +759,13 @@ Public Class model
                                 Dim deviceObj = getDeviceCmd.ExecuteScalar()
 
                                 If deviceObj Is Nothing Then
-                                    ' Only show brand name in MsgBox
                                     Dim brandName As String = GetBrandName(brandPointer)
                                     Throw New Exception($"Not enough stock for Brand {brandName}, Model {model}.")
                                 End If
 
                                 Dim devicePointer As Integer = Convert.ToInt32(deviceObj)
 
-                                ' 3️⃣ Insert into inv_unit_devices
+                                ' Insert into inv_unit_devices
                                 Dim insertLinkCmd As New MySqlCommand("
                                 INSERT INTO inv_unit_devices (inv_units_pointer, inv_devices_pointer, created_at, created_by)
                                 VALUES (@unitId, @devicePointer, NOW(), @created_by)
@@ -751,7 +775,7 @@ Public Class model
                                 insertLinkCmd.Parameters.AddWithValue("@created_by", 1)
                                 insertLinkCmd.ExecuteNonQuery()
 
-                                ' 4️⃣ Mark device as Assigned
+                                ' Mark device as Assigned
                                 Dim updateDeviceCmd As New MySqlCommand("
                                 UPDATE inv_devices 
                                 SET status = 'Assigned', updated_by = @updated_by, updated_at = NOW() 
@@ -777,6 +801,8 @@ Public Class model
             Return False
         End Try
     End Function
+
+
 
     ' Helper to fetch brand name by ID
     Private Function GetBrandName(brandId As Integer) As String
@@ -1191,16 +1217,322 @@ Public Class model
     End Sub
 
 
+    ' Method to insert a new Device Category
+    Public Function InsertDeviceCategory(categoryName As String, description As String, createdBy As Integer) As Boolean
+        Dim query As String = "INSERT INTO inv_device_category (category_name, description, created_by) " &
+                              "VALUES (@categoryName, @description, @createdBy)"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@categoryName", categoryName)
+                    cmd.Parameters.AddWithValue("@description", description)
+                    cmd.Parameters.AddWithValue("@createdBy", createdBy)
+
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+
+            Return True
+        Catch ex As Exception
+            ' Handle any errors that occur during the insert
+            MessageBox.Show("Error: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+
+    ' Method to retrieve device categories and populate the DataGridView
+    Public Function GetDeviceCategories() As List(Of DeviceCategory)
+        Dim categories As New List(Of DeviceCategory)()
+        Dim query As String = "SELECT pointer, category_name, description, created_at, updated_at FROM inv_device_category ORDER BY pointer DESC"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Using cmd As New MySqlCommand(query, conn)
+                    Using reader As MySqlDataReader = cmd.ExecuteReader()
+                        While reader.Read()
+                            ' Create a new DeviceCategory object and populate it
+                            Dim category As New DeviceCategory() With {
+                                .Pointer = reader.GetInt32("pointer"),
+                                .CategoryName = reader.GetString("category_name"),
+                                .Description = reader.GetString("description"),
+                                .CreatedAt = reader.GetDateTime("created_at"),
+                                .UpdatedAt = reader.GetDateTime("updated_at")
+                            }
+
+                            categories.Add(category)
+                        End While
+                    End Using
+                End Using
+            End Using
+
+            Return categories
+        Catch ex As Exception
+            ' Handle any errors that occur during data retrieval
+            MessageBox.Show("Error: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
+
+    ' === Get all categories for ComboBox ===
+    Public Function GetAllCategories() As DataTable
+        Dim dt As New DataTable()
+        Dim query As String = "SELECT pointer, category_name FROM inv_device_category ORDER BY category_name ASC"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using cmd As New MySqlCommand(query, conn)
+                    Using adapter As New MySqlDataAdapter(cmd)
+                        adapter.Fill(dt)
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error loading categories: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
+    Public Function IsCategoryExists(categoryName As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM inv_device_category WHERE category_name = @categoryName"
+        Using conn As New MySqlConnection(connectionString)
+            Using cmd As New MySqlCommand(query, conn)
+                cmd.Parameters.AddWithValue("@categoryName", categoryName)
+                conn.Open()
+                Dim count As Integer = Convert.ToInt32(cmd.ExecuteScalar())
+                Return count > 0
+            End Using
+        End Using
+    End Function
+
+
+
+    ' === Insert new Brand ===
+    Public Function InsertBrand(categoryPointer As Integer, brandName As String, createdBy As Integer) As Boolean
+        ' Check if the brand already exists
+        If BrandExists(categoryPointer, brandName) Then
+            MessageBox.Show("This brand already exists in the selected category.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return False
+        End If
+
+        ' Proceed with the insert if the brand does not exist
+        Dim query As String = "INSERT INTO inv_brands (brand_name, created_by, category_pointer) " &
+                          "VALUES (@brand_name, @created_by, @category_pointer)"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@brand_name", brandName)
+                    cmd.Parameters.AddWithValue("@created_by", createdBy)
+                    cmd.Parameters.AddWithValue("@category_pointer", categoryPointer)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+            Return True
+        Catch ex As Exception
+            MessageBox.Show("Failed inserting brand: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+    ' === Check if Brand already exists in the selected Category ===
+    Public Function BrandExists(categoryPointer As Integer, brandName As String) As Boolean
+        Dim query As String = "SELECT COUNT(*) FROM inv_brands WHERE category_pointer = @categoryPointer AND brand_name = @brandName"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@categoryPointer", categoryPointer)
+                    cmd.Parameters.AddWithValue("@brandName", brandName)
+
+                    Dim count As Integer = Convert.ToInt32(cmd.ExecuteScalar())
+                    Return count > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error checking brand existence: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+    ' === Get all brands with category names for DataGridView ===
+    Public Function GetAllBrands() As DataTable
+        Dim dt As New DataTable()
+        Dim query As String = "SELECT b.pointer, c.category_name, b.brand_name, b.created_at, b.updated_at, b.category_pointer " &
+                          "FROM inv_brands b " &
+                          "LEFT JOIN inv_device_category c ON b.category_pointer = c.pointer " &
+                          "ORDER BY b.pointer DESC, c.category_name, b.brand_name"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using adapter As New MySqlDataAdapter(query, conn)
+                    adapter.Fill(dt)
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error loading brands: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
 
 
 
 
+    ' === Insert specs into inv_specs ===
+    Public Function InsertSpecs(categoryId As Integer, specsText As String, createdBy As Integer) As Boolean
+        Dim query As String = "INSERT INTO inv_specs (category_id, specs, created_by) VALUES (@category_id, @specs, @created_by)"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@category_id", categoryId)
+                    cmd.Parameters.AddWithValue("@specs", specsText)
+                    cmd.Parameters.AddWithValue("@created_by", createdBy)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+            Return True
+        Catch ex As Exception
+            MessageBox.Show("Error inserting specs: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+
+    ' === Get all specs (with category name, newest first) ===
+    Public Function GetAllSpecs() As DataTable
+        Dim dt As New DataTable()
+        Dim query As String = "SELECT s.pointer, c.category_name, s.specs, s.created_at, s.updated_at, s.category_id AS category_pointer " &
+                          "FROM inv_specs s " &
+                          "LEFT JOIN inv_device_category c ON s.category_id = c.pointer " &
+                          "ORDER BY s.pointer DESC;"
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using adapter As New MySqlDataAdapter(query, conn)
+                    adapter.Fill(dt)
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error loading specs: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
+
+    Public Function UpdateCategory(categoryId As Integer, categoryName As String, description As String) As Boolean
+        Dim query As String = "UPDATE device_categories SET category_name=@name, description=@desc, updated_at=NOW() WHERE pointer=@id"
+        Using conn As New MySqlConnection(connectionString)
+            Using cmd As New MySqlCommand(query, conn)
+                cmd.Parameters.AddWithValue("@name", categoryName)
+                cmd.Parameters.AddWithValue("@desc", description)
+                cmd.Parameters.AddWithValue("@id", categoryId)
+                conn.Open()
+                Return cmd.ExecuteNonQuery() > 0
+            End Using
+        End Using
+    End Function
+
+    Public Function DeleteCategory(categoryId As Integer) As Boolean
+        Dim query As String = "DELETE FROM device_categories WHERE pointer=@id"
+        Using conn As New MySqlConnection(connectionString)
+            Using cmd As New MySqlCommand(query, conn)
+                cmd.Parameters.AddWithValue("@id", categoryId)
+                conn.Open()
+                Return cmd.ExecuteNonQuery() > 0
+            End Using
+        End Using
+    End Function
+
+    ' === Update Brand ===
+    Public Function UpdateBrand(brandId As Integer, categoryPointer As Integer, brandName As String) As Boolean
+        Dim query As String = "UPDATE inv_brands SET category_pointer=@cat, brand_name=@name, updated_at=NOW() WHERE pointer=@id"
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryPointer)
+                    cmd.Parameters.AddWithValue("@name", brandName)
+                    cmd.Parameters.AddWithValue("@id", brandId)
+                    conn.Open()
+                    Return cmd.ExecuteNonQuery() > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error updating brand: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+    ' === Delete Brand ===
+    Public Function DeleteBrand(brandId As Integer) As Boolean
+        Dim query As String = "DELETE FROM inv_brands WHERE pointer=@id"
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@id", brandId)
+                    conn.Open()
+                    Return cmd.ExecuteNonQuery() > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error deleting brand: " & ex.Message)
+            Return False
+        End Try
+    End Function
+
+    ' === Update Specs ===
+    Public Function UpdateSpecs(specsId As Integer, categoryId As Integer, combinedSpecs As String) As Boolean
+        Dim query As String = "UPDATE inv_specs SET category_id=@cat, specs=@specs, updated_at=NOW() WHERE pointer=@id"
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryId)
+                    cmd.Parameters.AddWithValue("@specs", combinedSpecs)
+                    cmd.Parameters.AddWithValue("@id", specsId)
+                    conn.Open()
+                    Return cmd.ExecuteNonQuery() > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error updating specs: " & ex.Message)
+            Return False
+        End Try
+    End Function
 
 
 
+    ' === Delete Specs ===
+    Public Function DeleteSpecs(specsId As Integer) As Boolean
+        Dim query As String = "DELETE FROM inv_specs WHERE pointer=@id"
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@id", specsId)
+                    conn.Open()
+                    Return cmd.ExecuteNonQuery() > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error deleting specs: " & ex.Message)
+            Return False
+        End Try
+    End Function
 
 End Class
-
 
 
 

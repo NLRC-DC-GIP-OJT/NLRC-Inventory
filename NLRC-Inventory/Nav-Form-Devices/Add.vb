@@ -26,6 +26,12 @@
             catcb.DisplayMember = "CategoryName"
             catcb.ValueMember = "Pointer"
             catcb.SelectedIndex = -1
+
+            ' Enable autocomplete
+            catcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+            catcb.AutoCompleteSource = AutoCompleteSource.ListItems
+
+
         Else
             catcb.DataSource = Nothing
             catcb.Items.Clear()
@@ -44,6 +50,10 @@
             brandcb.DisplayMember = "BrandName"
             brandcb.ValueMember = "Pointer"
             brandcb.SelectedIndex = -1
+
+            ' Enable autocomplete
+            brandcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+            brandcb.AutoCompleteSource = AutoCompleteSource.ListItems
         Else
             brandcb.DataSource = Nothing
             brandcb.Items.Clear()

@@ -35,7 +35,7 @@ Partial Class Login
         usertxt = New TextBox()
         Panel4 = New Panel()
         Label4 = New Label()
-        closebtn = New Button()
+        Panel5 = New Panel()
         Panel2.SuspendLayout()
         Panel3.SuspendLayout()
         Panel4.SuspendLayout()
@@ -87,7 +87,7 @@ Partial Class Login
         ' Label3
         ' 
         Label3.AutoSize = True
-        Label3.Font = New Font("Arial", 12.0F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
+        Label3.Font = New Font("Arial", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         Label3.ForeColor = Color.White
         Label3.Location = New Point(33, 27)
         Label3.Name = "Label3"
@@ -124,7 +124,7 @@ Partial Class Login
         ' Button1
         ' 
         Button1.BackColor = Color.DarkBlue
-        Button1.Font = New Font("Arial Black", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        Button1.Font = New Font("Arial Black", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         Button1.ForeColor = Color.White
         Button1.Location = New Point(101, 288)
         Button1.Name = "Button1"
@@ -163,7 +163,7 @@ Partial Class Login
         ' Label4
         ' 
         Label4.AutoSize = True
-        Label4.Font = New Font("Arial", 12.0F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
+        Label4.Font = New Font("Arial", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         Label4.ForeColor = Color.White
         Label4.Location = New Point(48, 15)
         Label4.Name = "Label4"
@@ -171,27 +171,24 @@ Partial Class Login
         Label4.TabIndex = 0
         Label4.Text = "Login your account"
         ' 
-        ' closebtn
+        ' Panel5
         ' 
-        closebtn.BackColor = Color.Transparent
-        closebtn.BackgroundImageLayout = ImageLayout.Stretch
-        closebtn.FlatAppearance.BorderSize = 0
-        closebtn.FlatStyle = FlatStyle.Flat
-        closebtn.Image = CType(resources.GetObject("closebtn.Image"), Image)
-        closebtn.Location = New Point(879, 5)
-        closebtn.Name = "closebtn"
-        closebtn.Size = New Size(43, 49)
-        closebtn.TabIndex = 5
-        closebtn.UseVisualStyleBackColor = False
+        Panel5.BackColor = Color.Transparent
+        Panel5.BackgroundImage = CType(resources.GetObject("Panel5.BackgroundImage"), Image)
+        Panel5.BackgroundImageLayout = ImageLayout.Stretch
+        Panel5.Location = New Point(884, 12)
+        Panel5.Name = "Panel5"
+        Panel5.Size = New Size(35, 33)
+        Panel5.TabIndex = 20
         ' 
         ' Login
         ' 
-        AutoScaleDimensions = New SizeF(8.0F, 20.0F)
+        AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
         BackgroundImage = My.Resources.Resources.background
         BackgroundImageLayout = ImageLayout.Stretch
         ClientSize = New Size(941, 533)
-        Controls.Add(closebtn)
+        Controls.Add(Panel5)
         Controls.Add(Panel3)
         Controls.Add(Panel2)
         Controls.Add(Label2)
@@ -223,7 +220,7 @@ Partial Class Login
     Friend WithEvents usertxt As TextBox
     Friend WithEvents Panel4 As Panel
     Friend WithEvents Label4 As Label
-    Friend WithEvents closebtn As Button
     Friend WithEvents chkShowPass As CheckBox
+    Friend WithEvents Panel5 As Panel
 
 End Class

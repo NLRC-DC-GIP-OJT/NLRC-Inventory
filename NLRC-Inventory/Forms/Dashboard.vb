@@ -39,4 +39,10 @@
         mainpnl.Controls.Add(uc)
     End Sub
 
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        mainpnl.Controls.Clear()
+        Dim uc As New Configuration()
+        uc.Dock = DockStyle.Fill
+        mainpnl.Controls.Add(uc)
+    End Sub
 End Class

@@ -34,22 +34,24 @@ Partial Class devices
         Panel2 = New Panel()
         catecb = New ComboBox()
         brandscb = New ComboBox()
+        Label3 = New Label()
         lblPageInfo = New Label()
         btnPrev = New Button()
         btnNext = New Button()
         addpnl = New Panel()
-        Label3 = New Label()
+        Panel3 = New Panel()
         Panel1.SuspendLayout()
         CType(devicesdgv, ComponentModel.ISupportInitialize).BeginInit()
         Panel2.SuspendLayout()
+        Panel3.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
         ' 
         Panel1.Controls.Add(devicesdgv)
-        Panel1.Location = New Point(26, 115)
+        Panel1.Location = New Point(15, 124)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1387, 714)
+        Panel1.Size = New Size(1387, 699)
         Panel1.TabIndex = 7
         ' 
         ' devicesdgv
@@ -67,7 +69,7 @@ Partial Class devices
         DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
         devicesdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         devicesdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
         DataGridViewCellStyle2.BackColor = SystemColors.Window
         DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
         DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
@@ -85,7 +87,7 @@ Partial Class devices
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         devicesdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicesdgv.Size = New Size(1387, 714)
+        devicesdgv.Size = New Size(1387, 699)
         devicesdgv.TabIndex = 0
         ' 
         ' addbtn
@@ -129,7 +131,7 @@ Partial Class devices
         Panel2.Controls.Add(brandscb)
         Panel2.Controls.Add(Label3)
         Panel2.Controls.Add(statuscb)
-        Panel2.Location = New Point(26, 15)
+        Panel2.Location = New Point(15, 24)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(1387, 76)
         Panel2.TabIndex = 13
@@ -152,48 +154,6 @@ Partial Class devices
         brandscb.Size = New Size(250, 39)
         brandscb.TabIndex = 13
         ' 
-        ' lblPageInfo
-        ' 
-        lblPageInfo.AutoSize = True
-        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblPageInfo.Location = New Point(652, 847)
-        lblPageInfo.Name = "lblPageInfo"
-        lblPageInfo.Size = New Size(109, 28)
-        lblPageInfo.TabIndex = 14
-        lblPageInfo.Text = "Page 1 of 1"
-        ' 
-        ' btnPrev
-        ' 
-        btnPrev.BackColor = Color.CornflowerBlue
-        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnPrev.ForeColor = Color.White
-        btnPrev.Location = New Point(552, 837)
-        btnPrev.Name = "btnPrev"
-        btnPrev.Size = New Size(94, 48)
-        btnPrev.TabIndex = 15
-        btnPrev.Text = "Previous"
-        btnPrev.UseVisualStyleBackColor = False
-        ' 
-        ' btnNext
-        ' 
-        btnNext.BackColor = Color.CornflowerBlue
-        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnNext.ForeColor = Color.White
-        btnNext.Location = New Point(773, 837)
-        btnNext.Name = "btnNext"
-        btnNext.Size = New Size(94, 48)
-        btnNext.TabIndex = 16
-        btnNext.Text = "Next"
-        btnNext.UseVisualStyleBackColor = False
-        ' 
-        ' addpnl
-        ' 
-        addpnl.Location = New Point(248, 67)
-        addpnl.Name = "addpnl"
-        addpnl.Size = New Size(867, 747)
-        addpnl.TabIndex = 17
-        addpnl.Visible = False
-        ' 
         ' Label3
         ' 
         Label3.AutoSize = True
@@ -205,26 +165,78 @@ Partial Class devices
         Label3.TabIndex = 6
         Label3.Text = "Filters :"
         ' 
+        ' lblPageInfo
+        ' 
+        lblPageInfo.AutoSize = True
+        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblPageInfo.Location = New Point(631, 845)
+        lblPageInfo.Name = "lblPageInfo"
+        lblPageInfo.Size = New Size(109, 28)
+        lblPageInfo.TabIndex = 14
+        lblPageInfo.Text = "Page 1 of 1"
+        ' 
+        ' btnPrev
+        ' 
+        btnPrev.BackColor = Color.CornflowerBlue
+        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnPrev.ForeColor = Color.White
+        btnPrev.Location = New Point(531, 835)
+        btnPrev.Name = "btnPrev"
+        btnPrev.Size = New Size(94, 48)
+        btnPrev.TabIndex = 15
+        btnPrev.Text = "Previous"
+        btnPrev.UseVisualStyleBackColor = False
+        ' 
+        ' btnNext
+        ' 
+        btnNext.BackColor = Color.CornflowerBlue
+        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnNext.ForeColor = Color.White
+        btnNext.Location = New Point(752, 835)
+        btnNext.Name = "btnNext"
+        btnNext.Size = New Size(94, 48)
+        btnNext.TabIndex = 16
+        btnNext.Text = "Next"
+        btnNext.UseVisualStyleBackColor = False
+        ' 
+        ' addpnl
+        ' 
+        addpnl.Location = New Point(191, 82)
+        addpnl.Name = "addpnl"
+        addpnl.Size = New Size(867, 747)
+        addpnl.TabIndex = 17
+        addpnl.Visible = False
+        ' 
+        ' Panel3
+        ' 
+        Panel3.Controls.Add(addpnl)
+        Panel3.Controls.Add(Panel2)
+        Panel3.Controls.Add(btnPrev)
+        Panel3.Controls.Add(btnNext)
+        Panel3.Controls.Add(Panel1)
+        Panel3.Controls.Add(lblPageInfo)
+        Panel3.Dock = DockStyle.Fill
+        Panel3.Location = New Point(0, 0)
+        Panel3.Name = "Panel3"
+        Panel3.Size = New Size(1438, 896)
+        Panel3.TabIndex = 18
+        ' 
         ' devices
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
         BackColor = Color.White
         BorderStyle = BorderStyle.FixedSingle
-        Controls.Add(addpnl)
-        Controls.Add(btnNext)
-        Controls.Add(btnPrev)
-        Controls.Add(lblPageInfo)
-        Controls.Add(Panel1)
-        Controls.Add(Panel2)
+        Controls.Add(Panel3)
         Name = "devices"
         Size = New Size(1438, 896)
         Panel1.ResumeLayout(False)
         CType(devicesdgv, ComponentModel.ISupportInitialize).EndInit()
         Panel2.ResumeLayout(False)
         Panel2.PerformLayout()
+        Panel3.ResumeLayout(False)
+        Panel3.PerformLayout()
         ResumeLayout(False)
-        PerformLayout()
     End Sub
     Friend WithEvents Panel1 As Panel
     Friend WithEvents devicesdgv As DataGridView
@@ -242,5 +254,6 @@ Partial Class devices
     Friend WithEvents btnNext As Button
     Friend WithEvents addpnl As Panel
     Friend WithEvents Label3 As Label
+    Friend WithEvents Panel3 As Panel
 
 End Class

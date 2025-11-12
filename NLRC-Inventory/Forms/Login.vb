@@ -103,9 +103,7 @@ Public Class Login
         End If
     End Sub
 
-    Private Sub closebtn_Click(sender As Object, e As EventArgs) Handles closebtn.Click
-        Close()
-    End Sub
+
 
     ' ===== Custom Big Message Box =====
     Private Sub CustomMsg(msg As String, title As String)
@@ -137,4 +135,7 @@ Public Class Login
         f.ShowDialog()
     End Sub
 
+    Private Sub Panel5_Click(sender As Object, e As EventArgs) Handles Panel5.Click
+        Close()
+    End Sub
 End Class

@@ -118,14 +118,29 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Panel4.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAB
+        1wAAAdcBjJIIaAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAHaSURBVHhe7Zpb
+        TsUwDEQtWAawH96sgcciYVnwA3yBRrqWkJVrp03sJsVHyg9NMp5pRHPbECVJkiRJkiRJktRzSkR3RPRM
+        RGfyYiAXRPRyqOVEXvQC5t+I6OfQPojoVnYKAJrQ5jpeo0JA2izK7Ts4BGhBU9ZxIzt68FQQRvsKCgEa
+        0JL6aI+yswfnYulFhqCZf4/8f3RsCXqGoJnH30OW/18uieizUAwawnmQAxq4MrTu5YAoIkIY1jxjhdBS
+        oOfcXfEo1GNOV3oW3HOuUHoU3mOOTWkx0DJ2KNYYWTNmaJYYWtJ3KmqM1fSZGmsLq13z2FJvgnaXS20X
+        d15SG8IuzTNWCLs2D2oC6PEDakgs87sOodb8LkPAmxrtUXfsGkKY/jGo3fnajdC0K8EytmQrPF0IlqHS
+        o84aM00IlpGSecYaO3wIlgHNPGPNMWwIVuE15hlrruFCsApeYp6x5hwmBKvQNeYZa+7NQ7AKbDHPWBqb
+        hWAV1sM8Y2mFh3CtbGG93uRob5YQgodmEXwex6doWYSneUYLAZ/sUZs7OBckxSPMM1oIIQckUIAUDl2C
+        yvmEkDMCOIiEA0ks+u8OSQEIoQCcFwo7llIA2lj2uPNh5pMkSZIkSZIkmZ9fbzIHJivIrioAAAAASUVO
+        RK5CYII=
+</value>
+  </data>
   <data name="minusQuantityBtn.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwa
-        AAAAtUlEQVR4Xu3UMQrCMBiG4Q7qpIsew7EgSbvESfAPgkMPo4u9hINgEpyEnkQPoNdROhrdqhDwfeCb
-        /3dJsgwAAAAAAAAAAAAA8Gq2Pk0K62ol7qzFNymtbVIStuXKjeLur5hWzUCLv2vxj7QXrsbUvbi/s1Lc
-        /P1Ysivi/s6UDebDoSRXWKfj/s7y/NDX4m/xsQR3+ckTaOnFcayWYZfqJ6it35hqP4y7AQAAAAAAAAAA
-        AODvPQFf3wKMwQcmUAAAAABJRU5ErkJggg==
+        iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vQAADr0BR/uQrQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAC1SURBVHhe7dQx
+        CsIwGIbhDuqkix7DsSBJu8RJ8A+CQw+ji72Eg2ASnISeRA+g11E6Gt2qEPB94Jv/d0myDAAAAAAAAAAA
+        AADwarY+TQrraiXurMU3Ka1tUhK25cqN4u6vmFbNQIu/a/GPtBeuxtS9uL+zUtz8/ViyK+L+zpQN5sOh
+        JFdYp+P+zvL80Nfib/GxBHf5yRNo6cVxrJZhl+onqK3fmGo/jLsBAAAAAAAAAAAA4O89AV/fAozBByZQ
+        AAAAAElFTkSuQmCC
 </value>
   </data>
   <data name="addQuantityBtn.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

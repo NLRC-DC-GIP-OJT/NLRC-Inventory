@@ -67,6 +67,10 @@
             catcb.DataSource = categories
             catcb.DisplayMember = "CategoryName"
             catcb.ValueMember = "Pointer"
+
+            ' Enable autocomplete
+            catcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+            catcb.AutoCompleteSource = AutoCompleteSource.ListItems
         End If
     End Sub
 
@@ -77,6 +81,10 @@
             brandcb.DataSource = brands
             brandcb.DisplayMember = "BrandName"
             brandcb.ValueMember = "Pointer"
+
+            ' Enable autocomplete
+            brandcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
+            brandcb.AutoCompleteSource = AutoCompleteSource.ListItems
         End If
     End Sub
 
@@ -177,5 +185,9 @@
     Private Sub cancelbtn_Click_1(sender As Object, e As EventArgs) Handles cancelbtn.Click
         Dim parentPanel = TryCast(Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
+    End Sub
+
+    Private Sub Panel1_Paint(sender As Object, e As PaintEventArgs) Handles Panel1.Paint
+
     End Sub
 End Class

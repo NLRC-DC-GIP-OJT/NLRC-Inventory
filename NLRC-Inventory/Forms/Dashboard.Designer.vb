@@ -25,24 +25,26 @@ Partial Class Dashboard
         components = New ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Dashboard))
         Panel1 = New Panel()
-        dntlbl = New Label()
-        userlbl = New Label()
-        Label4 = New Label()
-        mainpnl = New Panel()
-        Label3 = New Label()
+        Panel4 = New Panel()
+        Panel2 = New Panel()
         Panel3 = New Panel()
         Button5 = New Button()
         Button4 = New Button()
         unitbtn = New Button()
         Button2 = New Button()
         Button1 = New Button()
-        Label2 = New Label()
-        Panel2 = New Panel()
+        mainpnl = New Panel()
+        Label3 = New Label()
+        userlbl = New Label()
+        dntlbl = New Label()
+        Label4 = New Label()
         Label1 = New Label()
+        Label2 = New Label()
         Timer1 = New Timer(components)
         Panel1.SuspendLayout()
-        mainpnl.SuspendLayout()
+        Panel4.SuspendLayout()
         Panel3.SuspendLayout()
+        mainpnl.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -50,14 +52,7 @@ Partial Class Dashboard
         Panel1.BackColor = Color.Transparent
         Panel1.BackgroundImage = My.Resources.Resources.background
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
-        Panel1.Controls.Add(dntlbl)
-        Panel1.Controls.Add(userlbl)
-        Panel1.Controls.Add(Label4)
-        Panel1.Controls.Add(mainpnl)
-        Panel1.Controls.Add(Panel3)
-        Panel1.Controls.Add(Label2)
-        Panel1.Controls.Add(Panel2)
-        Panel1.Controls.Add(Label1)
+        Panel1.Controls.Add(Panel4)
         Panel1.Dock = DockStyle.Fill
         Panel1.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         Panel1.Location = New Point(0, 0)
@@ -65,50 +60,31 @@ Partial Class Dashboard
         Panel1.Size = New Size(1902, 1108)
         Panel1.TabIndex = 0
         ' 
-        ' dntlbl
+        ' Panel4
         ' 
-        dntlbl.AutoSize = True
-        dntlbl.Location = New Point(951, 24)
-        dntlbl.Name = "dntlbl"
-        dntlbl.Size = New Size(209, 38)
-        dntlbl.TabIndex = 7
-        dntlbl.Text = "Date and Time"
+        Panel4.Controls.Add(Panel2)
+        Panel4.Controls.Add(Panel3)
+        Panel4.Controls.Add(mainpnl)
+        Panel4.Controls.Add(userlbl)
+        Panel4.Controls.Add(dntlbl)
+        Panel4.Controls.Add(Label4)
+        Panel4.Controls.Add(Label1)
+        Panel4.Controls.Add(Label2)
+        Panel4.Dock = DockStyle.Fill
+        Panel4.Location = New Point(0, 0)
+        Panel4.Name = "Panel4"
+        Panel4.Size = New Size(1902, 1108)
+        Panel4.TabIndex = 8
         ' 
-        ' userlbl
+        ' Panel2
         ' 
-        userlbl.AutoSize = True
-        userlbl.Location = New Point(1619, 23)
-        userlbl.Name = "userlbl"
-        userlbl.Size = New Size(102, 38)
-        userlbl.TabIndex = 6
-        userlbl.Text = "Label5"
-        ' 
-        ' Label4
-        ' 
-        Label4.AutoSize = True
-        Label4.Location = New Point(1482, 23)
-        Label4.Name = "Label4"
-        Label4.Size = New Size(147, 38)
-        Label4.TabIndex = 5
-        Label4.Text = "Welcome!"
-        ' 
-        ' mainpnl
-        ' 
-        mainpnl.BackColor = Color.White
-        mainpnl.Controls.Add(Label3)
-        mainpnl.Location = New Point(404, 150)
-        mainpnl.Name = "mainpnl"
-        mainpnl.Size = New Size(1440, 898)
-        mainpnl.TabIndex = 4
-        ' 
-        ' Label3
-        ' 
-        Label3.AutoSize = True
-        Label3.Location = New Point(42, 37)
-        Label3.Name = "Label3"
-        Label3.Size = New Size(193, 38)
-        Label3.TabIndex = 5
-        Label3.Text = "DASHBOARD"
+        Panel2.BackColor = Color.Transparent
+        Panel2.BackgroundImage = My.Resources.Resources.NLRCLogo
+        Panel2.BackgroundImageLayout = ImageLayout.Stretch
+        Panel2.Location = New Point(24, 16)
+        Panel2.Name = "Panel2"
+        Panel2.Size = New Size(117, 101)
+        Panel2.TabIndex = 1
         ' 
         ' Panel3
         ' 
@@ -118,7 +94,7 @@ Partial Class Dashboard
         Panel3.Controls.Add(unitbtn)
         Panel3.Controls.Add(Button2)
         Panel3.Controls.Add(Button1)
-        Panel3.Location = New Point(39, 150)
+        Panel3.Location = New Point(40, 158)
         Panel3.Name = "Panel3"
         Panel3.Size = New Size(309, 898)
         Panel3.TabIndex = 3
@@ -187,34 +163,69 @@ Partial Class Dashboard
         Button1.Text = "            DASHBOARD"
         Button1.UseVisualStyleBackColor = True
         ' 
-        ' Label2
+        ' mainpnl
         ' 
-        Label2.AutoSize = True
-        Label2.Font = New Font("Segoe UI", 18F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(152, 63)
-        Label2.Name = "Label2"
-        Label2.Size = New Size(259, 41)
-        Label2.TabIndex = 2
-        Label2.Text = "Inventory System"
+        mainpnl.BackColor = Color.White
+        mainpnl.Controls.Add(Label3)
+        mainpnl.Location = New Point(426, 158)
+        mainpnl.Name = "mainpnl"
+        mainpnl.Size = New Size(1440, 898)
+        mainpnl.TabIndex = 4
         ' 
-        ' Panel2
+        ' Label3
         ' 
-        Panel2.BackColor = Color.Transparent
-        Panel2.BackgroundImage = My.Resources.Resources.NLRCLogo
-        Panel2.BackgroundImageLayout = ImageLayout.Stretch
-        Panel2.Location = New Point(29, 12)
-        Panel2.Name = "Panel2"
-        Panel2.Size = New Size(117, 101)
-        Panel2.TabIndex = 1
+        Label3.AutoSize = True
+        Label3.Location = New Point(48, 26)
+        Label3.Name = "Label3"
+        Label3.Size = New Size(193, 38)
+        Label3.TabIndex = 5
+        Label3.Text = "DASHBOARD"
+        ' 
+        ' userlbl
+        ' 
+        userlbl.AutoSize = True
+        userlbl.Location = New Point(1471, 28)
+        userlbl.Name = "userlbl"
+        userlbl.Size = New Size(102, 38)
+        userlbl.TabIndex = 6
+        userlbl.Text = "Label5"
+        ' 
+        ' dntlbl
+        ' 
+        dntlbl.AutoSize = True
+        dntlbl.Location = New Point(946, 28)
+        dntlbl.Name = "dntlbl"
+        dntlbl.Size = New Size(209, 38)
+        dntlbl.TabIndex = 7
+        dntlbl.Text = "Date and Time"
+        ' 
+        ' Label4
+        ' 
+        Label4.AutoSize = True
+        Label4.Location = New Point(1318, 28)
+        Label4.Name = "Label4"
+        Label4.Size = New Size(147, 38)
+        Label4.TabIndex = 5
+        Label4.Text = "Welcome!"
         ' 
         ' Label1
         ' 
         Label1.AutoSize = True
-        Label1.Location = New Point(152, 24)
+        Label1.Location = New Point(147, 28)
         Label1.Name = "Label1"
         Label1.Size = New Size(508, 38)
         Label1.TabIndex = 0
         Label1.Text = "National Labor Relations Commission"
+        ' 
+        ' Label2
+        ' 
+        Label2.AutoSize = True
+        Label2.Font = New Font("Segoe UI", 18F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
+        Label2.Location = New Point(147, 67)
+        Label2.Name = "Label2"
+        Label2.Size = New Size(259, 41)
+        Label2.TabIndex = 2
+        Label2.Text = "Inventory System"
         ' 
         ' Timer1
         ' 
@@ -230,10 +241,11 @@ Partial Class Dashboard
         Text = "Dashboard"
         WindowState = FormWindowState.Maximized
         Panel1.ResumeLayout(False)
-        Panel1.PerformLayout()
+        Panel4.ResumeLayout(False)
+        Panel4.PerformLayout()
+        Panel3.ResumeLayout(False)
         mainpnl.ResumeLayout(False)
         mainpnl.PerformLayout()
-        Panel3.ResumeLayout(False)
         ResumeLayout(False)
     End Sub
 
@@ -253,4 +265,5 @@ Partial Class Dashboard
     Friend WithEvents Label4 As Label
     Friend WithEvents dntlbl As Label
     Friend WithEvents Timer1 As Timer
+    Friend WithEvents Panel4 As Panel
 End Class
