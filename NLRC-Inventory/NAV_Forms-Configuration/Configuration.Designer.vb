@@ -287,7 +287,7 @@ Partial Class Configuration
         ' 
         ' btnInsertSpecs
         ' 
-        btnInsertSpecs.BackColor = Color.Green
+        btnInsertSpecs.BackColor = Color.DarkOrchid
         btnInsertSpecs.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         btnInsertSpecs.ForeColor = Color.White
         btnInsertSpecs.Location = New Point(115, 389)
@@ -378,7 +378,7 @@ Partial Class Configuration
         Panel5.Controls.Add(specsdgv)
         Panel5.Location = New Point(961, 511)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(444, 367)
+        Panel5.Size = New Size(451, 367)
         Panel5.TabIndex = 11
         ' 
         ' specsdgv
@@ -414,7 +414,7 @@ Partial Class Configuration
         DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle6.ForeColor = Color.Black
         specsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
-        specsdgv.Size = New Size(444, 367)
+        specsdgv.Size = New Size(451, 367)
         specsdgv.TabIndex = 1
         ' 
         ' Panel6

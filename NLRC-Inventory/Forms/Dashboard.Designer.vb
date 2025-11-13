@@ -118,7 +118,7 @@ Partial Class Dashboard
         Button4.Name = "Button4"
         Button4.Size = New Size(309, 91)
         Button4.TabIndex = 3
-        Button4.Text = "REPORT"
+        Button4.Text = "SETTINGS"
         Button4.UseVisualStyleBackColor = True
         ' 
         ' unitbtn
@@ -184,7 +184,7 @@ Partial Class Dashboard
         ' userlbl
         ' 
         userlbl.AutoSize = True
-        userlbl.Location = New Point(1471, 28)
+        userlbl.Location = New Point(1513, 29)
         userlbl.Name = "userlbl"
         userlbl.Size = New Size(102, 38)
         userlbl.TabIndex = 6
@@ -193,7 +193,7 @@ Partial Class Dashboard
         ' dntlbl
         ' 
         dntlbl.AutoSize = True
-        dntlbl.Location = New Point(946, 28)
+        dntlbl.Location = New Point(774, 28)
         dntlbl.Name = "dntlbl"
         dntlbl.Size = New Size(209, 38)
         dntlbl.TabIndex = 7
@@ -202,7 +202,7 @@ Partial Class Dashboard
         ' Label4
         ' 
         Label4.AutoSize = True
-        Label4.Location = New Point(1318, 28)
+        Label4.Location = New Point(1360, 28)
         Label4.Name = "Label4"
         Label4.Size = New Size(147, 38)
         Label4.TabIndex = 5

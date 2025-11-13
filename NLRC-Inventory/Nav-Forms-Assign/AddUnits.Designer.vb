@@ -39,21 +39,6 @@ Partial Class AddUnits
         devicecb = New ComboBox()
         assigncb = New ComboBox()
         unitnametxt = New TextBox()
-        unit2pnl = New Panel()
-        devicestocklbl = New Label()
-        checkstocklbl = New Label()
-        Label9 = New Label()
-        catecb = New ComboBox()
-        Panel5 = New Panel()
-        quantitxt = New TextBox()
-        minusQuantityBtn = New Button()
-        addQuantityBtn = New Button()
-        Label6 = New Label()
-        addbtn1 = New Button()
-        remarktxt1 = New TextBox()
-        Label7 = New Label()
-        Label8 = New Label()
-        devicecb1 = New ComboBox()
         Panel3 = New Panel()
         unitsdgv = New DataGridView()
         savebtn = New Button()
@@ -61,8 +46,6 @@ Partial Class AddUnits
         savebtn1 = New Button()
         Panel1.SuspendLayout()
         unit1pnl.SuspendLayout()
-        unit2pnl.SuspendLayout()
-        Panel5.SuspendLayout()
         Panel3.SuspendLayout()
         CType(unitsdgv, ComponentModel.ISupportInitialize).BeginInit()
         savepnl1.SuspendLayout()
@@ -135,17 +118,17 @@ Partial Class AddUnits
         ' 
         remarktxt.BorderStyle = BorderStyle.FixedSingle
         remarktxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        remarktxt.Location = New Point(590, 67)
+        remarktxt.Location = New Point(706, 67)
         remarktxt.Multiline = True
         remarktxt.Name = "remarktxt"
-        remarktxt.Size = New Size(527, 97)
+        remarktxt.Size = New Size(411, 97)
         remarktxt.TabIndex = 14
         ' 
         ' Label5
         ' 
         Label5.AutoSize = True
         Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(590, 32)
+        Label5.Location = New Point(706, 30)
         Label5.Name = "Label5"
         Label5.Size = New Size(103, 23)
         Label5.TabIndex = 13
@@ -187,7 +170,7 @@ Partial Class AddUnits
         devicecb.FormattingEnabled = True
         devicecb.Location = New Point(277, 164)
         devicecb.Name = "devicecb"
-        devicecb.Size = New Size(250, 39)
+        devicecb.Size = New Size(396, 39)
         devicecb.TabIndex = 9
         ' 
         ' assigncb
@@ -196,7 +179,7 @@ Partial Class AddUnits
         assigncb.FormattingEnabled = True
         assigncb.Location = New Point(277, 92)
         assigncb.Name = "assigncb"
-        assigncb.Size = New Size(250, 39)
+        assigncb.Size = New Size(396, 39)
         assigncb.TabIndex = 8
         ' 
         ' unitnametxt
@@ -205,173 +188,8 @@ Partial Class AddUnits
         unitnametxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitnametxt.Location = New Point(277, 24)
         unitnametxt.Name = "unitnametxt"
-        unitnametxt.Size = New Size(248, 38)
+        unitnametxt.Size = New Size(396, 38)
         unitnametxt.TabIndex = 2
-        ' 
-        ' unit2pnl
-        ' 
-        unit2pnl.Controls.Add(devicestocklbl)
-        unit2pnl.Controls.Add(checkstocklbl)
-        unit2pnl.Controls.Add(Label9)
-        unit2pnl.Controls.Add(catecb)
-        unit2pnl.Controls.Add(Panel5)
-        unit2pnl.Controls.Add(Label6)
-        unit2pnl.Controls.Add(addbtn1)
-        unit2pnl.Controls.Add(remarktxt1)
-        unit2pnl.Controls.Add(Label7)
-        unit2pnl.Controls.Add(Label8)
-        unit2pnl.Controls.Add(devicecb1)
-        unit2pnl.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        unit2pnl.Location = New Point(14, 73)
-        unit2pnl.Name = "unit2pnl"
-        unit2pnl.Size = New Size(1136, 258)
-        unit2pnl.TabIndex = 18
-        unit2pnl.Visible = False
-        ' 
-        ' devicestocklbl
-        ' 
-        devicestocklbl.AutoSize = True
-        devicestocklbl.ForeColor = Color.RoyalBlue
-        devicestocklbl.Location = New Point(26, 217)
-        devicestocklbl.Name = "devicestocklbl"
-        devicestocklbl.Size = New Size(160, 28)
-        devicestocklbl.TabIndex = 29
-        devicestocklbl.Text = "How many stock"
-        ' 
-        ' checkstocklbl
-        ' 
-        checkstocklbl.AutoSize = True
-        checkstocklbl.ForeColor = Color.RoyalBlue
-        checkstocklbl.Location = New Point(28, 92)
-        checkstocklbl.Name = "checkstocklbl"
-        checkstocklbl.Size = New Size(160, 28)
-        checkstocklbl.TabIndex = 28
-        checkstocklbl.Text = "How many stock"
-        ' 
-        ' Label9
-        ' 
-        Label9.AutoSize = True
-        Label9.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(27, 13)
-        Label9.Name = "Label9"
-        Label9.Size = New Size(107, 23)
-        Label9.TabIndex = 27
-        Label9.Text = "Category:"
-        ' 
-        ' catecb
-        ' 
-        catecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
-        catecb.FormattingEnabled = True
-        catecb.Location = New Point(27, 45)
-        catecb.Name = "catecb"
-        catecb.Size = New Size(436, 39)
-        catecb.TabIndex = 26
-        ' 
-        ' Panel5
-        ' 
-        Panel5.BackColor = Color.White
-        Panel5.Controls.Add(quantitxt)
-        Panel5.Controls.Add(minusQuantityBtn)
-        Panel5.Controls.Add(addQuantityBtn)
-        Panel5.Location = New Point(711, 10)
-        Panel5.Name = "Panel5"
-        Panel5.Size = New Size(229, 57)
-        Panel5.TabIndex = 25
-        ' 
-        ' quantitxt
-        ' 
-        quantitxt.BorderStyle = BorderStyle.FixedSingle
-        quantitxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        quantitxt.Location = New Point(59, 9)
-        quantitxt.Name = "quantitxt"
-        quantitxt.Size = New Size(106, 38)
-        quantitxt.TabIndex = 21
-        quantitxt.TextAlign = HorizontalAlignment.Center
-        ' 
-        ' minusQuantityBtn
-        ' 
-        minusQuantityBtn.BackgroundImage = CType(resources.GetObject("minusQuantityBtn.BackgroundImage"), Image)
-        minusQuantityBtn.BackgroundImageLayout = ImageLayout.Stretch
-        minusQuantityBtn.FlatAppearance.BorderSize = 0
-        minusQuantityBtn.FlatStyle = FlatStyle.Flat
-        minusQuantityBtn.Location = New Point(9, 9)
-        minusQuantityBtn.Name = "minusQuantityBtn"
-        minusQuantityBtn.Size = New Size(39, 38)
-        minusQuantityBtn.TabIndex = 24
-        minusQuantityBtn.UseVisualStyleBackColor = True
-        ' 
-        ' addQuantityBtn
-        ' 
-        addQuantityBtn.BackgroundImage = CType(resources.GetObject("addQuantityBtn.BackgroundImage"), Image)
-        addQuantityBtn.BackgroundImageLayout = ImageLayout.Zoom
-        addQuantityBtn.FlatAppearance.BorderSize = 0
-        addQuantityBtn.FlatStyle = FlatStyle.Flat
-        addQuantityBtn.Location = New Point(177, 8)
-        addQuantityBtn.Name = "addQuantityBtn"
-        addQuantityBtn.Size = New Size(36, 38)
-        addQuantityBtn.TabIndex = 23
-        addQuantityBtn.UseVisualStyleBackColor = True
-        ' 
-        ' Label6
-        ' 
-        Label6.AutoSize = True
-        Label6.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(585, 26)
-        Label6.Name = "Label6"
-        Label6.Size = New Size(98, 23)
-        Label6.TabIndex = 16
-        Label6.Text = "Quantity:"
-        ' 
-        ' addbtn1
-        ' 
-        addbtn1.BackColor = Color.CornflowerBlue
-        addbtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        addbtn1.ForeColor = Color.White
-        addbtn1.Location = New Point(998, 198)
-        addbtn1.Name = "addbtn1"
-        addbtn1.Size = New Size(113, 55)
-        addbtn1.TabIndex = 15
-        addbtn1.Text = "Add"
-        addbtn1.UseVisualStyleBackColor = False
-        ' 
-        ' remarktxt1
-        ' 
-        remarktxt1.BorderStyle = BorderStyle.FixedSingle
-        remarktxt1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        remarktxt1.Location = New Point(590, 115)
-        remarktxt1.Multiline = True
-        remarktxt1.Name = "remarktxt1"
-        remarktxt1.Size = New Size(527, 77)
-        remarktxt1.TabIndex = 14
-        ' 
-        ' Label7
-        ' 
-        Label7.AutoSize = True
-        Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(587, 77)
-        Label7.Name = "Label7"
-        Label7.Size = New Size(103, 23)
-        Label7.TabIndex = 13
-        Label7.Text = "Remarks:"
-        ' 
-        ' Label8
-        ' 
-        Label8.AutoSize = True
-        Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(28, 134)
-        Label8.Name = "Label8"
-        Label8.Size = New Size(234, 23)
-        Label8.TabIndex = 12
-        Label8.Text = "Devices / Components:"
-        ' 
-        ' devicecb1
-        ' 
-        devicecb1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
-        devicecb1.FormattingEnabled = True
-        devicecb1.Location = New Point(28, 170)
-        devicecb1.Name = "devicecb1"
-        devicecb1.Size = New Size(436, 39)
-        devicecb1.TabIndex = 9
         ' 
         ' Panel3
         ' 
@@ -457,7 +275,6 @@ Partial Class AddUnits
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(savepnl1)
         Controls.Add(savebtn)
-        Controls.Add(unit2pnl)
         Controls.Add(Panel3)
         Controls.Add(unit1pnl)
         Controls.Add(Panel1)
@@ -467,10 +284,6 @@ Partial Class AddUnits
         Panel1.PerformLayout()
         unit1pnl.ResumeLayout(False)
         unit1pnl.PerformLayout()
-        unit2pnl.ResumeLayout(False)
-        unit2pnl.PerformLayout()
-        Panel5.ResumeLayout(False)
-        Panel5.PerformLayout()
         Panel3.ResumeLayout(False)
         CType(unitsdgv, ComponentModel.ISupportInitialize).EndInit()
         savepnl1.ResumeLayout(False)
@@ -492,21 +305,6 @@ Partial Class AddUnits
     Friend WithEvents addbtn As Button
     Friend WithEvents unitsdgv As DataGridView
     Friend WithEvents savebtn As Button
-    Friend WithEvents unit2pnl As Panel
-    Friend WithEvents Panel5 As Panel
-    Friend WithEvents quantitxt As TextBox
-    Friend WithEvents minusQuantityBtn As Button
-    Friend WithEvents addQuantityBtn As Button
-    Friend WithEvents Label6 As Label
-    Friend WithEvents addbtn1 As Button
-    Friend WithEvents remarktxt1 As TextBox
-    Friend WithEvents Label7 As Label
-    Friend WithEvents Label8 As Label
-    Friend WithEvents devicecb1 As ComboBox
-    Friend WithEvents Label9 As Label
-    Friend WithEvents catecb As ComboBox
-    Friend WithEvents checkstocklbl As Label
-    Friend WithEvents devicestocklbl As Label
     Friend WithEvents savepnl1 As Panel
     Friend WithEvents savebtn1 As Button
     Friend WithEvents Panel2 As Panel

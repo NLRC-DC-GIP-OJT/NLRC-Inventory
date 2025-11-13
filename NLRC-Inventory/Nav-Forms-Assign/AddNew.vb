@@ -109,11 +109,12 @@ Public Class AddNew
                 End If
             Next
 
-            ' Add display_name column showing Brand - Model : Specs
+            ' Add display_name column showing Brand - Model (Total)
             If Not filteredDevices.Columns.Contains("display_name") Then
-                filteredDevices.Columns.Add("display_name", GetType(String), "brands + ' - ' + model + ' : ' + specs")
+                filteredDevices.Columns.Add("display_name", GetType(String), "brands + ' - ' + model + ' (' + Convert(total_devices, 'System.String') + ')' ")
             End If
 
+            ' Bind to ComboBox
             devicecb1.DataSource = filteredDevices
             devicecb1.DisplayMember = "display_name"
             devicecb1.ValueMember = "pointer"
@@ -126,6 +127,8 @@ Public Class AddNew
             ResetDeviceSelection()
         End If
     End Sub
+
+
 
 
     Private Sub ResetDeviceSelection()
@@ -339,8 +342,6 @@ Public Class AddNew
             parentPanel.Visible = False
         End If
     End Sub
-
-
 
 
 End Class

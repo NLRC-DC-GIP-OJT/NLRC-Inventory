@@ -33,6 +33,7 @@ Partial Class Units
         Panel2 = New Panel()
         allunitsdgv = New DataGridView()
         unitpnl = New Panel()
+        viewpnl = New Panel()
         btnNext = New Button()
         btnPrev = New Button()
         lblPageInfo = New Label()
@@ -153,6 +154,14 @@ Partial Class Units
         unitpnl.TabIndex = 2
         unitpnl.Visible = False
         ' 
+        ' viewpnl
+        ' 
+        viewpnl.Location = New Point(265, 165)
+        viewpnl.Name = "viewpnl"
+        viewpnl.Size = New Size(920, 487)
+        viewpnl.TabIndex = 3
+        viewpnl.Visible = False
+        ' 
         ' btnNext
         ' 
         btnNext.BackColor = Color.CornflowerBlue
@@ -189,6 +198,7 @@ Partial Class Units
         ' 
         ' Panel3
         ' 
+        Panel3.Controls.Add(viewpnl)
         Panel3.Controls.Add(unitpnl)
         Panel3.Controls.Add(btnPrev)
         Panel3.Controls.Add(btnNext)
@@ -235,5 +245,6 @@ Partial Class Units
     Friend WithEvents filtertxt As TextBox
     Friend WithEvents unitaddbtn As Button
     Friend WithEvents Panel3 As Panel
+    Friend WithEvents viewpnl As Panel
 
 End Class

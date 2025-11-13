@@ -152,6 +152,7 @@
         End If
     End Sub
 
+
     Private Sub catcb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles catcb.SelectedIndexChanged
         If catcb.SelectedIndex >= 0 Then
             Dim selectedCategory = CType(catcb.SelectedItem, DeviceCategory)
@@ -175,12 +176,17 @@
 
     Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles specscb.SelectedIndexChanged
         If specscb.SelectedIndex >= 0 AndAlso specscb.SelectedItem IsNot Nothing Then
-            Dim selectedSpec As DeviceSpecification = CType(specscb.SelectedItem, DeviceSpecification)
-            specstxt.Text = selectedSpec.SpecName
+            If specscb.SelectedItem.ToString() = "No specs available" Then
+                specstxt.Clear()
+            Else
+                Dim selectedSpec As DeviceSpecification = CType(specscb.SelectedItem, DeviceSpecification)
+                specstxt.Text = selectedSpec.SpecName
+            End If
         Else
             specstxt.Clear()
         End If
     End Sub
+
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         Dim parentPanel = TryCast(Me.Parent, Panel)

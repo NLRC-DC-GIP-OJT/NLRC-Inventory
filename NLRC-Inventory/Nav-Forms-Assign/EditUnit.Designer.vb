@@ -30,14 +30,18 @@ Partial Class EditUnit
         Label3 = New Label()
         Label4 = New Label()
         Label5 = New Label()
-        TextBox1 = New TextBox()
-        ComboBox2 = New ComboBox()
-        TextBox2 = New TextBox()
-        ComboBox5 = New ComboBox()
-        ListView1 = New ListView()
-        savebtn1 = New Button()
-        ListView2 = New ListView()
+        deviceflowpnl = New FlowLayoutPanel()
+        specsflowpnl = New FlowLayoutPanel()
+        unitnametxt = New TextBox()
+        assigntxt = New TextBox()
+        Panel3 = New Panel()
+        devicecb = New ComboBox()
+        adddevicebtn = New Button()
+        savebtn = New Button()
+        Panel4 = New Panel()
         Panel1.SuspendLayout()
+        Panel3.SuspendLayout()
+        Panel4.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -49,7 +53,7 @@ Partial Class EditUnit
         Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 4, 3, 4)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(992, 47)
+        Panel1.Size = New Size(920, 47)
         Panel1.TabIndex = 0
         ' 
         ' Panel2
@@ -57,7 +61,7 @@ Partial Class EditUnit
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
-        Panel2.Location = New Point(945, 7)
+        Panel2.Location = New Point(863, 3)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(35, 33)
         Panel2.TabIndex = 19
@@ -69,15 +73,15 @@ Partial Class EditUnit
         Label1.Font = New Font("Arial Rounded MT Bold", 15.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Label1.Location = New Point(7, 8)
         Label1.Name = "Label1"
-        Label1.Size = New Size(284, 32)
+        Label1.Size = New Size(329, 32)
         Label1.TabIndex = 1
-        Label1.Text = "Edit Unit Information"
+        Label1.Text = "Update Unit Information"
         ' 
         ' Label2
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(22, 64)
+        Label2.Location = New Point(7, 71)
         Label2.Name = "Label2"
         Label2.Size = New Size(117, 23)
         Label2.TabIndex = 1
@@ -87,7 +91,7 @@ Partial Class EditUnit
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label3.Location = New Point(490, 69)
+        Label3.Location = New Point(521, 71)
         Label3.Name = "Label3"
         Label3.Size = New Size(131, 23)
         Label3.TabIndex = 2
@@ -97,7 +101,7 @@ Partial Class EditUnit
         ' 
         Label4.AutoSize = True
         Label4.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label4.Location = New Point(26, 129)
+        Label4.Location = New Point(16, 115)
         Label4.Name = "Label4"
         Label4.Size = New Size(94, 23)
         Label4.TabIndex = 3
@@ -107,88 +111,116 @@ Partial Class EditUnit
         ' 
         Label5.AutoSize = True
         Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(490, 129)
+        Label5.Location = New Point(521, 115)
         Label5.Name = "Label5"
         Label5.Size = New Size(77, 23)
         Label5.TabIndex = 4
         Label5.Text = "Specs:"
         ' 
-        ' TextBox1
+        ' deviceflowpnl
         ' 
-        TextBox1.Location = New Point(490, 265)
-        TextBox1.Margin = New Padding(3, 4, 3, 4)
-        TextBox1.Multiline = True
-        TextBox1.Name = "TextBox1"
-        TextBox1.Size = New Size(448, 157)
-        TextBox1.TabIndex = 5
+        deviceflowpnl.AutoScroll = True
+        deviceflowpnl.BorderStyle = BorderStyle.FixedSingle
+        deviceflowpnl.Dock = DockStyle.Fill
+        deviceflowpnl.FlowDirection = FlowDirection.TopDown
+        deviceflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        deviceflowpnl.Location = New Point(0, 0)
+        deviceflowpnl.Name = "deviceflowpnl"
+        deviceflowpnl.Size = New Size(433, 233)
+        deviceflowpnl.TabIndex = 18
+        deviceflowpnl.WrapContents = False
         ' 
-        ' ComboBox2
+        ' specsflowpnl
         ' 
-        ComboBox2.FormattingEnabled = True
-        ComboBox2.Location = New Point(703, 64)
-        ComboBox2.Margin = New Padding(3, 4, 3, 4)
-        ComboBox2.Name = "ComboBox2"
-        ComboBox2.Size = New Size(229, 28)
-        ComboBox2.TabIndex = 7
+        specsflowpnl.AutoScroll = True
+        specsflowpnl.BorderStyle = BorderStyle.FixedSingle
+        specsflowpnl.Dock = DockStyle.Top
+        specsflowpnl.FlowDirection = FlowDirection.TopDown
+        specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        specsflowpnl.Location = New Point(0, 0)
+        specsflowpnl.Name = "specsflowpnl"
+        specsflowpnl.Size = New Size(388, 227)
+        specsflowpnl.TabIndex = 19
+        specsflowpnl.WrapContents = False
         ' 
-        ' TextBox2
+        ' unitnametxt
         ' 
-        TextBox2.Location = New Point(151, 64)
-        TextBox2.Margin = New Padding(3, 4, 3, 4)
-        TextBox2.Name = "TextBox2"
-        TextBox2.Size = New Size(229, 27)
-        TextBox2.TabIndex = 8
+        unitnametxt.BorderStyle = BorderStyle.FixedSingle
+        unitnametxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        unitnametxt.Location = New Point(130, 69)
+        unitnametxt.Name = "unitnametxt"
+        unitnametxt.Size = New Size(329, 31)
+        unitnametxt.TabIndex = 20
         ' 
-        ' ComboBox5
+        ' assigntxt
         ' 
-        ComboBox5.FormattingEnabled = True
-        ComboBox5.Location = New Point(490, 175)
-        ComboBox5.Margin = New Padding(3, 4, 3, 4)
-        ComboBox5.Name = "ComboBox5"
-        ComboBox5.Size = New Size(448, 28)
-        ComboBox5.TabIndex = 12
+        assigntxt.BorderStyle = BorderStyle.FixedSingle
+        assigntxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        assigntxt.Location = New Point(658, 69)
+        assigntxt.Name = "assigntxt"
+        assigntxt.Size = New Size(240, 31)
+        assigntxt.TabIndex = 21
         ' 
-        ' ListView1
+        ' Panel3
         ' 
-        ListView1.Location = New Point(26, 156)
-        ListView1.Margin = New Padding(3, 4, 3, 4)
-        ListView1.Name = "ListView1"
-        ListView1.Size = New Size(399, 177)
-        ListView1.TabIndex = 13
-        ListView1.UseCompatibleStateImageBehavior = False
+        Panel3.Controls.Add(deviceflowpnl)
+        Panel3.Location = New Point(26, 216)
+        Panel3.Name = "Panel3"
+        Panel3.Size = New Size(433, 233)
+        Panel3.TabIndex = 22
         ' 
-        ' savebtn1
+        ' devicecb
         ' 
-        savebtn1.BackColor = Color.CornflowerBlue
-        savebtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        savebtn1.ForeColor = Color.White
-        savebtn1.Location = New Point(865, 589)
-        savebtn1.Name = "savebtn1"
-        savebtn1.Size = New Size(89, 52)
-        savebtn1.TabIndex = 17
-        savebtn1.Text = "Save"
-        savebtn1.UseVisualStyleBackColor = False
+        devicecb.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        devicecb.FormattingEnabled = True
+        devicecb.Location = New Point(130, 112)
+        devicecb.Name = "devicecb"
+        devicecb.Size = New Size(329, 31)
+        devicecb.TabIndex = 25
         ' 
-        ' ListView2
+        ' adddevicebtn
         ' 
-        ListView2.Location = New Point(26, 374)
-        ListView2.Margin = New Padding(3, 4, 3, 4)
-        ListView2.Name = "ListView2"
-        ListView2.Size = New Size(399, 207)
-        ListView2.TabIndex = 18
-        ListView2.UseCompatibleStateImageBehavior = False
+        adddevicebtn.BackColor = Color.SlateGray
+        adddevicebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        adddevicebtn.ForeColor = Color.White
+        adddevicebtn.Location = New Point(287, 165)
+        adddevicebtn.Name = "adddevicebtn"
+        adddevicebtn.Size = New Size(172, 44)
+        adddevicebtn.TabIndex = 26
+        adddevicebtn.Text = "Add Device"
+        adddevicebtn.UseVisualStyleBackColor = False
+        ' 
+        ' savebtn
+        ' 
+        savebtn.BackColor = Color.MediumBlue
+        savebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        savebtn.ForeColor = Color.White
+        savebtn.Location = New Point(747, 429)
+        savebtn.Name = "savebtn"
+        savebtn.Size = New Size(151, 44)
+        savebtn.TabIndex = 27
+        savebtn.Text = "Save "
+        savebtn.UseVisualStyleBackColor = False
+        ' 
+        ' Panel4
+        ' 
+        Panel4.Controls.Add(specsflowpnl)
+        Panel4.Location = New Point(510, 141)
+        Panel4.Name = "Panel4"
+        Panel4.Size = New Size(388, 282)
+        Panel4.TabIndex = 28
         ' 
         ' EditUnit
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        Controls.Add(ListView2)
-        Controls.Add(savebtn1)
-        Controls.Add(ListView1)
-        Controls.Add(ComboBox5)
-        Controls.Add(TextBox2)
-        Controls.Add(ComboBox2)
-        Controls.Add(TextBox1)
+        Controls.Add(Panel4)
+        Controls.Add(savebtn)
+        Controls.Add(adddevicebtn)
+        Controls.Add(devicecb)
+        Controls.Add(Panel3)
+        Controls.Add(assigntxt)
+        Controls.Add(unitnametxt)
         Controls.Add(Label5)
         Controls.Add(Label4)
         Controls.Add(Label3)
@@ -196,9 +228,11 @@ Partial Class EditUnit
         Controls.Add(Panel1)
         Margin = New Padding(3, 4, 3, 4)
         Name = "EditUnit"
-        Size = New Size(992, 682)
+        Size = New Size(920, 487)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
+        Panel3.ResumeLayout(False)
+        Panel4.ResumeLayout(False)
         ResumeLayout(False)
         PerformLayout()
     End Sub
@@ -209,13 +243,15 @@ Partial Class EditUnit
     Friend WithEvents Label3 As Label
     Friend WithEvents Label4 As Label
     Friend WithEvents Label5 As Label
-    Friend WithEvents TextBox1 As TextBox
-    Friend WithEvents ComboBox2 As ComboBox
-    Friend WithEvents TextBox2 As TextBox
-    Friend WithEvents ComboBox5 As ComboBox
-    Friend WithEvents ListView1 As ListView
-    Friend WithEvents savebtn1 As Button
-    Friend WithEvents ListView2 As ListView
     Friend WithEvents Panel2 As Panel
+    Friend WithEvents deviceflowpnl As FlowLayoutPanel
+    Friend WithEvents specsflowpnl As FlowLayoutPanel
+    Friend WithEvents unitnametxt As TextBox
+    Friend WithEvents assigntxt As TextBox
+    Friend WithEvents Panel3 As Panel
+    Friend WithEvents devicecb As ComboBox
+    Friend WithEvents adddevicebtn As Button
+    Friend WithEvents savebtn As Button
+    Friend WithEvents Panel4 As Panel
 
 End Class

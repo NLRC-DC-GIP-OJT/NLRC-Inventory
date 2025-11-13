@@ -81,56 +81,65 @@ Public Class Units
     End Sub
 
     ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
+    ' This method is triggered when a button is clicked in the DataGridView (Edit/View)
     Private Sub allunitsdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles allunitsdgv.CellContentClick
-        If e.RowIndex < 0 Then Return
+        If e.RowIndex < 0 Then Return ' Skip header clicks
 
+        ' Identify the clicked column
         Dim colName As String = allunitsdgv.Columns(e.ColumnIndex).Name
-        Dim unitPointer As Integer = CInt(allunitsdgv.Rows(e.RowIndex).Cells("unit_id").Value)
+        Dim unitId As Integer = CInt(allunitsdgv.Rows(e.RowIndex).Cells("unit_id").Value)
 
-        If colName = "View" Then
-            ' Fetch unit details
-            Dim dtUnit As DataTable = mdl.GetUnitsSummary()  ' Fetch the unit summary
-            Dim unitRow As DataRow = dtUnit.AsEnumerable().FirstOrDefault(Function(r) CInt(r("unit_id")) = unitPointer)
+        ' Fetch full unit details from database
+        Dim dtUnit As DataTable = mdl.GetUnitsSummary()
+        Dim unitRow As DataRow = dtUnit.AsEnumerable().FirstOrDefault(Function(r) CInt(r("unit_id")) = unitId)
 
-            ' Fetch device specs for the selected unit using the updated function
-            Dim dtDeviceSpecs As DataTable = mdl.GetDeviceSpecsByUnitPointer(unitPointer)
+        If unitRow Is Nothing Then
+            MessageBox.Show("Unit data not found.")
+            Return
+        End If
 
-            ' Prepare the details message
-            Dim details As New StringBuilder()
+        Dim unitName As String = If(unitRow("Unit Name") IsNot DBNull.Value, unitRow("Unit Name").ToString(), "")
+        Dim assignedToId As Integer = If(unitRow("personnel_id") IsNot DBNull.Value, CInt(unitRow("personnel_id")), 0)
 
-            ' Show unit information (Unit Name and Assigned Personnel)
-            If unitRow IsNot Nothing Then
-                Dim unitName = If(unitRow("Unit Name") IsNot DBNull.Value, unitRow("Unit Name").ToString(), "None")
-                Dim assignedTo = If(unitRow("Assigned To") IsNot DBNull.Value, unitRow("Assigned To").ToString(), "None")
+        ' Fetch devices associated with this unit
+        Dim dtDevices As DataTable = mdl.GetDeviceSpecsByUnitPointer(unitId)
 
-                details.AppendLine($"Unit: {unitName}")
-                details.AppendLine($"Assigned To: {assignedTo}")
-            Else
-                details.AppendLine("Unit information not available.")
-            End If
+        ' Hide the main list panel
+        unitpnl.Visible = False
 
-            details.AppendLine("") ' Add an empty line for spacing
+        ' Clear and show the target panel
+        viewpnl.Controls.Clear()
+        viewpnl.Visible = True
+        viewpnl.BringToFront()
 
-            ' Show devices and specs for the selected unit
-            details.AppendLine("Devices and Specs:")
-            details.AppendLine("") ' Add an empty line for spacing
+        ' Decide which control to show based on column clicked
+        If colName = "Edit" Then
+            ' Create EditUnit control
+            Dim editUC As New EditUnit()
+            editUC.Dock = DockStyle.Fill
+            viewpnl.Controls.Add(editUC)
 
-            If dtDeviceSpecs.Rows.Count = 0 Then
-                details.AppendLine("No devices assigned to this unit or no specs available.")
-            Else
-                ' List devices and their specs
-                For Each row As DataRow In dtDeviceSpecs.Rows
-                    details.AppendLine($"• {row("DeviceAndSpecs")}")
-                Next
-            End If
+            ' Load data into EditUnit
+            editUC.LoadUnit(unitName, assignedToId, dtDevices)
 
-            ' Show the message box with unit, device, and specs details
-            MessageBox.Show(details.ToString(), "Unit and Devices", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        ElseIf colName = "View" Then
+            ' Create ViewUnit control
+            Dim viewUC As New ViewUnit()
+            viewUC.Dock = DockStyle.Fill
+            viewpnl.Controls.Add(viewUC)
 
-        ElseIf colName = "Edit" Then
-            MessageBox.Show("Edit feature not implemented yet.")
+            ' Assuming ViewUnit also has a LoadUnit method (similar to EditUnit)
+            viewUC.LoadUnit(unitName, assignedToId, dtDevices)
         End If
     End Sub
+
+
+
+
+
+
+
+
 
 
 

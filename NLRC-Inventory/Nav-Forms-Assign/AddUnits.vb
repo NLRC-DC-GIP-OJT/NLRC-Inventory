@@ -49,6 +49,7 @@ Public Class AddUnits
     ' Unit1: Devices
     ' =========================
     Private Sub LoadDevices()
+        ' Get devices from the database with Category-Brand-Model
         originalDeviceList = mdl.GetDevicesForUnits()
 
         If originalDeviceList Is Nothing OrElse originalDeviceList.Rows.Count = 0 Then
@@ -57,12 +58,31 @@ Public Class AddUnits
         End If
 
         ' Only working devices
-        Dim workingDevices = originalDeviceList.AsEnumerable().
-            Where(Function(r) r.Field(Of String)("status").Trim().ToLower() = "working").
-            CopyToDataTable()
+        Dim workingDevices As DataTable
+        Try
+            workingDevices = originalDeviceList.AsEnumerable() _
+                .Where(Function(r) r.Field(Of String)("status").Trim().ToLower() = "working") _
+                .CopyToDataTable()
+        Catch ex As InvalidOperationException
+            ' No working devices
+            workingDevices = originalDeviceList.Clone()
+        End Try
 
-        originalDeviceList = workingDevices
+        ' Remove duplicates based on Category-Brand-Model (Device column)
+        Dim distinctDevices As DataTable
+        Try
+            distinctDevices = workingDevices.AsEnumerable() _
+                .GroupBy(Function(r) r.Field(Of String)("Device")) _
+                .Select(Function(g) g.First()) _
+                .CopyToDataTable()
+        Catch ex As InvalidOperationException
+            ' No distinct devices
+            distinctDevices = workingDevices.Clone()
+        End Try
 
+        originalDeviceList = distinctDevices
+
+        ' Bind to combo box
         devicecb.DataSource = originalDeviceList.Copy()
         devicecb.DisplayMember = "Device"
         devicecb.ValueMember = "device_id"
@@ -71,13 +91,6 @@ Public Class AddUnits
         devicecb.IntegralHeight = False
         devicecb.DropDownHeight = 350
     End Sub
-
-
-
-
-
-
-
 
 
 
@@ -94,9 +107,6 @@ Public Class AddUnits
         SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList, "Full name", "user_id", AddressOf FilterAssignCombo)
     End Sub
 
-    ''Private Sub FilterDeviceComboUnit2(sender As Object, e As EventArgs)
-    ''SafeComboFilter(DirectCast(sender, ComboBox), originalDeviceList, "Device", "device_id", AddressOf FilterDeviceComboUnit2)
-    ''End Sub
 
     ' =========================
     ' Universal ComboBox Filter
@@ -115,7 +125,7 @@ Public Class AddUnits
                 filtered = source.Copy()
             Else
                 Dim rows = source.AsEnumerable().
-                    Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
+                        Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
                 filtered = If(rows.Any(), rows.CopyToDataTable(), Nothing)
             End If
 
@@ -180,13 +190,13 @@ Public Class AddUnits
             ' ✅ Use the model’s built-in function instead of direct connection
             If mdl.IsUnitNameExists(unitName) Then
                 MessageBox.Show($"The unit name '{unitName}' already exists in the database.",
-                            "Duplicate Unit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                                "Duplicate Unit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 unitnametxt.Focus()
                 unitnametxt.SelectAll()
             End If
         Catch ex As Exception
             MessageBox.Show("Error checking unit name: " & ex.Message,
-                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
@@ -212,14 +222,22 @@ Public Class AddUnits
         '    End If
         'Next
 
-        ' Add columns to DataGridView if not already present
+        ' Add columns to DataGridView if not already present AND remove button
         If unitsdgv.Columns.Count = 0 Then
             unitsdgv.Columns.Add("unit_name", "Unit Name")
             unitsdgv.Columns.Add("assigned_to", "Assigned To")
             unitsdgv.Columns.Add("device", "Device")
             unitsdgv.Columns.Add("remarks", "Remarks")
             unitsdgv.Columns.Add("device_id", "Device ID")
-            unitsdgv.Columns("device_id").Visible = False ' Hide device_id column
+            unitsdgv.Columns("device_id").Visible = False
+
+            ' Add Remove button column
+            Dim removeBtn As New DataGridViewButtonColumn()
+            removeBtn.HeaderText = "Remove"
+            removeBtn.Name = "remove"
+            removeBtn.Text = "Remove"
+            removeBtn.UseColumnTextForButtonValue = True
+            unitsdgv.Columns.Add(removeBtn)
         End If
 
         ' Get selected device details
@@ -236,10 +254,10 @@ Public Class AddUnits
         End If
 
         ' Update DataSource of device combo box
-        devicecb.DataSource = originalDeviceList.Copy() ' Ensure the combo box is updated with the new list
+        devicecb.DataSource = originalDeviceList.Copy()
         devicecb.DisplayMember = "Device"
         devicecb.ValueMember = "device_id"
-        devicecb.SelectedIndex = -1 ' Deselect the device combo box
+        devicecb.SelectedIndex = -1
 
         ' Clear form fields after addition
         ClearFields()
@@ -322,5 +340,45 @@ Public Class AddUnits
         If parentPanel Is Nothing Then parentPanel = TryCast(Me.Parent?.Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
+
+    Private Sub unitsdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles unitsdgv.CellContentClick
+        ' Check if Remove button column was clicked
+        If e.ColumnIndex >= 0 AndAlso unitsdgv.Columns(e.ColumnIndex).Name = "remove" AndAlso e.RowIndex >= 0 Then
+            Dim row As DataGridViewRow = unitsdgv.Rows(e.RowIndex)
+            Dim unitName As String = row.Cells("unit_name").Value?.ToString()
+
+            Dim result As DialogResult = MessageBox.Show(
+                $"Are you sure you want to remove the unit '{unitName}'?",
+                "Confirm Remove",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            )
+
+            If result = DialogResult.Yes Then
+                ' Optional: put device back into device combo list
+                If row.Cells("device_id").Value IsNot Nothing Then
+                    Dim deviceId As Integer = Convert.ToInt32(row.Cells("device_id").Value)
+                    Dim deviceRow = mdl.GetDevicesForUnits().AsEnumerable() _
+                                .FirstOrDefault(Function(r) r.Field(Of Integer)("device_id") = deviceId)
+                    If deviceRow IsNot Nothing Then
+                        originalDeviceList.Rows.Add(deviceRow.ItemArray)
+                        devicecb.DataSource = originalDeviceList.Copy()
+                        devicecb.DisplayMember = "Device"
+                        devicecb.ValueMember = "device_id"
+                    End If
+                End If
+
+                ' Remove the row from DataGridView
+                unitsdgv.Rows.RemoveAt(e.RowIndex)
+
+                ' ✅ Clear the device combo box selection
+                devicecb.SelectedIndex = -1
+                devicecb.Text = ""
+            End If
+        End If
+    End Sub
+
+
+
 
 End Class

@@ -119,16 +119,28 @@ Public Class Configuration
         If e.RowIndex >= 0 Then
             Dim selectedRow As DataGridViewRow = devicedgv.Rows(e.RowIndex)
             Dim categoryId As Integer = Convert.ToInt32(selectedRow.Cells("Pointer").Value)
+            Dim categoryName As String = selectedRow.Cells("CategoryName").Value.ToString()
 
+            ' === EDIT CATEGORY ===
             If devicedgv.Columns(e.ColumnIndex).Name = "Edit" Then
-                cattxt.Text = selectedRow.Cells("CategoryName").Value.ToString()
-                destxt.Text = selectedRow.Cells("Description").Value.ToString()
-                editingBrandId = categoryId
-                catbtn.Text = "Update Category"
+                If MessageBox.Show($"Are you sure you want to edit category: {categoryName}?",
+                               "Confirm Edit",
+                               MessageBoxButtons.YesNo,
+                               MessageBoxIcon.Question) = DialogResult.Yes Then
 
+                    cattxt.Text = selectedRow.Cells("CategoryName").Value.ToString()
+                    destxt.Text = selectedRow.Cells("Description").Value.ToString()
+                    editingBrandId = categoryId
+                    catbtn.Text = "Update Category"
+                End If
+
+                ' === DELETE CATEGORY ===
             ElseIf devicedgv.Columns(e.ColumnIndex).Name = "Delete" Then
-                If MessageBox.Show("Are you sure you want to delete this category?", "Confirm Delete",
-                               MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
+                If MessageBox.Show($"Are you sure you want to delete category: {categoryName}?",
+                               "Confirm Delete",
+                               MessageBoxButtons.YesNo,
+                               MessageBoxIcon.Warning) = DialogResult.Yes Then
+
                     If db.DeleteCategory(categoryId) Then
                         MessageBox.Show("Category deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         LoadDeviceCategories()
@@ -143,6 +155,7 @@ Public Class Configuration
     End Sub
 
 
+
     ' === Load Category Names into ComboBox (catcb) ===
     Private Sub LoadCategoryComboBox()
         Dim dt As DataTable = db.GetAllCategories()
@@ -155,30 +168,50 @@ Public Class Configuration
     End Sub
 
 
-    ' === Insert Brand ===
+
+    ' === Insert / Update Brand ===
     Private Sub brandbtn_Click(sender As Object, e As EventArgs) Handles brandbtn.Click
+        Dim categoryPointer As Integer
+        Dim brandName As String = brandtxt.Text.Trim()
+
+        If catcb.SelectedIndex = -1 Then
+            MessageBox.Show("Please select a category.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
+
+        categoryPointer = Convert.ToInt32(catcb.SelectedValue)
+
+        If String.IsNullOrWhiteSpace(brandName) Then
+            MessageBox.Show("Please enter a brand name.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
+
         If brandbtn.Text = "Update Brand" Then
-            Dim categoryPointer As Integer = Convert.ToInt32(catcb.SelectedValue)
-            Dim brandName As String = brandtxt.Text.Trim()
-
-            If String.IsNullOrWhiteSpace(brandName) Then
-                MessageBox.Show("Please enter a brand name.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Exit Sub
-            End If
-
+            ' === UPDATE ===
             Dim success As Boolean = db.UpdateBrand(editingBrandId, categoryPointer, brandName)
-
             If success Then
                 MessageBox.Show("Brand updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                LoadBrands()
-                brandtxt.Clear()
-                catcb.SelectedIndex = -1
-                brandbtn.Text = "Insert Brand"
             Else
                 MessageBox.Show("Failed to update brand.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
+        Else
+            ' === INSERT ===
+            Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
+            Dim success As Boolean = db.InsertBrand(categoryPointer, brandName, createdBy)
+            If success Then
+                MessageBox.Show("Brand inserted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Else
+                MessageBox.Show("Failed to insert brand.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
         End If
+
+        ' Refresh after insert or update
+        brandtxt.Clear()
+        catcb.SelectedIndex = -1
+        brandbtn.Text = "Insert Brand"
+        LoadBrands()
     End Sub
+
 
 
     ' === Load All Brands into branddgv ===
@@ -253,46 +286,110 @@ Public Class Configuration
 
 
     Private Sub addspecsbtn_Click(sender As Object, e As EventArgs) Handles addspecsbtn.Click
+        ' === Create container panel ===
+        Dim fieldPanel As New Panel()
+        fieldPanel.Width = flowpnl.ClientSize.Width - 2
+        fieldPanel.Height = 35
+        fieldPanel.Margin = New Padding(0)
+
+        ' === Remove Button ===
+        Dim removeButton As New Button()
+        removeButton.Text = "Remove"
+        removeButton.BackColor = Color.FromArgb(255, 204, 204)  ' light red
+        removeButton.FlatStyle = FlatStyle.Flat
+        removeButton.FlatAppearance.BorderColor = Color.FromArgb(200, 100, 100)
+        removeButton.FlatAppearance.BorderSize = 1
+        removeButton.ForeColor = Color.Black
+        removeButton.Font = New Font("Segoe UI", 9, FontStyle.Bold)
+        removeButton.Width = 90
+        removeButton.Height = 27
+        removeButton.Anchor = AnchorStyles.Right Or AnchorStyles.Top
+        removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 4)
+        AddHandler removeButton.Click, AddressOf RemoveSpecField
+
+        ' === TextBox ===
         Dim newSpecBox As New TextBox()
-        newSpecBox.Width = flowpnl.Width - 25
-        newSpecBox.Margin = New Padding(3, 3, 3, 3)
         newSpecBox.PlaceholderText = "Enter specification detail..."
-        flowpnl.Controls.Add(newSpecBox)
+        newSpecBox.Location = New Point(5, 5)
+        newSpecBox.Height = 25
+        newSpecBox.Width = removeButton.Left - 10
+        newSpecBox.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
+
+        ' === Add to panel ===
+        fieldPanel.Controls.Add(newSpecBox)
+        fieldPanel.Controls.Add(removeButton)
+
+        ' === Add panel to flowpnl ===
+        flowpnl.Controls.Add(fieldPanel)
+
+        ' === Resize event to keep alignment if flowpnl resizes ===
+        AddHandler flowpnl.Resize, Sub()
+                                       fieldPanel.Width = flowpnl.ClientSize.Width - 2
+                                       removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 4)
+                                       newSpecBox.Width = removeButton.Left - 10
+                                   End Sub
     End Sub
 
 
+    ' Handler for the remove button click event
+    Private Sub RemoveSpecField(sender As Object, e As EventArgs)
+        Dim button As Button = DirectCast(sender, Button)
+        flowpnl.Controls.Remove(button.Parent)
+    End Sub
+
+
+
+    ' === Insert / Update Specs ===
     Private Sub btnInsertSpecs_Click(sender As Object, e As EventArgs) Handles btnInsertSpecs.Click
-        If btnInsertSpecs.Text = "Update Specs" Then
-            Dim categoryId As Integer = Convert.ToInt32(catcb1.SelectedValue)
-            Dim specsList As New List(Of String)
+        If catcb1.SelectedIndex = -1 Then
+            MessageBox.Show("Please select a category.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
 
-            For Each ctrl As Control In flowpnl.Controls
-                If TypeOf ctrl Is TextBox Then
-                    Dim txt As TextBox = DirectCast(ctrl, TextBox)
-                    If Not String.IsNullOrWhiteSpace(txt.Text) Then
-                        specsList.Add(txt.Text.Trim())
-                    End If
+        Dim categoryId As Integer = Convert.ToInt32(catcb1.SelectedValue)
+        Dim specsList As New List(Of String)
+
+        For Each ctrl As Control In flowpnl.Controls
+            If TypeOf ctrl Is TextBox Then
+                Dim txt As TextBox = DirectCast(ctrl, TextBox)
+                If Not String.IsNullOrWhiteSpace(txt.Text) Then
+                    specsList.Add(txt.Text.Trim())
                 End If
-            Next
-
-            If specsList.Count = 0 Then
-                MessageBox.Show("Please add at least one specification.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Exit Sub
             End If
+        Next
 
-            Dim combinedSpecs As String = String.Join(";", specsList)
+        If specsList.Count = 0 Then
+            MessageBox.Show("Please add at least one specification.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        End If
+
+        Dim combinedSpecs As String = String.Join(";", specsList)
+
+        If btnInsertSpecs.Text = "Update Specs" Then
+            ' === UPDATE ===
             Dim success As Boolean = db.UpdateSpecs(editingSpecsId, categoryId, combinedSpecs)
-
             If success Then
                 MessageBox.Show("Specifications updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                flowpnl.Controls.Clear()
-                LoadSpecsDGV()
-                btnInsertSpecs.Text = "Insert Specs"
             Else
                 MessageBox.Show("Failed to update specifications.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
+        Else
+            ' === INSERT ===
+            Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
+            Dim success As Boolean = db.InsertSpecs(categoryId, combinedSpecs, createdBy)
+            If success Then
+                MessageBox.Show("Specifications inserted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Else
+                MessageBox.Show("Failed to insert specifications.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
         End If
+
+        ' Refresh after insert or update
+        flowpnl.Controls.Clear()
+        btnInsertSpecs.Text = "Insert Specs"
+        LoadSpecsDGV()
     End Sub
+
 
 
     ' === Load specs into specsdgv ===
@@ -357,15 +454,17 @@ Public Class Configuration
         If e.RowIndex >= 0 Then
             Dim selectedRow As DataGridViewRow = branddgv.Rows(e.RowIndex)
             Dim brandId As Integer = Convert.ToInt32(selectedRow.Cells("pointer").Value)
-            Dim categoryPointer As Integer = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
+            Dim brandName As String = selectedRow.Cells("brand_name").Value.ToString()
 
             If branddgv.Columns(e.ColumnIndex).Name = "Edit" Then
-                brandtxt.Text = selectedRow.Cells("brand_name").Value.ToString()
-                catcb.SelectedValue = categoryPointer
-                editingBrandId = brandId
-                brandbtn.Text = "Update Brand"
+                If MessageBox.Show($"Are you sure you want to edit the brand: {brandName}?", "Confirm Edit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                    brandtxt.Text = selectedRow.Cells("brand_name").Value.ToString()
+                    catcb.SelectedValue = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
+                    editingBrandId = brandId
+                    brandbtn.Text = "Update Brand"
+                End If
             ElseIf branddgv.Columns(e.ColumnIndex).Name = "Delete" Then
-                If MessageBox.Show("Are you sure you want to delete this brand?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
+                If MessageBox.Show($"Are you sure you want to delete the brand: {brandName}?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
                     If db.DeleteBrand(brandId) Then
                         MessageBox.Show("Brand deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         LoadBrands()
@@ -378,32 +477,35 @@ Public Class Configuration
     End Sub
 
 
+
     ' === Specs Edit/Delete handling ===
     Private Sub specsdgv_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles specsdgv.CellClick
         If e.RowIndex >= 0 Then
             Dim selectedRow As DataGridViewRow = specsdgv.Rows(e.RowIndex)
             Dim specsId As Integer = Convert.ToInt32(selectedRow.Cells("pointer").Value)
-            Dim categoryPointer As Integer = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
+            Dim specsName As String = selectedRow.Cells("specs").Value.ToString()
 
             If specsdgv.Columns(e.ColumnIndex).Name = "Edit" Then
-                catcb1.SelectedValue = categoryPointer
-                Dim specsValue As String = selectedRow.Cells("specs").Value.ToString()
-                Dim specValues() As String = specsValue.Split(";"c)
-                flowpnl.Controls.Clear()
+                If MessageBox.Show($"Are you sure you want to edit the specification: {specsName}?", "Confirm Edit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                    catcb1.SelectedValue = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
+                    Dim specsValue As String = selectedRow.Cells("specs").Value.ToString()
+                    Dim specValues() As String = specsValue.Split(";"c)
+                    flowpnl.Controls.Clear()
 
-                For Each spec In specValues
-                    Dim txt As New TextBox() With {
-                        .Text = spec.Trim(),
-                        .Width = flowpnl.Width - 25,
-                        .Margin = New Padding(3, 3, 3, 3)
-                    }
-                    flowpnl.Controls.Add(txt)
-                Next
+                    For Each spec In specValues
+                        Dim txt As New TextBox() With {
+                            .Text = spec.Trim(),
+                            .Width = flowpnl.Width - 25,
+                            .Margin = New Padding(3, 3, 3, 3)
+                        }
+                        flowpnl.Controls.Add(txt)
+                    Next
 
-                editingSpecsId = specsId
-                btnInsertSpecs.Text = "Update Specs"
+                    editingSpecsId = specsId
+                    btnInsertSpecs.Text = "Update Specs"
+                End If
             ElseIf specsdgv.Columns(e.ColumnIndex).Name = "Delete" Then
-                If MessageBox.Show("Are you sure you want to delete this specification?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
+                If MessageBox.Show($"Are you sure you want to delete the specification: {specsName}?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
                     If db.DeleteSpecs(specsId) Then
                         MessageBox.Show("Specification deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         LoadSpecsDGV()
@@ -414,5 +516,6 @@ Public Class Configuration
             End If
         End If
     End Sub
+
 
 End Class
