@@ -58,7 +58,7 @@ End Class
 
 Public Class model
 
-    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;"
+    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3306;Database=main_nlrc_db;Uid=root;Pwd=;"
 
     Public Function EncryptPassword(ByVal password As String) As String
         password = password.Trim()
@@ -568,7 +568,7 @@ Public Class model
     Public Function GetAssignments() As DataTable
         Dim dt As New DataTable()
         Try
-            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;")
+            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3306;Database=db_nlrc_intranet;Uid=root;Pwd=;")
                 conn.Open()
                 Dim query As String = "SELECT user_id, CONCAT(LAST_M, ', ', FIRST_M) AS `Full name` FROM user_info ORDER BY LAST_M, FIRST_M;"
                 Using cmd As New MySqlCommand(query, conn)
@@ -1731,6 +1731,155 @@ ORDER BY c.category_name, b.brand_name, d.model;
             Return False
         End Try
     End Function
+
+    Public Function GetDevicesByUnit(unitId As Integer) As DataTable
+        Dim dt As New DataTable()
+        Using conn As New MySqlConnection(connectionString)
+            Try
+                conn.Open()
+                Dim query As String = "
+                SELECT d.DeviceID, CONCAT(dc.CategoryName, ': ', d.Model, ', ', d.Specs) AS DeviceAndSpecs
+                FROM devices d
+                LEFT JOIN device_categories dc ON d.DevCategoryPointer = dc.Pointer
+                WHERE d.UnitID = @UnitID"
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@UnitID", unitId)
+                    Using adapter As New MySqlDataAdapter(cmd)
+                        adapter.Fill(dt)
+                    End Using
+                End Using
+            Catch ex As Exception
+                MessageBox.Show("Error loading devices: " & ex.Message)
+            End Try
+        End Using
+        Return dt
+    End Function
+
+
+    ' ==========================
+    ' Save unit changes including name, assigned personnel, devices, and specs
+    Public Sub SaveUnitChanges(unitId As Integer,
+                               assignedPersonnelId As Object,
+                               removedDevices As List(Of Integer),
+                               addedDevices As List(Of Integer),
+                               editedSpecs As Dictionary(Of Integer, Dictionary(Of String, String)),
+                               unitName As String)
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                ' -------------------------
+                ' 1. Get original unit info
+                ' -------------------------
+                Dim originalUnitName As String = ""
+                Dim originalAssigned As Integer = 0
+
+                Using cmd As New MySqlCommand("SELECT unit_name, assigned_personnel FROM inv_units WHERE pointer=@unitId", conn)
+                    cmd.Parameters.AddWithValue("@unitId", unitId)
+                    Using reader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            originalUnitName = If(reader("unit_name") IsNot DBNull.Value, reader("unit_name").ToString(), "")
+                            originalAssigned = If(reader("assigned_personnel") IsNot DBNull.Value, CInt(reader("assigned_personnel")), 0)
+                        End If
+                    End Using
+                End Using
+
+                ' -------------------------
+                ' 2. Update unit name & assigned personnel
+                ' -------------------------
+                Using cmd As New MySqlCommand("UPDATE inv_units SET unit_name=@unitName, assigned_personnel=@assigned WHERE pointer=@unitId", conn)
+                    cmd.Parameters.AddWithValue("@unitName", unitName)
+                    cmd.Parameters.AddWithValue("@assigned", If(assignedPersonnelId, DBNull.Value))
+                    cmd.Parameters.AddWithValue("@unitId", unitId)
+                    cmd.ExecuteNonQuery()
+                End Using
+
+                ' -------------------------
+                ' 3. Remove devices
+                ' -------------------------
+                For Each devId In removedDevices
+                    Using cmd As New MySqlCommand("DELETE FROM inv_unit_devices WHERE inv_units_pointer=@unitId AND inv_devices_pointer=@devId", conn)
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.ExecuteNonQuery()
+                    End Using
+
+                    ' Insert history
+                    Using cmd As New MySqlCommand("INSERT INTO inv_unit_history (inv_devices_pointer, units_pointer, remarks) VALUES (@devId, @unitId, @remarks)", conn)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        cmd.Parameters.AddWithValue("@remarks", "Device removed from unit")
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Next
+
+                ' -------------------------
+                ' 4. Add devices
+                ' -------------------------
+                For Each devId In addedDevices
+                    Using cmd As New MySqlCommand("INSERT INTO inv_unit_devices (inv_units_pointer, inv_devices_pointer) VALUES (@unitId, @devId)", conn)
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.ExecuteNonQuery()
+                    End Using
+
+                    ' Insert history
+                    Using cmd As New MySqlCommand("INSERT INTO inv_unit_history (inv_devices_pointer, units_pointer, remarks) VALUES (@devId, @unitId, @remarks)", conn)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        cmd.Parameters.AddWithValue("@remarks", "Device added to unit")
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Next
+
+                ' -------------------------
+                ' 5. Edited device specs
+                ' -------------------------
+                For Each kvp In editedSpecs
+                    Dim devId = kvp.Key
+                    Dim specsDict = kvp.Value
+                    Dim specsString = String.Join(", ", specsDict.Select(Function(s) $"{s.Key}: {s.Value}"))
+
+                    ' Update inv_devices.specs
+                    Using cmd As New MySqlCommand("UPDATE inv_devices SET specs=@specs WHERE pointer=@devId", conn)
+                        cmd.Parameters.AddWithValue("@specs", specsString)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.ExecuteNonQuery()
+                    End Using
+
+                    ' Insert history
+                    Using cmd As New MySqlCommand("INSERT INTO inv_unit_history (inv_devices_pointer, units_pointer, remarks) VALUES (@devId, @unitId, @remarks)", conn)
+                        cmd.Parameters.AddWithValue("@devId", devId)
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        cmd.Parameters.AddWithValue("@remarks", "Device specs updated")
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Next
+
+                ' -------------------------
+                ' 6. Only unit name or assigned personnel changed
+                ' -------------------------
+                If unitName <> originalUnitName OrElse (assignedPersonnelId IsNot Nothing AndAlso assignedPersonnelId <> originalAssigned) Then
+                    Using cmd As New MySqlCommand("INSERT INTO inv_unit_history (inv_devices_pointer, units_pointer, remarks) VALUES (@devId, @unitId, @remarks)", conn)
+                        cmd.Parameters.AddWithValue("@devId", DBNull.Value) ' No device affected
+                        cmd.Parameters.AddWithValue("@unitId", unitId)
+                        Dim remarks = "Unit updated: "
+                        If unitName <> originalUnitName Then remarks &= $"Name changed from '{originalUnitName}' to '{unitName}'. "
+                        If assignedPersonnelId IsNot Nothing AndAlso assignedPersonnelId <> originalAssigned Then
+                            remarks &= $"Assigned personnel changed."
+                        End If
+                        cmd.Parameters.AddWithValue("@remarks", remarks.Trim())
+                        cmd.ExecuteNonQuery()
+                    End Using
+                End If
+
+            End Using
+        Catch ex As Exception
+            Throw New Exception("Error saving unit changes: " & ex.Message)
+        End Try
+    End Sub
+
 
 
 

@@ -52,9 +52,10 @@ Partial Class Units
         Panel1.Controls.Add(filtertxt)
         Panel1.Controls.Add(addbtn)
         Panel1.Controls.Add(Label3)
-        Panel1.Location = New Point(17, 14)
+        Panel1.Location = New Point(15, 10)
+        Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1410, 66)
+        Panel1.Size = New Size(974, 50)
         Panel1.TabIndex = 0
         ' 
         ' unitaddbtn
@@ -62,9 +63,10 @@ Partial Class Units
         unitaddbtn.BackColor = Color.CornflowerBlue
         unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
-        unitaddbtn.Location = New Point(1077, 6)
+        unitaddbtn.Location = New Point(569, 4)
+        unitaddbtn.Margin = New Padding(3, 2, 3, 2)
         unitaddbtn.Name = "unitaddbtn"
-        unitaddbtn.Size = New Size(161, 54)
+        unitaddbtn.Size = New Size(141, 40)
         unitaddbtn.TabIndex = 21
         unitaddbtn.Text = "Create Unit"
         unitaddbtn.UseVisualStyleBackColor = False
@@ -73,9 +75,10 @@ Partial Class Units
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
         filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(744, 14)
+        filtertxt.Location = New Point(284, 10)
+        filtertxt.Margin = New Padding(3, 2, 3, 2)
         filtertxt.Name = "filtertxt"
-        filtertxt.Size = New Size(301, 38)
+        filtertxt.Size = New Size(264, 32)
         filtertxt.TabIndex = 20
         ' 
         ' addbtn
@@ -83,9 +86,10 @@ Partial Class Units
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1261, 5)
+        addbtn.Location = New Point(716, 5)
+        addbtn.Margin = New Padding(3, 2, 3, 2)
         addbtn.Name = "addbtn"
-        addbtn.Size = New Size(139, 54)
+        addbtn.Size = New Size(122, 40)
         addbtn.TabIndex = 16
         addbtn.Text = "Add Unit"
         addbtn.UseVisualStyleBackColor = False
@@ -96,18 +100,19 @@ Partial Class Units
         Label3.BackColor = Color.Transparent
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(17, 12)
+        Label3.Location = New Point(3, 8)
         Label3.Name = "Label3"
-        Label3.Size = New Size(236, 38)
+        Label3.Size = New Size(185, 30)
         Label3.TabIndex = 7
         Label3.Text = "Unit Assignment"
         ' 
         ' Panel2
         ' 
         Panel2.Controls.Add(allunitsdgv)
-        Panel2.Location = New Point(28, 96)
+        Panel2.Location = New Point(24, 72)
+        Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1389, 728)
+        Panel2.Size = New Size(922, 490)
         Panel2.TabIndex = 1
         ' 
         ' allunitsdgv
@@ -135,6 +140,7 @@ Partial Class Units
         allunitsdgv.DefaultCellStyle = DataGridViewCellStyle2
         allunitsdgv.Dock = DockStyle.Fill
         allunitsdgv.Location = New Point(0, 0)
+        allunitsdgv.Margin = New Padding(3, 2, 3, 2)
         allunitsdgv.Name = "allunitsdgv"
         allunitsdgv.ReadOnly = True
         allunitsdgv.RowHeadersVisible = False
@@ -143,22 +149,24 @@ Partial Class Units
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         allunitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        allunitsdgv.Size = New Size(1389, 728)
+        allunitsdgv.Size = New Size(922, 490)
         allunitsdgv.TabIndex = 1
         ' 
         ' unitpnl
         ' 
-        unitpnl.Location = New Point(149, 39)
+        unitpnl.Location = New Point(21, 31)
+        unitpnl.Margin = New Padding(3, 2, 3, 2)
         unitpnl.Name = "unitpnl"
-        unitpnl.Size = New Size(1167, 799)
+        unitpnl.Size = New Size(971, 545)
         unitpnl.TabIndex = 2
         unitpnl.Visible = False
         ' 
         ' viewpnl
         ' 
-        viewpnl.Location = New Point(265, 165)
+        viewpnl.Location = New Point(104, 124)
+        viewpnl.Margin = New Padding(3, 2, 3, 2)
         viewpnl.Name = "viewpnl"
-        viewpnl.Size = New Size(920, 487)
+        viewpnl.Size = New Size(805, 382)
         viewpnl.TabIndex = 3
         viewpnl.Visible = False
         ' 
@@ -167,9 +175,10 @@ Partial Class Units
         btnNext.BackColor = Color.CornflowerBlue
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
-        btnNext.Location = New Point(800, 830)
+        btnNext.Location = New Point(567, 564)
+        btnNext.Margin = New Padding(3, 2, 3, 2)
         btnNext.Name = "btnNext"
-        btnNext.Size = New Size(94, 48)
+        btnNext.Size = New Size(82, 36)
         btnNext.TabIndex = 19
         btnNext.Text = "Next"
         btnNext.UseVisualStyleBackColor = False
@@ -179,9 +188,10 @@ Partial Class Units
         btnPrev.BackColor = Color.CornflowerBlue
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
-        btnPrev.Location = New Point(579, 830)
+        btnPrev.Location = New Point(374, 564)
+        btnPrev.Margin = New Padding(3, 2, 3, 2)
         btnPrev.Name = "btnPrev"
-        btnPrev.Size = New Size(94, 48)
+        btnPrev.Size = New Size(82, 36)
         btnPrev.TabIndex = 18
         btnPrev.Text = "Previous"
         btnPrev.UseVisualStyleBackColor = False
@@ -190,9 +200,9 @@ Partial Class Units
         ' 
         lblPageInfo.AutoSize = True
         lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblPageInfo.Location = New Point(679, 840)
+        lblPageInfo.Location = New Point(461, 572)
         lblPageInfo.Name = "lblPageInfo"
-        lblPageInfo.Size = New Size(109, 28)
+        lblPageInfo.Size = New Size(86, 21)
         lblPageInfo.TabIndex = 17
         lblPageInfo.Text = "Page 1 of 1"
         ' 
@@ -200,24 +210,26 @@ Partial Class Units
         ' 
         Panel3.Controls.Add(viewpnl)
         Panel3.Controls.Add(unitpnl)
-        Panel3.Controls.Add(btnPrev)
-        Panel3.Controls.Add(btnNext)
         Panel3.Controls.Add(Panel1)
-        Panel3.Controls.Add(lblPageInfo)
         Panel3.Controls.Add(Panel2)
+        Panel3.Controls.Add(btnPrev)
+        Panel3.Controls.Add(lblPageInfo)
+        Panel3.Controls.Add(btnNext)
         Panel3.Dock = DockStyle.Fill
         Panel3.Location = New Point(0, 0)
+        Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1440, 898)
+        Panel3.Size = New Size(1009, 606)
         Panel3.TabIndex = 20
         ' 
         ' Units
         ' 
-        AutoScaleDimensions = New SizeF(8F, 20F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Panel3)
+        Margin = New Padding(3, 2, 3, 2)
         Name = "Units"
-        Size = New Size(1440, 898)
+        Size = New Size(1009, 606)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel2.ResumeLayout(False)

@@ -65,7 +65,7 @@ Public Class ViewUnit
                     specsTable.RowCount = 0
 
                     Dim specs As String = row("DeviceAndSpecs").ToString()
-                    Dim specFields As String() = specs.Split(";"c)
+                    Dim specFields As String() = specs.Split(","c)
 
                     For Each spec As String In specFields
                         Dim parts As String() = spec.Trim().Split(":"c)
