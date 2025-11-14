@@ -113,4 +113,29 @@ Public Class Units
         LoadAllUnits()
         isLoading = False
     End Sub
+
+    Private Sub unitaddbtn_Click(sender As Object, e As EventArgs) Handles unitaddbtn.Click
+        unitpnl.Visible = True
+        unitpnl.BringToFront()
+        unitpnl.Controls.Clear()
+        Dim addUnitControl As New AddNew()
+        addUnitControl.Dock = DockStyle.Fill
+        unitpnl.Controls.Add(addUnitControl)
+        addUnitControl.unit2pnl.Visible = True
+    End Sub
+
+    Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
+        unitpnl.Visible = True
+        unitpnl.BringToFront()
+        unitpnl.Controls.Clear()
+        Dim addUnitControl As New AddUnits()
+        addUnitControl.Dock = DockStyle.Fill
+        unitpnl.Controls.Add(addUnitControl)
+        addUnitControl.unit1pnl.Visible = True
+        AddHandler addUnitControl.UnitSaved, Sub()
+                                                 LoadAllUnits()
+                                                 unitpnl.Visible = False
+                                             End Sub
+
+    End Sub
 End Class
