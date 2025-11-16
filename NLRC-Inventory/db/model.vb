@@ -2139,21 +2139,30 @@ ORDER BY c.category_name, b.brand_name, d.model;
                     End If
 
                     ' -------------------------------
-                    ' Log assigned personnel change
+                    ' Log assigned personnel change with remarks
                     ' -------------------------------
                     If assignedChanged And finalAssignedId <> 0 Then
+                        ' Declare the remark string
+                        Dim remarkStr As String = $"Assigned personnel changed from '{originalAssignedName}' to '{assignedFullName}'"
+
                         Using cmd As New MySqlCommand("
-                        INSERT INTO inv_assigned_history 
-                        (units_pointer, assigned_from, assigned_to, date_assigned, created_by)
-                        VALUES (@unitId, @from, @to, NOW(), @user)", conn)
+                            INSERT INTO inv_assigned_history 
+                            (units_pointer, assigned_from, assigned_to, date_assigned, created_by, remarks)
+                            VALUES (@unitId, @from, @to, NOW(), @user, @remarks)", conn)
+
                             cmd.Parameters.AddWithValue("@unitId", unitId)
                             cmd.Parameters.AddWithValue("@from", If(originalAssignedId = 0, DBNull.Value, originalAssignedId))
                             cmd.Parameters.AddWithValue("@to", finalAssignedId)
                             cmd.Parameters.AddWithValue("@user", loggedInUserId)
+                            cmd.Parameters.AddWithValue("@remarks", remarkStr)
+
                             cmd.ExecuteNonQuery()
                         End Using
-                        sb.AppendLine($"Unit ID {unitId}: Assigned personnel changed from '{originalAssignedName}' to '{assignedFullName}'")
+
+                        ' Also log in your StringBuilder for display
+                        sb.AppendLine($"Unit ID {unitId}: {remarkStr}")
                     End If
+
                 Next
             End Using
 
@@ -2165,8 +2174,216 @@ ORDER BY c.category_name, b.brand_name, d.model;
     End Function
 
 
+    ' ✅ Function to get serial counts
+    Public Function GetSerialCounts() As (WithSerial As Integer, WithoutSerial As Integer)
+        Dim withSerial As Integer = 0
+        Dim withoutSerial As Integer = 0
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+
+            Dim query As String =
+                "SELECT 
+                    SUM(CASE WHEN serial_number IS NOT NULL AND serial_number <> '' THEN 1 ELSE 0 END) AS WithSerial,
+                    SUM(CASE WHEN serial_number IS NULL OR serial_number = '' THEN 1 ELSE 0 END) AS WithoutSerial
+                FROM inv_devices;"
+
+            Using cmd As New MySqlCommand(query, conn)
+                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                    If reader.Read() Then
+                        withSerial = reader("WithSerial")
+                        withoutSerial = reader("WithoutSerial")
+                    End If
+                End Using
+            End Using
+        End Using
+
+        Return (withSerial, withoutSerial)
+    End Function
+
+    Public Function GetDeviceStatusCounts() As Dictionary(Of String, Integer)
+        Dim result As New Dictionary(Of String, Integer)
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+
+            Dim query As String =
+            "SELECT status, COUNT(*) AS cnt
+             FROM inv_devices
+             GROUP BY status;"
+
+            Using cmd As New MySqlCommand(query, conn)
+                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        Dim status As String = reader("status").ToString()
+                        Dim count As Integer = Convert.ToInt32(reader("cnt"))
+                        result(status) = count
+                    End While
+                End Using
+            End Using
+        End Using
+
+        ' Ensure all statuses exist even if zero
+        For Each s In New String() {"Working", "Assigned", "Maintenance", "Not Working"}
+            If Not result.ContainsKey(s) Then
+                result(s) = 0
+            End If
+        Next
+
+        Return result
+    End Function
+
+    Public Function GetTotalDevices() As Integer
+        Dim total As Integer = 0
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim query As String = "SELECT COUNT(*) FROM inv_devices"
+            Using cmd As New MySqlCommand(query, conn)
+                total = Convert.ToInt32(cmd.ExecuteScalar())
+            End Using
+        End Using
+        Return total
+    End Function
+
+    Public Function GetTotalUnits() As Integer
+        Dim total As Integer = 0
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim query As String = "SELECT COUNT(*) FROM inv_units"
+            Using cmd As New MySqlCommand(query, conn)
+                total = Convert.ToInt32(cmd.ExecuteScalar())
+            End Using
+        End Using
+        Return total
+    End Function
+
+    Public Function GetDevicesPerCategory() As DataTable
+        Dim dt As New DataTable
+        dt.Columns.Add("Category", GetType(String))
+        dt.Columns.Add("Count", GetType(Integer))
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim query As String = "SELECT dc.category_name, COUNT(d.pointer) AS DeviceCount
+                               FROM inv_device_category dc
+                               LEFT JOIN inv_devices d ON dc.pointer = d.dev_category_pointer
+                               GROUP BY dc.pointer"
+            Using cmd As New MySqlCommand(query, conn)
+                Using reader = cmd.ExecuteReader()
+                    While reader.Read()
+                        dt.Rows.Add(reader("category_name").ToString(), Convert.ToInt32(reader("DeviceCount")))
+                    End While
+                End Using
+            End Using
+        End Using
+
+        Return dt
+    End Function
+
+    Public Function GetRecentUnitActivities() As DataTable
+        Dim dt As New DataTable()
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Dim query As String = "
+            SELECT 
+                u.unit_name AS UnitName,
+                IFNULL(d.model, '-') AS DeviceModel,
+                CASE 
+                    WHEN ah.pointer IS NOT NULL THEN 'Assigned'
+                    WHEN uh.pointer IS NOT NULL THEN 'History'
+                    ELSE 'N/A'
+                END AS ActivityType,
+                COALESCE(ah.remarks, uh.remarks, '-') AS Remarks,
+                COALESCE(ah.date_assigned, uh.created_at) AS ActivityDate
+            FROM inv_units u
+            LEFT JOIN inv_assigned_history ah 
+                ON u.pointer = ah.units_pointer
+            LEFT JOIN inv_unit_history uh
+                ON u.pointer = uh.units_pointer
+            LEFT JOIN inv_devices d
+                ON uh.inv_devices_pointer = d.pointer
+            ORDER BY COALESCE(ah.date_assigned, uh.created_at) DESC
+            LIMIT 20;
+        "
+            Using cmd As New MySqlCommand(query, conn)
+                Using adapter As New MySqlDataAdapter(cmd)
+                    adapter.Fill(dt)
+                End Using
+            End Using
+        End Using
+        Return dt
+    End Function
 
 
+    ' ========================
+    ' Get Unit Stats for Panel14 graph
+    ' ========================
+    Public Function GetUnitStats() As Object
+        Dim result As Object = Nothing
+        Dim query As String = "
+            SELECT
+                SUM(CASE WHEN unit_name IS NOT NULL AND unit_name <> '' THEN 1 ELSE 0 END) AS WithName,
+                SUM(CASE WHEN unit_name IS NULL OR unit_name = '' THEN 1 ELSE 0 END) AS WithoutName,
+                SUM(CASE WHEN assigned_personnel IS NOT NULL THEN 1 ELSE 0 END) AS WithPersonnel,
+                SUM(CASE WHEN assigned_personnel IS NULL THEN 1 ELSE 0 END) AS WithoutPersonnel
+            FROM inv_units;
+        "
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Using cmd As New MySqlCommand(query, conn)
+                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                    If reader.Read() Then
+                        result = New With {
+                            .WithName = Convert.ToInt32(reader("WithName")),
+                            .WithoutName = Convert.ToInt32(reader("WithoutName")),
+                            .WithPersonnel = Convert.ToInt32(reader("WithPersonnel")),
+                            .WithoutPersonnel = Convert.ToInt32(reader("WithoutPersonnel"))
+                        }
+                    End If
+                End Using
+            End Using
+        End Using
+
+        Return result
+    End Function
+
+    Public Function GetRecentAddedDevicesAndUnits(Optional topCount As Integer = 10) As DataTable
+        Dim dt As New DataTable()
+        Dim sql As String = "
+        SELECT 'Device' AS Type,
+               CONCAT(dc.category_name, ' - ', b.brand_name, ' - ', d.model) AS Name,
+               d.created_at AS DateAdded,
+               u.UAUsername AS CreatedBy
+        FROM inv_devices d
+        LEFT JOIN inv_device_category dc ON d.dev_category_pointer = dc.pointer
+        LEFT JOIN inv_brands b ON d.brands = b.pointer
+        LEFT JOIN m_useraccounts u ON d.created_by = u.pointer
+
+        UNION ALL
+
+        SELECT 'Unit' AS Type,
+               u.unit_name AS Name,
+               u.created_at AS DateAdded,
+               ua.UAUsername AS CreatedBy
+        FROM inv_units u
+        LEFT JOIN m_useraccounts ua ON u.created_by = ua.pointer
+
+        ORDER BY DateAdded DESC
+        LIMIT @TopCount;
+    "
+
+        Using conn As New MySqlConnection(connectionString)
+            Using cmd As New MySqlCommand(sql, conn)
+                cmd.Parameters.AddWithValue("@TopCount", topCount)
+                Using adapter As New MySqlDataAdapter(cmd)
+                    adapter.Fill(dt)
+                End Using
+            End Using
+        End Using
+
+        Return dt
+    End Function
 
 
 
