@@ -329,6 +329,8 @@ Public Class AddUnits
         If success Then
             MessageBox.Show("Unit saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             unitsdgv.Rows.Clear()
+            unitnametxt.Clear()
+
             LoadDevices() ' Refresh device list
         Else
             MessageBox.Show("Failed to save unit.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -377,8 +379,6 @@ Public Class AddUnits
             End If
         End If
     End Sub
-
-
 
 
 End Class

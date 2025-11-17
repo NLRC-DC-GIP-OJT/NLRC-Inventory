@@ -11,6 +11,7 @@ Public Class EditUnit
     ' Tracking
     Private originalUnitName As String
     Private originalAssignedId As Integer
+    Private selectedAssignedId As Integer? = Nothing
 
     Private currentDevices As New List(Of Integer)
     Private removedDevices As New List(Of Integer)
@@ -66,32 +67,60 @@ Public Class EditUnit
         editedSpecs.Clear()
         deviceDisplayNames.Clear()
 
+        ' devices DataTable contains columns: DeviceID, DeviceAndSpecs (full string like "Category - Brand - Model - CPU:..., RAM:...")
         For Each dr As DataRow In devices.Rows
-            Dim devId As Integer = dr("DeviceID")
-            Dim fullText As String = dr("DeviceAndSpecs").ToString()
+            Dim devId As Integer = CInt(dr("DeviceID"))
+            Dim rawFullText As String = dr("DeviceAndSpecs").ToString()
 
             ' Button text = Category - Brand - Model only
-            Dim baseText As String = ExtractBaseText(fullText)
+            Dim baseText As String = ExtractBaseText(rawFullText)
             deviceDisplayNames(devId) = baseText
 
             currentDevices.Add(devId)
 
-            AddDeviceToPanel(devId, baseText, fullText)
+            ' Normalize the full specs string to guaranteed format:
+            ' "Category - Brand - Model - spec1: x; spec2: y; ..."
+            Dim specsPart As String = ExtractOnlySpecs(rawFullText)
+            Dim normalizedSpecsPart As String = NormalizeSpecs(specsPart)
+            Dim rebuiltFull As String = $"{baseText} - {normalizedSpecsPart}"
+
+            ' Store normalized full string for this device (useful for later when selecting from combo)
+            deviceFullSpecs(devId) = rebuiltFull
+
+            AddDeviceToPanel(devId, baseText, rebuiltFull)
         Next
 
     End Sub
 
     ' Extract Category - Brand - Model from DeviceAndSpecs
     Private Function ExtractBaseText(fullText As String) As String
-        ' Split by " - "
+        ' Split by " - " (preserve ordering)
         Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
-        If parts.Length < 3 Then Return fullText
-        Return $"{parts(0)} - {parts(1)} - {parts(2)}"
+        If parts.Length < 3 Then Return fullText.Trim()
+        Return $"{parts(0).Trim()} - {parts(1).Trim()} - {parts(2).Trim()}"
     End Function
 
-    ' ============================================================================
+    ' Extract only the specs portion from a full string (everything after the 3rd " - ")
+    Private Function ExtractOnlySpecs(fullText As String) As String
+        If String.IsNullOrWhiteSpace(fullText) Then Return String.Empty
+
+        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
+        If parts.Length <= 3 Then
+            ' If there are exactly 3 or fewer parts, there may be no "- specs" separator.
+            ' The specs might be appended directly after the model with or without a dash.
+            ' Try to locate the fourth segment by finding the first occurrence of " - " after model.
+            ' Fallback: remove the first three token-like segments (split by " - " or by spaces) — conservative approach:
+            Return String.Empty
+        End If
+
+        ' Join everything after index 2 (the 3rd element) as the specs (in case specs contained " - " itself)
+        Dim specsParts = parts.Skip(3).ToArray()
+        Return String.Join(" - ", specsParts).Trim()
+    End Function
+
+    ' ===============================================================
     ' BLOCK 2 — LOAD DEVICE COMBO, MANAGE QTY, ADD DEVICE, REMOVE DEVICE
-    ' ============================================================================
+    ' ===============================================================
 
     ' ===============================================================
     ' LOAD DEVICE COMBO + QUANTITY (only WORKING devices)
@@ -107,8 +136,23 @@ Public Class EditUnit
         For Each row As DataRow In dt.Rows
             Dim id = CInt(row("device_id"))
             deviceQuantities(id) = CInt(row("qty"))
-            deviceFullSpecs(id) = row("DeviceAndSpecs").ToString()
-            deviceBaseDisplay(id) = $"{row("category_name")} - {row("brand_name")} - {row("model")}"
+
+            ' The GetDevicesForUnits1 might return DeviceAndSpecs or you may have separate category/brand/model columns.
+            ' If DeviceAndSpecs column exists as e.g. "Laptop - Dell - Inspiron - CPU:..., RAM:..."
+            If row.Table.Columns.Contains("DeviceAndSpecs") Then
+                Dim rawFull = row("DeviceAndSpecs").ToString()
+                Dim base = ExtractBaseText(rawFull)
+                Dim specsOnly = ExtractOnlySpecs(rawFull)
+                Dim normalizedSpecs = NormalizeSpecs(specsOnly)
+                Dim rebuiltFull = $"{base} - {normalizedSpecs}"
+
+                deviceFullSpecs(id) = rebuiltFull
+                deviceBaseDisplay(id) = base
+            Else
+                ' If DeviceAndSpecs doesn't exist, try constructing from category_name, brand_name, model
+                deviceBaseDisplay(id) = $"{row("category_name")} - {row("brand_name")} - {row("model")}"
+                deviceFullSpecs(id) = deviceBaseDisplay(id) ' no specs available
+            End If
         Next
 
         UpdateComboList()
@@ -129,7 +173,7 @@ Public Class EditUnit
         For Each kv In deviceBaseDisplay
             Dim id = kv.Key
             Dim baseText = kv.Value
-            Dim qty = deviceQuantities(id)
+            Dim qty = If(deviceQuantities.ContainsKey(id), deviceQuantities(id), 0)
 
             dt.Rows.Add(id, $"{baseText} ({qty})")
         Next
@@ -163,12 +207,12 @@ Public Class EditUnit
         End If
 
         ' Prevent adding if no available WORKING qty
-        If deviceQuantities(devId) <= 0 Then
+        If Not deviceQuantities.ContainsKey(devId) OrElse deviceQuantities(devId) <= 0 Then
             MessageBox.Show("No more available stock for this device.")
             Return
         End If
 
-        Dim fullText As String = deviceFullSpecs(devId)
+        Dim rawFullText As String = If(deviceFullSpecs.ContainsKey(devId), deviceFullSpecs(devId), String.Empty)
 
         addedDevices.Add(devId)
         currentDevices.Add(devId)
@@ -178,9 +222,17 @@ Public Class EditUnit
         UpdateComboList()
 
         ' Display only Category - Brand - Model
-        deviceDisplayNames(devId) = deviceBaseDisplay(devId)
+        deviceDisplayNames(devId) = If(deviceBaseDisplay.ContainsKey(devId), deviceBaseDisplay(devId), "Unknown Device")
 
-        AddDeviceToPanel(devId, deviceBaseDisplay(devId), fullText)
+        ' Build normalized full specs: ensure semicolon separators and "Base - specs" format
+        Dim specsOnly As String = ExtractOnlySpecs(rawFullText)
+        Dim normalizedSpecsOnly As String = NormalizeSpecs(specsOnly)
+        Dim rebuilt As String = $"{deviceDisplayNames(devId)} - {normalizedSpecsOnly}"
+
+        ' store normalized full specs for this device (so subsequent clicks use same normalized format)
+        deviceFullSpecs(devId) = rebuilt
+
+        AddDeviceToPanel(devId, deviceDisplayNames(devId), rebuilt)
 
     End Sub
 
@@ -220,19 +272,36 @@ Public Class EditUnit
     }
 
         AddHandler removeBtn.Click,
-        Sub()
+    Sub()
 
-            deviceflowpnl.Controls.Remove(container)
+        Dim deviceName As String = displayText
 
-            currentDevices.Remove(deviceId)
-            editedSpecs.Remove(deviceId)
-            removedDevices.Add(deviceId)
+        Dim result = MessageBox.Show(
+            $"Are you sure you want to remove {deviceName}?",
+            "Confirm Removal",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning
+        )
 
-            ' Return to WORKING stock
+        If result = DialogResult.No Then Exit Sub
+
+        ' Remove from UI
+        deviceflowpnl.Controls.Remove(container)
+
+        ' Tracking edits
+        currentDevices.Remove(deviceId)
+        editedSpecs.Remove(deviceId)
+        removedDevices.Add(deviceId)
+
+        ' Return quantity back to working stock
+        If deviceQuantities.ContainsKey(deviceId) Then
             deviceQuantities(deviceId) += 1
-            UpdateComboList()
+        End If
 
-        End Sub
+        UpdateComboList()
+
+    End Sub
+
 
         container.Controls.Add(removeBtn)
         container.Controls.Add(btn)
@@ -267,7 +336,9 @@ Public Class EditUnit
 
             specsTable.Controls.Add(New Label With {
             .Text = kvp.Key & ":",
-            .Width = 120
+            .Width = 120,
+            .AutoSize = False,
+            .TextAlign = ContentAlignment.MiddleLeft
         }, 0, specsTable.RowCount - 1)
 
             specsTable.Controls.Add(New TextBox With {
@@ -281,6 +352,38 @@ Public Class EditUnit
 
 
     ' ===============================================================
+    ' NORMALIZE SPECS
+    ' Takes DB format:
+    '   "CPU: Intel Core i5, RAM: 8GB, Storage: 1TB HDD, GPU: Integrated"
+    '
+    ' Converts to ParseSpecs() format:
+    '   "CPU: Intel Core i5; RAM: 8GB; Storage: 1TB HDD; GPU: Integrated"
+    ' ===============================================================
+    Private Function NormalizeSpecs(raw As String) As String
+
+        If String.IsNullOrWhiteSpace(raw) Then
+            Return String.Empty
+        End If
+
+        Dim s As String = raw.Trim()
+
+        ' Some DB entries might use commas between specs. Convert commas to semicolons.
+        ' Also handle cases where semi-colons already present.
+        ' First replace any comma followed by optional space with semicolon.
+        s = System.Text.RegularExpressions.Regex.Replace(s, ",\s*", "; ")
+
+        ' Remove duplicate semicolons/spaces
+        s = System.Text.RegularExpressions.Regex.Replace(s, ";\s*;", ";")
+        s = s.Replace(" ;", ";").Trim()
+
+        ' Make sure we don't end with a trailing semicolon or trailing spaces
+        If s.EndsWith(";") Then s = s.TrimEnd(";"c).Trim()
+
+        Return s
+
+    End Function
+
+    ' ===============================================================
     ' PARSE SPECS FROM FULL STRING
     ' Example input:
     '   "Category - Brand - Model - spec1: x; spec2: y; spec3: z"
@@ -292,28 +395,49 @@ Public Class EditUnit
 
         Dim dict As New Dictionary(Of String, String)
 
-        ' Find start of actual specs (after 3rd dash)
-        ' Category - Brand - Model - SPEC1:xx; SPEC2:yy
-        Dim parts = fullSpecs.Split("-"c)
+        If String.IsNullOrWhiteSpace(fullSpecs) Then Return dict
 
-        If parts.Length < 4 Then Return dict
+        ' Find start of actual specs (after 3rd " - ")
+        Dim parts = fullSpecs.Split(New String() {" - "}, StringSplitOptions.None)
 
-        ' Everything after model = specs
-        Dim specString As String = parts(parts.Length - 1).Trim()
+        If parts.Length < 4 Then
+            ' Try a fallback: maybe fullSpecs is just the specs (no base). Normalize and parse directly.
+            Dim fallback = NormalizeSpecs(fullSpecs)
+            If String.IsNullOrWhiteSpace(fallback) Then Return dict
+            Dim fallbackItems = fallback.Split(";"c)
+            For Each it As String In fallbackItems
+                Dim p = it.Split(":"c)
+                If p.Length >= 2 Then
+                    Dim key = p(0).Trim()
+                    Dim val = String.Join(":", p.Skip(1)).Trim() ' in case value contains colon
+                    If Not dict.ContainsKey(key) Then dict(key) = val
+                End If
+            Next
+            Return dict
+        End If
+
+        ' Everything after model = join remaining parts (in case specs had " - " internally)
+        Dim specString As String = String.Join(" - ", parts.Skip(3)).Trim()
+
+        ' Normalize separators (commas -> semicolons etc.)
+        specString = NormalizeSpecs(specString)
 
         If specString.Contains(";") = False AndAlso specString.Contains(":") = False Then
             Return dict
         End If
 
-        ' Split into pairs
+        ' Split into pairs by semicolon
         Dim items = specString.Split(";"c)
 
         For Each item As String In items
+            If String.IsNullOrWhiteSpace(item) Then Continue For
             Dim p = item.Split(":"c)
-            If p.Length = 2 Then
+            If p.Length >= 2 Then
                 Dim key = p(0).Trim()
-                Dim val = p(1).Trim()
-                dict(key) = val
+                Dim val = String.Join(":", p.Skip(1)).Trim() ' preserve extra colons in value
+                If Not dict.ContainsKey(key) Then
+                    dict(key) = val
+                End If
             End If
         Next
 
@@ -334,13 +458,13 @@ Public Class EditUnit
 
         Dim dict As New Dictionary(Of String, String)
 
-        For i As Integer = 0 To specsTable.RowCount - 1
+        For i = 0 To specsTable.RowCount - 1
 
             Dim lbl = TryCast(specsTable.GetControlFromPosition(0, i), Label)
             Dim txt = TryCast(specsTable.GetControlFromPosition(1, i), TextBox)
 
             If lbl IsNot Nothing AndAlso txt IsNot Nothing Then
-                dict(lbl.Text.Replace(":", "").Trim()) = txt.Text.Trim()
+                dict(lbl.Text.Replace(":", "").Trim) = txt.Text.Trim
             End If
 
         Next
@@ -371,8 +495,8 @@ Public Class EditUnit
     ' ===============================================================
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
 
-        Dim newAssignedId As Object =
-            If(assigncb.SelectedIndex = -1, originalAssignedId, assigncb.SelectedValue)
+        ' Use selectedAssignedId if available, otherwise keep original
+        Dim newAssignedId As Integer = If(selectedAssignedId.HasValue, selectedAssignedId.Value, originalAssignedId)
 
         Dim newUnitName = unitnametxt.Text.Trim()
         Dim remarksText = remarkstxt.Text.Trim()
@@ -380,14 +504,17 @@ Public Class EditUnit
         Dim sb As New StringBuilder()
         sb.AppendLine("You are about to save the following changes:" & vbCrLf)
 
+        ' Unit name change
         If newUnitName <> originalUnitName Then
             sb.AppendLine($"- Unit Name: {originalUnitName} → {newUnitName}")
         End If
 
+        ' Assigned personnel change
         If newAssignedId <> originalAssignedId Then
-            sb.AppendLine("- Assigned Personnel changed")
+            sb.AppendLine($"- Assigned Personnel: {GetNameById(originalAssignedId)} → {GetNameById(newAssignedId)}")
         End If
 
+        ' Removed devices
         If removedDevices.Any() Then
             sb.AppendLine("- Removed Devices:")
             For Each d In removedDevices
@@ -395,6 +522,7 @@ Public Class EditUnit
             Next
         End If
 
+        ' Added devices
         If addedDevices.Any() Then
             sb.AppendLine("- Added Devices:")
             For Each d In addedDevices
@@ -402,6 +530,7 @@ Public Class EditUnit
             Next
         End If
 
+        ' Edited specs
         If editedSpecs.Any() Then
             sb.AppendLine("- Edited Specs:")
             For Each kvp In editedSpecs
@@ -414,24 +543,31 @@ Public Class EditUnit
 
         sb.AppendLine(vbCrLf & "Proceed?")
 
-        If MessageBox.Show(sb.ToString(), "Confirm Save",
-                           MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
+        If MessageBox.Show(sb.ToString(), "Confirm Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
             Return
         End If
 
         mdl.SaveUnitChanges(
-            unitId,
-            newAssignedId,
-            removedDevices,
-            addedDevices,
-            editedSpecs,
-            newUnitName,
-            remarksText
-        )
+        unitId,
+        newAssignedId,
+        removedDevices,
+        addedDevices,
+        editedSpecs,
+        newUnitName,
+        remarksText
+    )
 
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
     End Sub
+
+
+    Private Function GetNameById(userId As Integer) As String
+        Dim row = originalAssignList.AsEnumerable().FirstOrDefault(Function(r) r.Field(Of Integer)("user_id") = userId)
+        If row IsNot Nothing Then Return row("Full name").ToString()
+        Return ""
+    End Function
+
 
     ' ===============================================================
     ' CLOSE
@@ -439,6 +575,22 @@ Public Class EditUnit
     Private Sub Panel2_Click(sender As Object, e As EventArgs) Handles Panel2.Click
         Dim parentPanel = TryCast(Me.Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
+    End Sub
+
+    Private Sub assignbtn_Click(sender As Object, e As EventArgs) Handles assignbtn.Click
+
+        ' Make sure an item is selected
+        If assigncb.SelectedIndex = -1 Then
+            MessageBox.Show("Please select a personnel first.")
+            Return
+        End If
+
+        ' Transfer selected name to textbox
+        assigntxt.Text = assigncb.Text
+
+        ' ►► Store new assigned ID separately
+        selectedAssignedId = CInt(assigncb.SelectedValue)
+
     End Sub
 
 End Class

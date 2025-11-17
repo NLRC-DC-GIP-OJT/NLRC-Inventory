@@ -44,6 +44,7 @@ Partial Class EditUnit
         Label6 = New Label()
         Label7 = New Label()
         remarkstxt = New TextBox()
+        assignbtn = New Button()
         Panel1.SuspendLayout()
         Panel3.SuspendLayout()
         Panel4.SuspendLayout()
@@ -58,7 +59,7 @@ Partial Class EditUnit
         Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 4, 3, 4)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1056, 47)
+        Panel1.Size = New Size(1118, 47)
         Panel1.TabIndex = 0
         ' 
         ' Panel2
@@ -66,7 +67,7 @@ Partial Class EditUnit
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
-        Panel2.Location = New Point(990, 8)
+        Panel2.Location = New Point(1067, 8)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(35, 33)
         Panel2.TabIndex = 19
@@ -144,7 +145,7 @@ Partial Class EditUnit
         specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         specsflowpnl.Location = New Point(0, 0)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(485, 257)
+        specsflowpnl.Size = New Size(545, 257)
         specsflowpnl.TabIndex = 19
         specsflowpnl.WrapContents = False
         ' 
@@ -161,9 +162,9 @@ Partial Class EditUnit
         ' 
         assigntxt.BorderStyle = BorderStyle.FixedSingle
         assigntxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        assigntxt.Location = New Point(694, 107)
+        assigntxt.Location = New Point(694, 58)
         assigntxt.Name = "assigntxt"
-        assigntxt.Size = New Size(331, 31)
+        assigntxt.Size = New Size(391, 31)
         assigntxt.TabIndex = 21
         ' 
         ' Panel3
@@ -200,7 +201,7 @@ Partial Class EditUnit
         savebtn.BackColor = Color.MediumBlue
         savebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
-        savebtn.Location = New Point(874, 575)
+        savebtn.Location = New Point(934, 581)
         savebtn.Name = "savebtn"
         savebtn.Size = New Size(151, 44)
         savebtn.TabIndex = 27
@@ -213,7 +214,7 @@ Partial Class EditUnit
         Panel4.Controls.Add(specsflowpnl)
         Panel4.Location = New Point(540, 271)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(485, 298)
+        Panel4.Size = New Size(545, 298)
         Panel4.TabIndex = 28
         ' 
         ' savespecsbtn
@@ -221,7 +222,7 @@ Partial Class EditUnit
         savespecsbtn.FlatAppearance.BorderSize = 2
         savespecsbtn.FlatStyle = FlatStyle.Flat
         savespecsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        savespecsbtn.Location = New Point(82, 263)
+        savespecsbtn.Location = New Point(122, 263)
         savespecsbtn.Name = "savespecsbtn"
         savespecsbtn.Size = New Size(298, 32)
         savespecsbtn.TabIndex = 30
@@ -232,9 +233,9 @@ Partial Class EditUnit
         ' 
         assigncb.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         assigncb.FormattingEnabled = True
-        assigncb.Location = New Point(694, 66)
+        assigncb.Location = New Point(694, 104)
         assigncb.Name = "assigncb"
-        assigncb.Size = New Size(331, 31)
+        assigncb.Size = New Size(294, 31)
         assigncb.TabIndex = 29
         ' 
         ' Label6
@@ -264,13 +265,26 @@ Partial Class EditUnit
         remarkstxt.Location = New Point(694, 149)
         remarkstxt.Multiline = True
         remarkstxt.Name = "remarkstxt"
-        remarkstxt.Size = New Size(331, 81)
+        remarkstxt.Size = New Size(391, 81)
         remarkstxt.TabIndex = 32
+        ' 
+        ' assignbtn
+        ' 
+        assignbtn.FlatAppearance.BorderSize = 2
+        assignbtn.FlatStyle = FlatStyle.Flat
+        assignbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        assignbtn.Location = New Point(994, 103)
+        assignbtn.Name = "assignbtn"
+        assignbtn.Size = New Size(91, 32)
+        assignbtn.TabIndex = 33
+        assignbtn.Text = "Add"
+        assignbtn.UseVisualStyleBackColor = True
         ' 
         ' EditUnit
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
+        Controls.Add(assignbtn)
         Controls.Add(remarkstxt)
         Controls.Add(Label7)
         Controls.Add(Label6)
@@ -289,7 +303,7 @@ Partial Class EditUnit
         Controls.Add(Panel1)
         Margin = New Padding(3, 4, 3, 4)
         Name = "EditUnit"
-        Size = New Size(1056, 643)
+        Size = New Size(1118, 643)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel3.ResumeLayout(False)
@@ -319,5 +333,6 @@ Partial Class EditUnit
     Friend WithEvents Label6 As Label
     Friend WithEvents Label7 As Label
     Friend WithEvents remarkstxt As TextBox
+    Friend WithEvents assignbtn As Button
 
 End Class

@@ -26,25 +26,28 @@ Partial Class Dashboard
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Dashboard))
         Panel1 = New Panel()
         Panel4 = New Panel()
+        Label1 = New Label()
         Panel2 = New Panel()
         Panel3 = New Panel()
         Button5 = New Button()
-        Button4 = New Button()
+        confibtn = New Button()
         unitbtn = New Button()
-        Button2 = New Button()
-        Button1 = New Button()
+        devicebtn = New Button()
+        dashbtn = New Button()
         mainpnl = New Panel()
-        Label3 = New Label()
         userlbl = New Label()
         dntlbl = New Label()
         Label4 = New Label()
-        Label1 = New Label()
         Label2 = New Label()
         Timer1 = New Timer(components)
+        BindingSource1 = New BindingSource(components)
+        Timer2 = New Timer(components)
+        Panel5 = New Panel()
         Panel1.SuspendLayout()
         Panel4.SuspendLayout()
         Panel3.SuspendLayout()
-        mainpnl.SuspendLayout()
+        CType(BindingSource1, ComponentModel.ISupportInitialize).BeginInit()
+        Panel5.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -57,46 +60,52 @@ Partial Class Dashboard
         Panel1.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         Panel1.Location = New Point(0, 0)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1902, 1108)
+        Panel1.Size = New Size(1924, 1175)
         Panel1.TabIndex = 0
         ' 
         ' Panel4
         ' 
-        Panel4.Controls.Add(Panel2)
+        Panel4.Controls.Add(Panel5)
         Panel4.Controls.Add(Panel3)
         Panel4.Controls.Add(mainpnl)
-        Panel4.Controls.Add(userlbl)
         Panel4.Controls.Add(dntlbl)
-        Panel4.Controls.Add(Label4)
-        Panel4.Controls.Add(Label1)
-        Panel4.Controls.Add(Label2)
         Panel4.Dock = DockStyle.Fill
         Panel4.Location = New Point(0, 0)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(1902, 1108)
+        Panel4.Size = New Size(1924, 1175)
         Panel4.TabIndex = 8
+        ' 
+        ' Label1
+        ' 
+        Label1.AutoSize = True
+        Label1.Location = New Point(206, 22)
+        Label1.Name = "Label1"
+        Label1.Size = New Size(508, 38)
+        Label1.TabIndex = 0
+        Label1.Text = "National Labor Relations Commission"
         ' 
         ' Panel2
         ' 
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = My.Resources.Resources.NLRCLogo
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
-        Panel2.Location = New Point(24, 16)
+        Panel2.Location = New Point(53, 12)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(117, 101)
         Panel2.TabIndex = 1
         ' 
         ' Panel3
         ' 
+        Panel3.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
         Panel3.BackColor = Color.White
         Panel3.Controls.Add(Button5)
-        Panel3.Controls.Add(Button4)
+        Panel3.Controls.Add(confibtn)
         Panel3.Controls.Add(unitbtn)
-        Panel3.Controls.Add(Button2)
-        Panel3.Controls.Add(Button1)
-        Panel3.Location = New Point(40, 158)
+        Panel3.Controls.Add(devicebtn)
+        Panel3.Controls.Add(dashbtn)
+        Panel3.Location = New Point(24, 157)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(309, 898)
+        Panel3.Size = New Size(309, 963)
         Panel3.TabIndex = 3
         ' 
         ' Button5
@@ -105,21 +114,21 @@ Partial Class Dashboard
         Button5.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         Button5.Location = New Point(0, 359)
         Button5.Name = "Button5"
-        Button5.Size = New Size(309, 94)
+        Button5.Size = New Size(309, 93)
         Button5.TabIndex = 4
         Button5.Text = "SETTINGS"
         Button5.UseVisualStyleBackColor = True
         ' 
-        ' Button4
+        ' confibtn
         ' 
-        Button4.Dock = DockStyle.Top
-        Button4.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
-        Button4.Location = New Point(0, 268)
-        Button4.Name = "Button4"
-        Button4.Size = New Size(309, 91)
-        Button4.TabIndex = 3
-        Button4.Text = "SETTINGS"
-        Button4.UseVisualStyleBackColor = True
+        confibtn.Dock = DockStyle.Top
+        confibtn.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        confibtn.Location = New Point(0, 268)
+        confibtn.Name = "confibtn"
+        confibtn.Size = New Size(309, 91)
+        confibtn.TabIndex = 3
+        confibtn.Text = "SETTINGS"
+        confibtn.UseVisualStyleBackColor = True
         ' 
         ' unitbtn
         ' 
@@ -127,64 +136,55 @@ Partial Class Dashboard
         unitbtn.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         unitbtn.Image = CType(resources.GetObject("unitbtn.Image"), Image)
         unitbtn.ImageAlign = ContentAlignment.MiddleLeft
-        unitbtn.Location = New Point(0, 178)
+        unitbtn.Location = New Point(0, 177)
         unitbtn.Name = "unitbtn"
         unitbtn.Padding = New Padding(25, 0, 0, 0)
-        unitbtn.Size = New Size(309, 90)
+        unitbtn.Size = New Size(309, 91)
         unitbtn.TabIndex = 2
         unitbtn.Text = "UNITS"
         unitbtn.UseVisualStyleBackColor = True
         ' 
-        ' Button2
+        ' devicebtn
         ' 
-        Button2.Dock = DockStyle.Top
-        Button2.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
-        Button2.Image = CType(resources.GetObject("Button2.Image"), Image)
-        Button2.ImageAlign = ContentAlignment.MiddleLeft
-        Button2.Location = New Point(0, 92)
-        Button2.Name = "Button2"
-        Button2.Padding = New Padding(25, 0, 0, 0)
-        Button2.Size = New Size(309, 86)
-        Button2.TabIndex = 1
-        Button2.Text = "    DEVICES" & vbCrLf & "       COMPONENTS"
-        Button2.UseVisualStyleBackColor = True
+        devicebtn.Dock = DockStyle.Top
+        devicebtn.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        devicebtn.Image = CType(resources.GetObject("devicebtn.Image"), Image)
+        devicebtn.ImageAlign = ContentAlignment.MiddleLeft
+        devicebtn.Location = New Point(0, 92)
+        devicebtn.Name = "devicebtn"
+        devicebtn.Padding = New Padding(25, 0, 0, 0)
+        devicebtn.Size = New Size(309, 85)
+        devicebtn.TabIndex = 1
+        devicebtn.Text = "    DEVICES" & vbCrLf & "       COMPONENTS"
+        devicebtn.UseVisualStyleBackColor = True
         ' 
-        ' Button1
+        ' dashbtn
         ' 
-        Button1.Dock = DockStyle.Top
-        Button1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Button1.Image = CType(resources.GetObject("Button1.Image"), Image)
-        Button1.ImageAlign = ContentAlignment.MiddleLeft
-        Button1.Location = New Point(0, 0)
-        Button1.Name = "Button1"
-        Button1.Padding = New Padding(20, 0, 0, 0)
-        Button1.Size = New Size(309, 92)
-        Button1.TabIndex = 0
-        Button1.Text = "            DASHBOARD"
-        Button1.UseVisualStyleBackColor = True
+        dashbtn.Dock = DockStyle.Top
+        dashbtn.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        dashbtn.Image = CType(resources.GetObject("dashbtn.Image"), Image)
+        dashbtn.ImageAlign = ContentAlignment.MiddleLeft
+        dashbtn.Location = New Point(0, 0)
+        dashbtn.Name = "dashbtn"
+        dashbtn.Padding = New Padding(21, 0, 0, 0)
+        dashbtn.Size = New Size(309, 92)
+        dashbtn.TabIndex = 0
+        dashbtn.Text = "            DASHBOARD"
+        dashbtn.UseVisualStyleBackColor = True
         ' 
         ' mainpnl
         ' 
+        mainpnl.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         mainpnl.BackColor = Color.White
-        mainpnl.Controls.Add(Label3)
-        mainpnl.Location = New Point(426, 158)
+        mainpnl.Location = New Point(382, 157)
         mainpnl.Name = "mainpnl"
-        mainpnl.Size = New Size(1440, 898)
+        mainpnl.Size = New Size(1480, 963)
         mainpnl.TabIndex = 4
-        ' 
-        ' Label3
-        ' 
-        Label3.AutoSize = True
-        Label3.Location = New Point(48, 26)
-        Label3.Name = "Label3"
-        Label3.Size = New Size(193, 38)
-        Label3.TabIndex = 5
-        Label3.Text = "DASHBOARD"
         ' 
         ' userlbl
         ' 
         userlbl.AutoSize = True
-        userlbl.Location = New Point(1513, 29)
+        userlbl.Location = New Point(1282, 22)
         userlbl.Name = "userlbl"
         userlbl.Size = New Size(102, 38)
         userlbl.TabIndex = 6
@@ -193,7 +193,7 @@ Partial Class Dashboard
         ' dntlbl
         ' 
         dntlbl.AutoSize = True
-        dntlbl.Location = New Point(774, 28)
+        dntlbl.Location = New Point(622, 571)
         dntlbl.Name = "dntlbl"
         dntlbl.Size = New Size(209, 38)
         dntlbl.TabIndex = 7
@@ -202,26 +202,17 @@ Partial Class Dashboard
         ' Label4
         ' 
         Label4.AutoSize = True
-        Label4.Location = New Point(1360, 28)
+        Label4.Location = New Point(1111, 22)
         Label4.Name = "Label4"
         Label4.Size = New Size(147, 38)
         Label4.TabIndex = 5
         Label4.Text = "Welcome!"
         ' 
-        ' Label1
-        ' 
-        Label1.AutoSize = True
-        Label1.Location = New Point(147, 28)
-        Label1.Name = "Label1"
-        Label1.Size = New Size(508, 38)
-        Label1.TabIndex = 0
-        Label1.Text = "National Labor Relations Commission"
-        ' 
         ' Label2
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Segoe UI", 18F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(147, 67)
+        Label2.Location = New Point(206, 64)
         Label2.Name = "Label2"
         Label2.Size = New Size(259, 41)
         Label2.TabIndex = 2
@@ -230,11 +221,24 @@ Partial Class Dashboard
         ' Timer1
         ' 
         ' 
+        ' Panel5
+        ' 
+        Panel5.Controls.Add(Panel2)
+        Panel5.Controls.Add(Label1)
+        Panel5.Controls.Add(Label2)
+        Panel5.Controls.Add(userlbl)
+        Panel5.Controls.Add(Label4)
+        Panel5.Dock = DockStyle.Top
+        Panel5.Location = New Point(0, 0)
+        Panel5.Name = "Panel5"
+        Panel5.Size = New Size(1924, 125)
+        Panel5.TabIndex = 8
+        ' 
         ' Dashboard
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(1902, 1108)
+        ClientSize = New Size(1924, 1175)
         Controls.Add(Panel1)
         Name = "Dashboard"
         StartPosition = FormStartPosition.CenterScreen
@@ -244,8 +248,9 @@ Partial Class Dashboard
         Panel4.ResumeLayout(False)
         Panel4.PerformLayout()
         Panel3.ResumeLayout(False)
-        mainpnl.ResumeLayout(False)
-        mainpnl.PerformLayout()
+        CType(BindingSource1, ComponentModel.ISupportInitialize).EndInit()
+        Panel5.ResumeLayout(False)
+        Panel5.PerformLayout()
         ResumeLayout(False)
     End Sub
 
@@ -254,16 +259,18 @@ Partial Class Dashboard
     Friend WithEvents Label1 As Label
     Friend WithEvents Panel3 As Panel
     Friend WithEvents Button5 As Button
-    Friend WithEvents Button4 As Button
+    Friend WithEvents confibtn As Button
     Friend WithEvents unitbtn As Button
-    Friend WithEvents Button2 As Button
-    Friend WithEvents Button1 As Button
+    Friend WithEvents devicebtn As Button
+    Friend WithEvents dashbtn As Button
     Friend WithEvents Label2 As Label
     Friend WithEvents mainpnl As Panel
-    Friend WithEvents Label3 As Label
     Friend WithEvents userlbl As Label
     Friend WithEvents Label4 As Label
     Friend WithEvents dntlbl As Label
     Friend WithEvents Timer1 As Timer
     Friend WithEvents Panel4 As Panel
+    Friend WithEvents BindingSource1 As BindingSource
+    Friend WithEvents Timer2 As Timer
+    Friend WithEvents Panel5 As Panel
 End Class

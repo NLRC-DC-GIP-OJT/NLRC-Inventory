@@ -198,7 +198,7 @@ Partial Class Login
         FormBorderStyle = FormBorderStyle.None
         Name = "Login"
         StartPosition = FormStartPosition.CenterScreen
-        Text = "Form1"
+        Text = "  "
         Panel2.ResumeLayout(False)
         Panel2.PerformLayout()
         Panel3.ResumeLayout(False)

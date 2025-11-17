@@ -26,6 +26,7 @@ Partial Class Units
         Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
+        multibtn = New Button()
         unitaddbtn = New Button()
         filtertxt = New TextBox()
         addbtn = New Button()
@@ -38,6 +39,7 @@ Partial Class Units
         btnPrev = New Button()
         lblPageInfo = New Label()
         Panel3 = New Panel()
+        savedgvbtn = New Button()
         Panel1.SuspendLayout()
         Panel2.SuspendLayout()
         CType(allunitsdgv, ComponentModel.ISupportInitialize).BeginInit()
@@ -48,14 +50,27 @@ Partial Class Units
         ' 
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
+        Panel1.Controls.Add(multibtn)
         Panel1.Controls.Add(unitaddbtn)
         Panel1.Controls.Add(filtertxt)
         Panel1.Controls.Add(addbtn)
         Panel1.Controls.Add(Label3)
         Panel1.Location = New Point(17, 13)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1402, 67)
+        Panel1.Size = New Size(1446, 67)
         Panel1.TabIndex = 0
+        ' 
+        ' multibtn
+        ' 
+        multibtn.BackColor = Color.CornflowerBlue
+        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        multibtn.ForeColor = Color.White
+        multibtn.Location = New Point(884, 8)
+        multibtn.Name = "multibtn"
+        multibtn.Size = New Size(183, 53)
+        multibtn.TabIndex = 22
+        multibtn.Text = "Multiple Create"
+        multibtn.UseVisualStyleBackColor = False
         ' 
         ' unitaddbtn
         ' 
@@ -107,7 +122,7 @@ Partial Class Units
         Panel2.Controls.Add(allunitsdgv)
         Panel2.Location = New Point(23, 96)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1392, 726)
+        Panel2.Size = New Size(1440, 785)
         Panel2.TabIndex = 1
         ' 
         ' allunitsdgv
@@ -143,12 +158,12 @@ Partial Class Units
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         allunitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        allunitsdgv.Size = New Size(1392, 726)
+        allunitsdgv.Size = New Size(1440, 785)
         allunitsdgv.TabIndex = 1
         ' 
         ' unitpnl
         ' 
-        unitpnl.Location = New Point(112, 41)
+        unitpnl.Location = New Point(138, 82)
         unitpnl.Name = "unitpnl"
         unitpnl.Size = New Size(1167, 799)
         unitpnl.TabIndex = 2
@@ -156,9 +171,9 @@ Partial Class Units
         ' 
         ' viewpnl
         ' 
-        viewpnl.Location = New Point(170, 144)
+        viewpnl.Location = New Point(166, 144)
         viewpnl.Name = "viewpnl"
-        viewpnl.Size = New Size(1056, 643)
+        viewpnl.Size = New Size(1118, 643)
         viewpnl.TabIndex = 3
         viewpnl.Visible = False
         ' 
@@ -167,7 +182,7 @@ Partial Class Units
         btnNext.BackColor = Color.CornflowerBlue
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
-        btnNext.Location = New Point(770, 828)
+        btnNext.Location = New Point(847, 895)
         btnNext.Name = "btnNext"
         btnNext.Size = New Size(94, 48)
         btnNext.TabIndex = 19
@@ -179,7 +194,7 @@ Partial Class Units
         btnPrev.BackColor = Color.CornflowerBlue
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
-        btnPrev.Location = New Point(549, 828)
+        btnPrev.Location = New Point(626, 895)
         btnPrev.Name = "btnPrev"
         btnPrev.Size = New Size(94, 48)
         btnPrev.TabIndex = 18
@@ -190,7 +205,7 @@ Partial Class Units
         ' 
         lblPageInfo.AutoSize = True
         lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblPageInfo.Location = New Point(649, 839)
+        lblPageInfo.Location = New Point(726, 906)
         lblPageInfo.Name = "lblPageInfo"
         lblPageInfo.Size = New Size(109, 28)
         lblPageInfo.TabIndex = 17
@@ -198,6 +213,7 @@ Partial Class Units
         ' 
         ' Panel3
         ' 
+        Panel3.Controls.Add(savedgvbtn)
         Panel3.Controls.Add(viewpnl)
         Panel3.Controls.Add(unitpnl)
         Panel3.Controls.Add(Panel1)
@@ -208,8 +224,21 @@ Partial Class Units
         Panel3.Dock = DockStyle.Fill
         Panel3.Location = New Point(0, 0)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1438, 896)
+        Panel3.Size = New Size(1480, 963)
         Panel3.TabIndex = 20
+        ' 
+        ' savedgvbtn
+        ' 
+        savedgvbtn.BackColor = Color.CornflowerBlue
+        savedgvbtn.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        savedgvbtn.ForeColor = Color.White
+        savedgvbtn.Location = New Point(1211, 890)
+        savedgvbtn.Name = "savedgvbtn"
+        savedgvbtn.Size = New Size(252, 62)
+        savedgvbtn.TabIndex = 20
+        savedgvbtn.Text = "Save"
+        savedgvbtn.UseVisualStyleBackColor = False
+        savedgvbtn.Visible = False
         ' 
         ' Units
         ' 
@@ -217,7 +246,7 @@ Partial Class Units
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Panel3)
         Name = "Units"
-        Size = New Size(1438, 896)
+        Size = New Size(1480, 963)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel2.ResumeLayout(False)
@@ -229,7 +258,7 @@ Partial Class Units
     Friend WithEvents unitsdgv As DataGridView
     Friend WithEvents TabMain As TabControl
     Friend WithEvents UnitTab As TabPage
-    Friend WithEvents Button1 As Button
+    Friend WithEvents savedgvbtn As Button
     Friend WithEvents AddUnitTab As TabPage
     Friend WithEvents unitpnl As Panel
     Friend WithEvents unitnametxt As TextBox
@@ -246,5 +275,6 @@ Partial Class Units
     Friend WithEvents unitaddbtn As Button
     Friend WithEvents Panel3 As Panel
     Friend WithEvents viewpnl As Panel
+    Friend WithEvents multibtn As Button
 
 End Class

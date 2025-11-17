@@ -23,9 +23,9 @@ Partial Class AddUnits
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(AddUnits))
-        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
         Panel2 = New Panel()
         Label3 = New Label()
@@ -42,13 +42,10 @@ Partial Class AddUnits
         Panel3 = New Panel()
         unitsdgv = New DataGridView()
         savebtn = New Button()
-        savepnl1 = New Panel()
-        savebtn1 = New Button()
         Panel1.SuspendLayout()
         unit1pnl.SuspendLayout()
         Panel3.SuspendLayout()
         CType(unitsdgv, ComponentModel.ISupportInitialize).BeginInit()
-        savepnl1.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -205,33 +202,33 @@ Partial Class AddUnits
         unitsdgv.AllowUserToDeleteRows = False
         unitsdgv.AllowUserToResizeColumns = False
         unitsdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle1.ForeColor = Color.White
-        DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
-        unitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle4.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle4.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle4.ForeColor = Color.White
+        DataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
+        unitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
         unitsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
-        unitsdgv.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle5.BackColor = SystemColors.Window
+        DataGridViewCellStyle5.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
+        unitsdgv.DefaultCellStyle = DataGridViewCellStyle5
         unitsdgv.Dock = DockStyle.Fill
         unitsdgv.Location = New Point(0, 0)
         unitsdgv.Name = "unitsdgv"
         unitsdgv.ReadOnly = True
         unitsdgv.RowHeadersVisible = False
         unitsdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle3.BackColor = Color.AliceBlue
-        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle3.ForeColor = Color.Black
-        unitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle6.BackColor = Color.AliceBlue
+        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle6.ForeColor = Color.Black
+        unitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
         unitsdgv.Size = New Size(1136, 381)
         unitsdgv.TabIndex = 1
         ' 
@@ -247,33 +244,10 @@ Partial Class AddUnits
         savebtn.Text = "Save"
         savebtn.UseVisualStyleBackColor = False
         ' 
-        ' savepnl1
-        ' 
-        savepnl1.BackColor = Color.Transparent
-        savepnl1.Controls.Add(savebtn1)
-        savepnl1.Location = New Point(997, 731)
-        savepnl1.Name = "savepnl1"
-        savepnl1.Size = New Size(135, 59)
-        savepnl1.TabIndex = 19
-        savepnl1.Visible = False
-        ' 
-        ' savebtn1
-        ' 
-        savebtn1.BackColor = Color.CornflowerBlue
-        savebtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        savebtn1.ForeColor = Color.White
-        savebtn1.Location = New Point(11, 2)
-        savebtn1.Name = "savebtn1"
-        savebtn1.Size = New Size(113, 55)
-        savebtn1.TabIndex = 20
-        savebtn1.Text = "Save"
-        savebtn1.UseVisualStyleBackColor = False
-        ' 
         ' AddUnits
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        Controls.Add(savepnl1)
         Controls.Add(savebtn)
         Controls.Add(Panel3)
         Controls.Add(unit1pnl)
@@ -286,7 +260,6 @@ Partial Class AddUnits
         unit1pnl.PerformLayout()
         Panel3.ResumeLayout(False)
         CType(unitsdgv, ComponentModel.ISupportInitialize).EndInit()
-        savepnl1.ResumeLayout(False)
         ResumeLayout(False)
     End Sub
 
@@ -305,8 +278,6 @@ Partial Class AddUnits
     Friend WithEvents addbtn As Button
     Friend WithEvents unitsdgv As DataGridView
     Friend WithEvents savebtn As Button
-    Friend WithEvents savepnl1 As Panel
-    Friend WithEvents savebtn1 As Button
     Friend WithEvents Panel2 As Panel
 
 End Class

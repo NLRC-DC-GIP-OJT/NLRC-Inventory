@@ -1,48 +1,72 @@
 ﻿Public Class Dashboard
 
     Private LoggedUser As String
+    Private model As New model() ' Your Model class
 
-    ' ✅ Default constructor (needed for designer)
+    ' ========================
+    ' Constructors
+    ' ========================
     Public Sub New()
         InitializeComponent()
     End Sub
 
-    ' ✅ Constructor with username parameter
     Public Sub New(user As String)
         InitializeComponent()
         LoggedUser = user
     End Sub
 
+    ' ========================
+    ' Dashboard Load
+    ' ========================
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         userlbl.Text = LoggedUser
+        LoadDashboard()
 
-        ' ✅ Timer starts
+        ' Start timer for clock
         Timer1.Interval = 1000
         Timer1.Start()
     End Sub
 
+    ' ========================
+    ' Generic method to load any UserControl
+    ' ========================
+    Private Sub LoadUserControl(ctrl As UserControl)
+        mainpnl.Controls.Clear()
+        ctrl.Dock = DockStyle.Fill
+        mainpnl.Controls.Add(ctrl)
+    End Sub
+
+    ' ========================
+    ' Load DashboardControl by default
+    ' ========================
+    Private Sub LoadDashboard()
+        LoadUserControl(New DashboardControl())
+    End Sub
+
+    ' ========================
+    ' Timer Tick for Clock
+    ' ========================
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         dntlbl.Text = DateTime.Now.ToString("MMMM dd, yyyy hh:mm:ss tt")
     End Sub
 
-    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
-        mainpnl.Controls.Clear()
-        Dim uc As New devices()
-        uc.Dock = DockStyle.Fill
-        mainpnl.Controls.Add(uc)
+    ' ========================
+    ' Button Clicks to load UserControls
+    ' ========================
+    Private Sub dashbtn_Click(sender As Object, e As EventArgs) Handles dashbtn.Click
+        LoadDashboard()
+    End Sub
+
+    Private Sub devicebtn_Click(sender As Object, e As EventArgs) Handles devicebtn.Click
+        LoadUserControl(New devices())
     End Sub
 
     Private Sub unitbtn_Click(sender As Object, e As EventArgs) Handles unitbtn.Click
-        mainpnl.Controls.Clear()
-        Dim uc As New Units()
-        uc.Dock = DockStyle.Fill
-        mainpnl.Controls.Add(uc)
+        LoadUserControl(New Units())
     End Sub
 
-    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
-        mainpnl.Controls.Clear()
-        Dim uc As New Configuration()
-        uc.Dock = DockStyle.Fill
-        mainpnl.Controls.Add(uc)
+    Private Sub confibtn_Click(sender As Object, e As EventArgs) Handles confibtn.Click
+        LoadUserControl(New Configuration())
     End Sub
+
 End Class

@@ -44,7 +44,7 @@ Partial Class ViewUnit
         Panel3.Controls.Add(deviceflowpnl)
         Panel3.Location = New Point(21, 164)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(394, 252)
+        Panel3.Size = New Size(547, 399)
         Panel3.TabIndex = 31
         ' 
         ' deviceflowpnl
@@ -56,7 +56,7 @@ Partial Class ViewUnit
         deviceflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         deviceflowpnl.Location = New Point(0, 0)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(394, 252)
+        deviceflowpnl.Size = New Size(547, 399)
         deviceflowpnl.TabIndex = 18
         deviceflowpnl.WrapContents = False
         ' 
@@ -64,7 +64,7 @@ Partial Class ViewUnit
         ' 
         assigntxt.BorderStyle = BorderStyle.FixedSingle
         assigntxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        assigntxt.Location = New Point(592, 66)
+        assigntxt.Location = New Point(760, 73)
         assigntxt.Name = "assigntxt"
         assigntxt.Size = New Size(292, 31)
         assigntxt.TabIndex = 30
@@ -73,9 +73,9 @@ Partial Class ViewUnit
         ' 
         unitnametxt.BorderStyle = BorderStyle.FixedSingle
         unitnametxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        unitnametxt.Location = New Point(144, 66)
+        unitnametxt.Location = New Point(154, 74)
         unitnametxt.Name = "unitnametxt"
-        unitnametxt.Size = New Size(274, 31)
+        unitnametxt.Size = New Size(414, 31)
         unitnametxt.TabIndex = 29
         ' 
         ' specsflowpnl
@@ -84,9 +84,9 @@ Partial Class ViewUnit
         specsflowpnl.BorderStyle = BorderStyle.FixedSingle
         specsflowpnl.FlowDirection = FlowDirection.TopDown
         specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        specsflowpnl.Location = New Point(455, 164)
+        specsflowpnl.Location = New Point(610, 164)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(442, 252)
+        specsflowpnl.Size = New Size(442, 399)
         specsflowpnl.TabIndex = 28
         specsflowpnl.WrapContents = False
         ' 
@@ -94,7 +94,7 @@ Partial Class ViewUnit
         ' 
         Label5.AutoSize = True
         Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(455, 128)
+        Label5.Location = New Point(605, 128)
         Label5.Name = "Label5"
         Label5.Size = New Size(77, 23)
         Label5.TabIndex = 27
@@ -114,7 +114,7 @@ Partial Class ViewUnit
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label3.Location = New Point(455, 70)
+        Label3.Location = New Point(601, 77)
         Label3.Name = "Label3"
         Label3.Size = New Size(131, 23)
         Label3.TabIndex = 25
@@ -124,7 +124,7 @@ Partial Class ViewUnit
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(21, 68)
+        Label2.Location = New Point(21, 76)
         Label2.Name = "Label2"
         Label2.Size = New Size(117, 23)
         Label2.TabIndex = 24
@@ -139,7 +139,7 @@ Partial Class ViewUnit
         Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 4, 3, 4)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(920, 47)
+        Panel1.Size = New Size(1118, 47)
         Panel1.TabIndex = 23
         ' 
         ' Panel2
@@ -147,7 +147,7 @@ Partial Class ViewUnit
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
-        Panel2.Location = New Point(863, 6)
+        Panel2.Location = New Point(1065, 7)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(35, 33)
         Panel2.TabIndex = 19
@@ -177,7 +177,7 @@ Partial Class ViewUnit
         Controls.Add(Label2)
         Controls.Add(Panel1)
         Name = "ViewUnit"
-        Size = New Size(920, 487)
+        Size = New Size(1118, 643)
         Panel3.ResumeLayout(False)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
