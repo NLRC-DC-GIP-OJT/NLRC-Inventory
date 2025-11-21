@@ -70,7 +70,7 @@ Public Class Edit
         LoadSpecs()
         BuildDynamicFields()
 
-        ' CATEGORY COMBOBOX: same size as textboxes, non-editable
+        ' CATEGORY COMBOBOX: non-editable
         If catcb.Items.Count > 0 Then
             catcb.SelectedValue = categoryPointer
         End If
@@ -89,47 +89,19 @@ Public Class Edit
         If device.PurchaseDate.HasValue Then purchaseDatePicker.Value = device.PurchaseDate.Value
         If device.WarrantyExpires.HasValue Then warrantyDatePicker.Value = device.WarrantyExpires.Value
 
-        ' ============================
-        ' LOAD SPECSFLOWPNL FROM device.Specs
-        ' ============================
+        ' SPECS PANEL
         specsflowpnl.Controls.Clear()
-
         If Not String.IsNullOrWhiteSpace(device.Specs) Then
-
-            ' Example: "Processor: Intel i5; RAM: 8GB; Storage: 512GB SSD"
             Dim specsArray() As String = device.Specs.Split(";"c)
-
             For Each spec In specsArray
                 If String.IsNullOrWhiteSpace(spec) Then Continue For
-
                 Dim parts() As String = spec.Split(":"c)
                 If parts.Length < 2 Then Continue For
-
                 Dim labelName As String = parts(0).Trim()
                 Dim fieldValue As String = parts(1).Trim()
-
-                ' ---- Row Panel ----
-                Dim row As New Panel With {
-            .Width = specsflowpnl.ClientSize.Width - 2,
-            .Height = 32,
-            .Margin = New Padding(0, 0, 0, 4)
-        }
-
-                ' ---- Label ----
-                Dim lbl As New Label With {
-            .Text = labelName & ":",
-            .AutoSize = False,
-            .Width = 140,
-            .Location = New Point(5, 8)
-        }
-
-                ' ---- TextBox ----
-                Dim txt As New TextBox With {
-            .Text = fieldValue,
-            .Tag = labelName
-        }
-
-                ' Add to panel
+                Dim row As New Panel With {.Width = specsflowpnl.ClientSize.Width - 2, .Height = 32, .Margin = New Padding(0, 0, 0, 4)}
+                Dim lbl As New Label With {.Text = labelName & ":", .AutoSize = False, .Width = 140, .Location = New Point(5, 8)}
+                Dim txt As New TextBox With {.Text = fieldValue, .Tag = labelName}
                 row.Controls.Add(lbl)
                 row.Controls.Add(txt)
                 specsflowpnl.Controls.Add(row)
@@ -137,8 +109,6 @@ Public Class Edit
         End If
 
         LayoutSpecsRows()
-
-
         ApplyUniformSpacing()
     End Sub
 
@@ -159,17 +129,12 @@ Public Class Edit
     ' ================================
     Private Sub BuildDynamicFields()
         deviceflowpnl.Controls.Clear()
-
         Dim props As DataTable = mdl.GetCategoryProperties(categoryPointer)
-
-        ' 🔥 Filter ONLY ACTIVE properties
-        Dim activeProps = props.AsEnumerable().
-        Where(Function(r) Convert.ToBoolean(r("active")) = True).
-        ToList()
+        Dim activeProps = props.AsEnumerable().Where(Function(r) Convert.ToBoolean(r("active")) = True).ToList()
 
         deviceflowpnl.FlowDirection = FlowDirection.TopDown
         deviceflowpnl.WrapContents = False
-        deviceflowpnl.AutoScroll = False
+        deviceflowpnl.AutoScroll = True
         deviceflowpnl.Padding = New Padding(0, 10, 0, 0)
 
         Dim rowHeight As Integer = 58
@@ -177,7 +142,8 @@ Public Class Edit
         Dim totalHeight As Integer = 10
 
         For Each prop As DataRow In activeProps
-            Dim propName As String = prop("property_name").ToString().ToLower()
+            Dim rawName As String = prop("property_name").ToString()
+            Dim propName As String = rawName.Trim().ToLower()
             Dim propPointer As Integer = CInt(prop("pointer"))
 
             Dim rowPanel As New Panel With {
@@ -187,7 +153,7 @@ Public Class Edit
         }
 
             Dim lbl As New Label With {
-            .Text = prop("property_name").ToString() & ":",
+            .Text = rawName & ":",
             .AutoSize = False,
             .Width = 160,
             .Height = rowHeight,
@@ -197,17 +163,16 @@ Public Class Edit
 
             Dim inputCtrl As Control
 
-            If propName = "brand" Then
+            ' BRAND COMBOBOX
+            If propName.Contains("brand") Then
                 Dim cb As New ComboBox With {
                 .Name = "cb_" & propPointer,
                 .DropDownStyle = ComboBoxStyle.DropDownList,
                 .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
                 .Height = inputHeight
             }
-
                 cb.Width = rowPanel.Width - lbl.Width - 20
                 cb.Location = New Point(lbl.Right + 10, (rowPanel.Height - cb.Height) \ 2)
-
                 Dim brands = mdl.GetBrandsByCategory(categoryPointer)
                 If brands IsNot Nothing AndAlso brands.Count > 0 Then
                     cb.DataSource = brands
@@ -220,49 +185,59 @@ Public Class Edit
                     cb.Items.Add("No brands available")
                     cb.SelectedIndex = 0
                 End If
-
                 inputCtrl = cb
 
             Else
+                ' TEXTBOX PROPERTIES
                 Dim txt As New TextBox With {
                 .Name = "txt_" & propPointer,
                 .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
                 .Height = inputHeight
             }
-
                 txt.Width = rowPanel.Width - lbl.Width - 20
                 txt.Location = New Point(lbl.Right + 10, (rowPanel.Height - txt.Height) \ 2)
 
-                ' Load existing device values
-                Select Case propName
-                    Case "model" : txt.Text = If(currentDevice?.Model, "")
-                    Case "serial number" : txt.Text = If(currentDevice?.SerialNumber, "")
-                    Case "property number" : txt.Text = If(currentDevice?.PropertyNumber, "")
-                    Case "nsoc name" : txt.Text = If(currentDevice?.NsocName, "")
+                ' Auto-load all known fields
+                Select Case True
+                    Case propName.Contains("model")
+                        txt.Text = If(currentDevice?.Model, "")
+                    Case propName.Contains("serial")
+                        txt.Text = If(currentDevice?.SerialNumber, "")
+                    Case propName.Contains("property")
+                        txt.Text = If(currentDevice?.PropertyNumber, "")
+                    Case propName.Contains("nsoc")
+                        txt.Text = If(currentDevice?.NsocName, "")
+                    Case propName.Contains("cost")
+                        txt.Text = If(currentDevice?.Cost, 0).ToString()
+                    Case propName.Contains("status")
+                        txt.Text = If(currentDevice?.Status, "")
+                    Case propName.Contains("notes")
+                        txt.Text = If(currentDevice?.Notes, "")
+                    Case Else
+                        txt.Text = ""
                 End Select
 
                 inputCtrl = txt
             End If
 
             inputCtrl.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
-
             rowPanel.Controls.Add(lbl)
             rowPanel.Controls.Add(inputCtrl)
             deviceflowpnl.Controls.Add(rowPanel)
 
             totalHeight += rowPanel.Height + rowPanel.Margin.Bottom
 
+            ' RESIZE HANDLER
             AddHandler deviceflowpnl.Resize,
-            Sub()
-                rowPanel.Width = deviceflowpnl.ClientSize.Width - 2
-                inputCtrl.Width = rowPanel.Width - lbl.Width - 20
-                inputCtrl.Location = New Point(lbl.Right + 10, (rowPanel.Height - inputCtrl.Height) \ 2)
-            End Sub
+        Sub()
+            rowPanel.Width = deviceflowpnl.ClientSize.Width - 2
+            inputCtrl.Width = rowPanel.Width - lbl.Width - 20
+            inputCtrl.Location = New Point(lbl.Right + 10, (rowPanel.Height - inputCtrl.Height) \ 2)
+        End Sub
         Next
 
         deviceflowpnl.Height = totalHeight
     End Sub
-
 
 
     ' ================================
@@ -279,79 +254,45 @@ Public Class Edit
             specscb.DataSource = Nothing
             specscb.Items.Clear()
             specscb.Items.Add("No specs available")
-
         End If
     End Sub
 
     Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles specscb.SelectedIndexChanged
-        ' Clear previous rows
         specsflowpnl.Controls.Clear()
-
         If specscb.SelectedIndex < 0 OrElse specscb.SelectedItem Is Nothing Then Exit Sub
-
-        ' Selected spec from dropdown
         Dim selectedSpec As DeviceSpecification = CType(specscb.SelectedItem, DeviceSpecification)
         Dim specsString As String = selectedSpec.SpecName
         If String.IsNullOrWhiteSpace(specsString) Then Exit Sub
-
-        ' Split "CPU: Intel; RAM: 8GB" → array
         Dim specsArray() As String = specsString.Split(";"c)
-
         For Each spec In specsArray
             If String.IsNullOrWhiteSpace(spec) Then Continue For
-
             Dim parts() As String = spec.Split(":"c)
             Dim labelName As String = parts(0).Trim()
             Dim fieldValue As String = If(parts.Length > 1, parts(1).Trim(), "")
-
-            Dim rowPanel As New Panel With {
-            .Width = specsflowpnl.ClientSize.Width - 2,
-            .Height = 32,
-            .Margin = New Padding(0, 0, 0, 4)
-        }
-
-            Dim lbl As New Label With {
-            .Text = labelName & ":",
-            .AutoSize = False,
-            .Width = 140,
-            .Location = New Point(5, 8)
-        }
-
-            Dim txt As New TextBox With {
-            .Text = fieldValue,
-            .Tag = labelName
-        }
-
+            Dim rowPanel As New Panel With {.Width = specsflowpnl.ClientSize.Width - 2, .Height = 32, .Margin = New Padding(0, 0, 0, 4)}
+            Dim lbl As New Label With {.Text = labelName & ":", .AutoSize = False, .Width = 140, .Location = New Point(5, 8)}
+            Dim txt As New TextBox With {.Text = fieldValue, .Tag = labelName}
             rowPanel.Controls.Add(lbl)
             rowPanel.Controls.Add(txt)
             specsflowpnl.Controls.Add(rowPanel)
         Next
-
         LayoutSpecsRows()
     End Sub
-
 
     Private Sub LayoutSpecsRows()
         Dim totalWidth As Integer = specsflowpnl.ClientSize.Width - 2
         Dim textLeft As Integer = 5 + 140 + 5
-
         For Each row As Control In specsflowpnl.Controls
             If TypeOf row Is Panel Then
                 Dim rowPanel As Panel = DirectCast(row, Panel)
                 rowPanel.Width = totalWidth
-
                 Dim lbl As Label = Nothing
                 Dim txt As TextBox = Nothing
-
                 For Each c As Control In rowPanel.Controls
                     If TypeOf c Is Label Then lbl = DirectCast(c, Label)
                     If TypeOf c Is TextBox Then txt = DirectCast(c, TextBox)
                 Next
-
-                If lbl IsNot Nothing Then
-                    lbl.Location = New Point(5, (rowPanel.Height - lbl.Height) \ 2)
-                End If
-
+                If lbl IsNot Nothing Then lbl.Location = New Point(5, (rowPanel.Height - lbl.Height) \ 2)
                 If txt IsNot Nothing Then
                     txt.Location = New Point(textLeft, (rowPanel.Height - txt.Height) \ 2)
                     txt.Width = totalWidth - textLeft - 5
@@ -367,14 +308,7 @@ Public Class Edit
         If currentDevice Is Nothing Then Exit Sub
         Dim userID As Integer = Session.LoggedInUserPointer
 
-        If specscb.SelectedValue IsNot Nothing Then
-            currentDevice.Specs = specscb.SelectedValue.ToString()
-        End If
-
-        currentDevice.Notes = notetxt.Text.Trim()
-        currentDevice.PurchaseDate = purchaseDatePicker.Value
-        currentDevice.WarrantyExpires = warrantyDatePicker.Value
-
+        ' Update dynamic fields
         For Each row As Control In deviceflowpnl.Controls
             If TypeOf row Is Panel Then
                 For Each ctrl As Control In row.Controls
@@ -382,11 +316,14 @@ Public Class Edit
                         Dim propPointer As Integer = CInt(ctrl.Name.Replace("txt_", ""))
                         Dim value As String = ctrl.Text.Trim()
                         Dim propName As String = mdl.GetCategoryPropertyName(propPointer).ToLower()
-                        Select Case propName
-                            Case "model" : currentDevice.Model = value
-                            Case "serial number" : currentDevice.SerialNumber = value
-                            Case "property number" : currentDevice.PropertyNumber = value
-                            Case "nsoc name" : currentDevice.NsocName = value
+                        Select Case True
+                            Case propName.Contains("model") : currentDevice.Model = value
+                            Case propName.Contains("serial") : currentDevice.SerialNumber = value
+                            Case propName.Contains("property") : currentDevice.PropertyNumber = value
+                            Case propName.Contains("nsoc") : currentDevice.NsocName = value
+                            Case propName.Contains("cost") : currentDevice.Cost = Convert.ToDecimal(value)
+                            Case propName.Contains("status") : currentDevice.Status = value
+                            Case propName.Contains("notes") : currentDevice.Notes = value
                         End Select
                     ElseIf TypeOf ctrl Is ComboBox Then
                         Dim cb As ComboBox = DirectCast(ctrl, ComboBox)
@@ -399,12 +336,12 @@ Public Class Edit
 
         If mdl.Save(currentDevice, userID) Then
             MessageBox.Show("Device updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Dim parentPanel = TryCast(Me.Parent, Panel)
-            If parentPanel IsNot Nothing Then parentPanel.Visible = False
+            Me.Parent.Visible = False
         Else
             MessageBox.Show("Update failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
+
 
     Private Sub cancelbtn_Click(sender As Object, e As EventArgs) Handles cancelbtn.Click
         Dim parentPanel = TryCast(Me.Parent, Panel)
@@ -414,13 +351,12 @@ Public Class Edit
     Private Sub ApplyUniformSpacing()
         Dim spacing As Integer = 12
         For Each ctrl As Control In Me.Controls
-            If Not TypeOf ctrl Is Panel AndAlso Not TypeOf ctrl Is FlowLayoutPanel Then
-                ctrl.Margin = New Padding(0, 0, 0, spacing)
-            End If
+            If Not TypeOf ctrl Is Panel AndAlso Not TypeOf ctrl Is FlowLayoutPanel Then ctrl.Margin = New Padding(0, 0, 0, spacing)
         Next
         For Each row As Control In deviceflowpnl.Controls
             row.Margin = New Padding(0, 0, 0, spacing)
         Next
     End Sub
+
 
 End Class

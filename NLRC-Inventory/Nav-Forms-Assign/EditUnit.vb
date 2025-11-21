@@ -147,27 +147,64 @@ Public Class EditUnit
         editedSpecs.Clear()
         deviceDisplayNames.Clear()
 
-        ' devices DataTable contains columns: DeviceID, DeviceAndSpecs (full string like "Category - Brand - Model - CPU:..., RAM:...")
+        ' ================================================
+        ' devices DataTable HAS: UnitID, DeviceID, DeviceAndSpecs
+        ' We fetch full info per DeviceID using mdl.GetDeviceDetails
+        ' ================================================
         For Each dr As DataRow In devices.Rows
+
             Dim devId As Integer = CInt(dr("DeviceID"))
-            Dim rawFullText As String = dr("DeviceAndSpecs").ToString()
+            Dim details As DataRow = mdl.GetDeviceDetails(devId)
 
-            ' Button text = Category - Brand - Model only
-            Dim baseText As String = ExtractBaseText(rawFullText)
-            deviceDisplayNames(devId) = baseText
+            Dim category As String = ""
+            Dim brand As String = ""
+            Dim model As String = ""
+            Dim nsoc As String = ""
+            Dim propNo As String = ""
+            Dim specsOnly As String = ""
 
+            If details IsNot Nothing Then
+                category = details("category_name").ToString()
+                brand = details("brand_name").ToString()
+                model = details("model").ToString()
+                nsoc = details("nsoc_name").ToString()
+                propNo = details("property_number").ToString()
+                specsOnly = details("device_specs").ToString()
+            Else
+                ' Fallback: parse original DeviceAndSpecs string
+                Dim rawFullText As String = dr("DeviceAndSpecs").ToString()
+                Dim baseTextTmp As String = ExtractBaseText(rawFullText)
+                specsOnly = ExtractOnlySpecs(rawFullText)
+
+                Dim parts = baseTextTmp.Split(New String() {" - "}, StringSplitOptions.None)
+                If parts.Length >= 3 Then
+                    category = parts(0).Trim()
+                    brand = parts(1).Trim()
+                    model = parts(2).Trim()
+                Else
+                    brand = baseTextTmp
+                End If
+            End If
+
+            Dim baseText As String = $"{category} - {brand} - {model}".Trim()
+            Dim normalizedSpecsOnly As String = NormalizeSpecs(specsOnly)
+
+            ' NSOC / Property / Brand-Model
+            Dim displayText As String = BuildDeviceDisplay(baseText, nsoc, propNo)
+
+            deviceDisplayNames(devId) = displayText
             currentDevices.Add(devId)
 
-            ' Normalize the full specs string to guaranteed format:
-            ' "Category - Brand - Model - spec1: x; spec2: y; ..."
-            Dim specsPart As String = ExtractOnlySpecs(rawFullText)
-            Dim normalizedSpecsPart As String = NormalizeSpecs(specsPart)
-            Dim rebuiltFull As String = $"{baseText} - {normalizedSpecsPart}"
+            Dim rebuiltFull As String
+            If String.IsNullOrWhiteSpace(normalizedSpecsOnly) Then
+                rebuiltFull = baseText
+            Else
+                rebuiltFull = $"{baseText} - {normalizedSpecsOnly}"
+            End If
 
-            ' Store normalized full string for this device
             deviceFullSpecs(devId) = rebuiltFull
 
-            AddDeviceToPanel(devId, baseText, rebuiltFull)
+            AddDeviceToPanel(devId, displayText, rebuiltFull)
         Next
 
     End Sub
@@ -204,25 +241,27 @@ Public Class EditUnit
 
         For Each row As DataRow In dt.Rows
             Dim id = CInt(row("device_id"))
+
             deviceQuantities(id) = CInt(row("qty"))
 
-            If row.Table.Columns.Contains("DeviceAndSpecs") Then
-                Dim rawFull = row("DeviceAndSpecs").ToString()
-                Dim base = ExtractBaseText(rawFull)
-                Dim specsOnly = ExtractOnlySpecs(rawFull)
-                Dim normalizedSpecs = NormalizeSpecs(specsOnly)
-                Dim rebuiltFull = $"{base} - {normalizedSpecs}"
+            Dim category = row("category_name").ToString()
+            Dim brand = row("brand_name").ToString()
+            Dim model = row("model").ToString()
 
-                deviceFullSpecs(id) = rebuiltFull
-                deviceBaseDisplay(id) = base
-            Else
-                deviceBaseDisplay(id) = $"{row("category_name")} - {row("brand_name")} - {row("model")}"
-                deviceFullSpecs(id) = deviceBaseDisplay(id)
-            End If
+            Dim nsoc As String = row("nsoc_name").ToString()
+            Dim propNo As String = row("property_number").ToString()
+
+            Dim rawSpecs = row("device_specs").ToString()
+
+            Dim baseText As String = $"{category} - {brand} - {model}"
+
+            Dim finalDisplay As String = BuildDeviceDisplay(baseText, nsoc, propNo)
+
+            deviceBaseDisplay(id) = finalDisplay
+            deviceFullSpecs(id) = rawSpecs
         Next
 
         UpdateComboList()
-
     End Sub
 
     Private Sub UpdateComboList()
@@ -245,7 +284,6 @@ Public Class EditUnit
 
         devicecb.SelectedIndex = -1
         devicecb.Text = "Select Device"
-
     End Sub
 
     Private Sub adddevicebtn_Click(sender As Object, e As EventArgs) Handles adddevicebtn.Click
@@ -284,7 +322,6 @@ Public Class EditUnit
         deviceFullSpecs(devId) = rebuilt
 
         AddDeviceToPanel(devId, deviceDisplayNames(devId), rebuilt)
-
     End Sub
 
     Private Sub AddDeviceToPanel(deviceId As Integer, displayText As String, fullSpecs As String)
@@ -307,7 +344,21 @@ Public Class EditUnit
 
         AddHandler btn.Click,
             Sub()
-                ShowSpecs(fullSpecs, deviceId)
+                currentSpecDeviceId = deviceId
+
+                Dim specsToShow As String
+
+                If editedSpecs.ContainsKey(deviceId) Then
+                    Dim list As New List(Of String)
+                    For Each kv In editedSpecs(deviceId)
+                        list.Add($"{kv.Key}: {kv.Value}")
+                    Next
+                    specsToShow = String.Join("; ", list)
+                Else
+                    specsToShow = deviceFullSpecs(deviceId)
+                End If
+
+                ShowSpecs(specsToShow, deviceId)
             End Sub
 
         Dim removeBtn As New Button With {
@@ -343,13 +394,11 @@ Public Class EditUnit
                 End If
 
                 UpdateComboList()
-
             End Sub
 
         container.Controls.Add(removeBtn)
         container.Controls.Add(btn)
         deviceflowpnl.Controls.Add(container)
-
     End Sub
 
     Private Sub ShowSpecs(fullSpecs As String, deviceId As Integer)
@@ -367,7 +416,6 @@ Public Class EditUnit
         End If
 
         For Each kvp In dict
-
             specsTable.RowCount += 1
 
             specsTable.Controls.Add(New Label With {
@@ -381,9 +429,7 @@ Public Class EditUnit
                 .Text = kvp.Value,
                 .Dock = DockStyle.Fill
             }, 1, specsTable.RowCount - 1)
-
         Next
-
     End Sub
 
     Private Function NormalizeSpecs(raw As String) As String
@@ -401,7 +447,6 @@ Public Class EditUnit
         If s.EndsWith(";") Then s = s.TrimEnd(";"c).Trim()
 
         Return s
-
     End Function
 
     Private Function ParseSpecs(fullSpecs As String) As Dictionary(Of String, String)
@@ -450,7 +495,6 @@ Public Class EditUnit
         Next
 
         Return dict
-
     End Function
 
     Private Sub savespecsbtn_Click(sender As Object, e As EventArgs) Handles savespecsbtn.Click
@@ -470,14 +514,12 @@ Public Class EditUnit
             If lbl IsNot Nothing AndAlso txt IsNot Nothing Then
                 dict(lbl.Text.Replace(":", "").Trim) = txt.Text.Trim
             End If
-
         Next
 
         editedSpecs(currentSpecDeviceId) = dict
 
         MessageBox.Show("Specs saved temporarily!", "Saved",
                         MessageBoxButtons.OK, MessageBoxIcon.Information)
-
     End Sub
 
     Private Sub LoadAssignments()
@@ -488,7 +530,6 @@ Public Class EditUnit
         assigncb.DisplayMember = "Full name"
         assigncb.ValueMember = "user_id"
         assigncb.SelectedIndex = -1
-
     End Sub
 
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
@@ -550,7 +591,6 @@ Public Class EditUnit
         )
 
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-
     End Sub
 
     Private Function GetNameById(userId As Integer) As String
@@ -572,9 +612,26 @@ Public Class EditUnit
         End If
 
         assigntxt.Text = assigncb.Text
-
         selectedAssignedId = CInt(assigncb.SelectedValue)
-
     End Sub
+
+    ' ============================
+    ' BUILD DISPLAY TITLE
+    ' ============================
+    Private Function BuildDeviceDisplay(baseText As String, nsoc As String, propNo As String) As String
+        Dim title As String = ""
+
+        If Not String.IsNullOrWhiteSpace(nsoc) Then
+            title = nsoc.Trim()
+        ElseIf Not String.IsNullOrWhiteSpace(propNo) Then
+            title = "Property No: " & propNo.Trim()
+        End If
+
+        If title = "" Then
+            Return baseText
+        Else
+            Return title & " - " & baseText
+        End If
+    End Function
 
 End Class

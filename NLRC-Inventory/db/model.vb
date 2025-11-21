@@ -1,5 +1,6 @@
 ﻿Imports System.Text
 Imports MySql.Data.MySqlClient
+Imports Mysqlx
 
 
 Public Class InvDevice
@@ -143,6 +144,11 @@ Public Class model
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
 
+                ' ============================
+                ' 🔥 Get or Create SPEC POINTER
+                ' ============================
+                Dim specsPointer As Integer = GetSpecsPointer(device.Specs, conn)
+
                 Dim query As String
 
                 If device.Pointer > 0 Then
@@ -151,7 +157,7 @@ Public Class model
                          SET dev_category_pointer=@category,
                              brands=@brand,
                              model=@model,
-                             specs=@specs,
+                             specs=@specsPointer,
                              status=@status,
                              nsoc_name=@nsoc,
                              serial_number=@serial,
@@ -165,8 +171,8 @@ Public Class model
                 Else
                     ' INSERT
                     query = "INSERT INTO inv_devices 
-                         (dev_category_pointer, brands, model, specs, status,nsoc_name, serial_number,property_number, purchase_date, warranty_expires, notes, created_at, updated_at, created_by, updated_by)
-                         VALUES (@category, @brand, @model, @specs, @status,@nsoc, @serial,@property, @purchase, @warranty, @notes, NOW(), NOW(), @userID, @userID)"
+                         (dev_category_pointer, brands, model, specs, status, nsoc_name, serial_number, property_number, purchase_date, warranty_expires, notes, created_at, updated_at, created_by, updated_by)
+                         VALUES (@category, @brand, @model, @specsPointer, @status, @nsoc, @serial, @property, @purchase, @warranty, @notes, NOW(), NOW(), @userID, @userID)"
                 End If
 
                 Using cmd As New MySqlCommand(query, conn)
@@ -175,7 +181,7 @@ Public Class model
                     cmd.Parameters.AddWithValue("@brand", device.BrandPointer)
                     cmd.Parameters.AddWithValue("@model", device.Model)
                     cmd.Parameters.AddWithValue("@nsoc", device.NsocName)
-                    cmd.Parameters.AddWithValue("@specs", device.Specs)
+                    cmd.Parameters.AddWithValue("@specsPointer", specsPointer)
                     cmd.Parameters.AddWithValue("@status", device.Status)
                     cmd.Parameters.AddWithValue("@serial", device.SerialNumber)
                     cmd.Parameters.AddWithValue("@property", device.PropertyNumber)
@@ -194,6 +200,28 @@ Public Class model
             MessageBox.Show("Database save error: " & ex.Message)
             Return False
         End Try
+    End Function
+
+    Private Function GetSpecsPointer(specText As String, conn As MySqlConnection) As Integer
+        ' CHECK IF SPECS ALREADY EXIST
+        Dim checkSql As String = "SELECT pointer FROM inv_specs WHERE specs=@spec LIMIT 1"
+        Using cmd As New MySqlCommand(checkSql, conn)
+            cmd.Parameters.AddWithValue("@spec", specText)
+            Dim result = cmd.ExecuteScalar()
+            If result IsNot Nothing Then
+                Return CInt(result)
+            End If
+        End Using
+
+        ' INSERT NEW SPECS AND RETURN POINTER
+        Dim insertSql As String = "INSERT INTO inv_specs(specs) VALUES(@spec)"
+        Using cmd As New MySqlCommand(insertSql, conn)
+            cmd.Parameters.AddWithValue("@spec", specText)
+            cmd.ExecuteNonQuery()
+        End Using
+
+        Dim idCmd As New MySqlCommand("SELECT LAST_INSERT_ID()", conn)
+        Return CInt(idCmd.ExecuteScalar())
     End Function
 
 
@@ -455,6 +483,54 @@ Public Class model
     End Function
 
 
+    Public Function GetDeviceByPointer(pointer As Integer) As InvDevice
+        Dim device As New InvDevice()
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Dim query As String = "
+                SELECT 
+                    d.pointer,
+                    d.dev_category_pointer,
+                    d.brands,
+                    d.model,
+                    d.serial_number,
+                    d.property_number,
+                    d.nsoc_name,
+                    d.specs,
+                    d.status,
+                    d.purchase_date,
+                    d.warranty_expires,
+                    d.notes
+                FROM inv_devices d
+                WHERE d.pointer = @pointer
+            "
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@pointer", pointer)
+                    Using reader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            device.Pointer = reader("pointer")
+                            device.DevCategoryPointer = reader("dev_category_pointer")
+                            device.BrandPointer = If(IsDBNull(reader("brands")), 0, reader("brands"))
+                            device.Model = If(IsDBNull(reader("model")), "", reader("model").ToString())
+                            device.SerialNumber = If(IsDBNull(reader("serial_number")), "", reader("serial_number").ToString())
+                            device.PropertyNumber = If(IsDBNull(reader("property_number")), "", reader("property_number").ToString())
+                            device.NsocName = If(IsDBNull(reader("nsoc_name")), "", reader("nsoc_name").ToString())
+                            device.Specs = If(IsDBNull(reader("specs")), "", reader("specs").ToString())
+                            device.Status = If(IsDBNull(reader("status")), "", reader("status").ToString())
+                            device.PurchaseDate = If(IsDBNull(reader("purchase_date")), Nothing, reader("purchase_date"))
+                            device.WarrantyExpires = If(IsDBNull(reader("warranty_expires")), Nothing, reader("warranty_expires"))
+                            device.Notes = If(IsDBNull(reader("notes")), "", reader("notes").ToString())
+                        End If
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error fetching device: " & ex.Message)
+        End Try
+        Return device
+    End Function
+
 
 
 
@@ -495,27 +571,36 @@ Public Class model
                         If reader.Read() Then
                             device.Pointer = Convert.ToInt32(reader("pointer"))
                             device.DevCategoryPointer = Convert.ToInt32(reader("dev_category_pointer"))
+
+                            device.SerialNumber = reader("serial_number").ToString()
+                            device.PropertyNumber = reader("property_number").ToString()
+                            device.NsocName = reader("nsoc_name").ToString()
+
                             device.BrandPointer = Convert.ToInt32(reader("brands"))
                             device.Model = reader("model").ToString()
                             device.Specs = reader("specs").ToString()
                             device.Status = reader("status").ToString()
-                            device.SerialNumber = reader("serial_number").ToString()
+
                             device.PurchaseDate = If(IsDBNull(reader("purchase_date")), Nothing, Convert.ToDateTime(reader("purchase_date")))
                             device.WarrantyExpires = If(IsDBNull(reader("warranty_expires")), Nothing, Convert.ToDateTime(reader("warranty_expires")))
                             device.Cost = If(IsDBNull(reader("cost")), Nothing, Convert.ToDecimal(reader("cost")))
+
                             device.Notes = reader("notes").ToString()
+
                             device.CreatedAt = Convert.ToDateTime(reader("created_at"))
                             device.UpdatedAt = Convert.ToDateTime(reader("updated_at"))
                         End If
                     End Using
                 End Using
             End Using
+
         Catch ex As Exception
             MessageBox.Show("Error retrieving device by ID: " & ex.Message)
         End Try
 
         Return device
     End Function
+
 
 
 
@@ -622,68 +707,9 @@ Public Class model
         Return dt
     End Function
 
-    Public Function GetDevicesForUnits1(unitId As Integer) As DataTable
-        Dim dt As New DataTable()
 
-        Try
-            Using conn As New MySqlConnection(connectionString)
-                conn.Open()
 
-                Dim query As String = "
-                SELECT 
-                    MIN(d.pointer) AS device_id,
 
-                    c.category_name,
-                    b.brand_name,
-                    d.model,
-                    s.specs,
-
-                    CONCAT(
-                        c.category_name, ' - ',
-                        b.brand_name, ' - ',
-                        d.model, ' - ',
-                        s.specs
-                    ) AS DeviceAndSpecs,
-
-                    COUNT(*) AS qty,
-
-                    CONCAT(
-                        c.category_name, ' - ',
-                        b.brand_name, ' - ',
-                        d.model, ' (', COUNT(*), ')'
-                    ) AS DeviceDisplay
-
-                FROM inv_devices d
-                INNER JOIN inv_brands b ON b.pointer = d.brands
-                INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
-                INNER JOIN inv_specs s ON s.pointer = d.specs
-
-                -- Only show WORKING ones NOT assigned to current unit
-                WHERE d.status = 'Working'
-                  AND d.pointer NOT IN (
-                        SELECT inv_devices_pointer
-                        FROM inv_unit_devices
-                        WHERE inv_units_pointer = @unitId
-                  )
-
-                GROUP BY d.dev_category_pointer, d.brands, d.model, s.specs
-
-                ORDER BY c.category_name, b.brand_name, d.model;
-            "
-
-                Using da As New MySqlDataAdapter(query, conn)
-                    da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
-                    da.Fill(dt)
-                End Using
-            End Using
-
-        Catch ex As Exception
-            MessageBox.Show("Error loading devices: " & ex.Message, "Database Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
-
-        Return dt
-    End Function
 
 
 
@@ -1206,30 +1232,53 @@ Public Class model
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
 
-                ' Adjust the query to fetch devices based on the unit pointer
                 Dim query As String = "
                 SELECT 
-                    d.device_id,
-                    d.device_name,
-                    d.device_category,
-                    d.device_brand,
-                    d.device_status
-                FROM inv_unit_devices AS d
-                WHERE d.unit_pointer = @unitPointer;"
+                    u.inv_units_pointer AS UnitID,
+                    d.pointer AS DeviceID,
 
-                Using cmd As New MySqlCommand(query, conn)
-                    cmd.Parameters.AddWithValue("@unitPointer", unitPointer)
-                    Using da As New MySqlDataAdapter(cmd)
-                        da.Fill(dt)
-                    End Using
+                    -- New fields your UI requires
+                    c.category_name,
+                    b.brand_name,
+                    d.model,
+                    d.specs AS device_specs,
+                    d.nsoc_name,
+                    d.property_number,
+
+                    CONCAT(
+                        c.category_name, ' - ',
+                        b.brand_name, ' - ',
+                        d.model, ' - ',
+                        d.specs
+                    ) AS DeviceAndSpecs
+
+                FROM inv_unit_devices u
+                INNER JOIN inv_devices d 
+                    ON d.pointer = u.inv_devices_pointer
+                INNER JOIN inv_brands b 
+                    ON b.pointer = d.brands
+                INNER JOIN inv_device_category c 
+                    ON c.pointer = d.dev_category_pointer
+
+                WHERE u.inv_units_pointer = @unitPointer;
+
+            "
+
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@unitPointer", unitPointer)
+                    da.Fill(dt)
                 End Using
+
             End Using
+
         Catch ex As Exception
             MessageBox.Show("Error fetching devices by unit pointer: " & ex.Message)
         End Try
 
         Return dt
     End Function
+
+
 
 
 
@@ -2199,7 +2248,6 @@ ORDER BY c.category_name, b.brand_name, d.model;
     End Function
 
 
-    ' ✅ Function to get serial counts
     Public Function GetSerialCounts() As (WithSerial As Integer, WithoutSerial As Integer)
         Dim withSerial As Integer = 0
         Dim withoutSerial As Integer = 0
@@ -2208,16 +2256,22 @@ ORDER BY c.category_name, b.brand_name, d.model;
             conn.Open()
 
             Dim query As String =
-                "SELECT 
-                    SUM(CASE WHEN serial_number IS NOT NULL AND serial_number <> '' THEN 1 ELSE 0 END) AS WithSerial,
-                    SUM(CASE WHEN serial_number IS NULL OR serial_number = '' THEN 1 ELSE 0 END) AS WithoutSerial
-                FROM inv_devices;"
+            "SELECT 
+                 SUM(CASE WHEN serial_number IS NOT NULL AND serial_number <> '' THEN 1 ELSE 0 END) AS WithSerial,
+                 SUM(CASE WHEN serial_number IS NULL OR serial_number = '' THEN 1 ELSE 0 END) AS WithoutSerial
+             FROM inv_devices;"
 
             Using cmd As New MySqlCommand(query, conn)
                 Using reader As MySqlDataReader = cmd.ExecuteReader()
                     If reader.Read() Then
-                        withSerial = reader("WithSerial")
-                        withoutSerial = reader("WithoutSerial")
+                        ' Check for DBNull and assign default 0 if DBNull
+                        If Not IsDBNull(reader("WithSerial")) Then
+                            withSerial = Convert.ToInt32(reader("WithSerial"))
+                        End If
+
+                        If Not IsDBNull(reader("WithoutSerial")) Then
+                            withoutSerial = Convert.ToInt32(reader("WithoutSerial"))
+                        End If
                     End If
                 End Using
             End Using
@@ -2225,6 +2279,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
 
         Return (withSerial, withoutSerial)
     End Function
+
 
     Public Function GetDeviceStatusCounts() As Dictionary(Of String, Integer)
         Dim result As New Dictionary(Of String, Integer)
@@ -2346,13 +2401,13 @@ ORDER BY c.category_name, b.brand_name, d.model;
     Public Function GetUnitStats() As Object
         Dim result As Object = Nothing
         Dim query As String = "
-            SELECT
-                SUM(CASE WHEN unit_name IS NOT NULL AND unit_name <> '' THEN 1 ELSE 0 END) AS WithName,
-                SUM(CASE WHEN unit_name IS NULL OR unit_name = '' THEN 1 ELSE 0 END) AS WithoutName,
-                SUM(CASE WHEN assigned_personnel IS NOT NULL THEN 1 ELSE 0 END) AS WithPersonnel,
-                SUM(CASE WHEN assigned_personnel IS NULL THEN 1 ELSE 0 END) AS WithoutPersonnel
-            FROM inv_units;
-        "
+        SELECT
+            IFNULL(SUM(CASE WHEN unit_name IS NOT NULL AND unit_name <> '' THEN 1 ELSE 0 END), 0) AS WithName,
+            IFNULL(SUM(CASE WHEN unit_name IS NULL OR unit_name = '' THEN 1 ELSE 0 END), 0) AS WithoutName,
+            IFNULL(SUM(CASE WHEN assigned_personnel IS NOT NULL THEN 1 ELSE 0 END), 0) AS WithPersonnel,
+            IFNULL(SUM(CASE WHEN assigned_personnel IS NULL THEN 1 ELSE 0 END), 0) AS WithoutPersonnel
+        FROM inv_units;
+    "
 
         Using conn As New MySqlConnection(connectionString)
             conn.Open()
@@ -2360,11 +2415,11 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 Using reader As MySqlDataReader = cmd.ExecuteReader()
                     If reader.Read() Then
                         result = New With {
-                            .WithName = Convert.ToInt32(reader("WithName")),
-                            .WithoutName = Convert.ToInt32(reader("WithoutName")),
-                            .WithPersonnel = Convert.ToInt32(reader("WithPersonnel")),
-                            .WithoutPersonnel = Convert.ToInt32(reader("WithoutPersonnel"))
-                        }
+                        .WithName = Convert.ToInt32(reader("WithName")),
+                        .WithoutName = Convert.ToInt32(reader("WithoutName")),
+                        .WithPersonnel = Convert.ToInt32(reader("WithPersonnel")),
+                        .WithoutPersonnel = Convert.ToInt32(reader("WithoutPersonnel"))
+                    }
                     End If
                 End Using
             End Using
@@ -2372,6 +2427,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
 
         Return result
     End Function
+
 
     Public Function GetRecentAddedDevicesAndUnits(Optional topCount As Integer = 10) As DataTable
         Dim dt As New DataTable()
@@ -2765,6 +2821,207 @@ ORDER BY c.category_name, b.brand_name, d.model;
         End Using
     End Function
 
+    Public Function IsCategorySpecExist(categoryPointer As Integer, specName As String) As Boolean
+        Dim sql As String = "
+        SELECT COUNT(*) 
+        FROM inv_category_specs 
+        WHERE category_pointer=@cat AND specs_name=@name
+    "
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Using cmd As New MySqlCommand(sql, conn)
+                cmd.Parameters.AddWithValue("@cat", categoryPointer)
+                cmd.Parameters.AddWithValue("@name", specName)
+
+                Dim count As Integer = Convert.ToInt32(cmd.ExecuteScalar())
+                Return count > 0
+            End Using
+        End Using
+    End Function
+
+
+
+    Public Function InsertCategorySpec(categoryPointer As Integer, specName As String, createdBy As Integer) As Boolean
+        Dim sql As String = "
+        INSERT INTO inv_category_specs (category_pointer, specs_name, created_by)
+        VALUES (@cat, @name, @created)
+    "
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Using cmd As New MySqlCommand(sql, conn)
+                cmd.Parameters.AddWithValue("@cat", categoryPointer)
+                cmd.Parameters.AddWithValue("@name", specName)
+                cmd.Parameters.AddWithValue("@created", createdBy)
+
+                Return cmd.ExecuteNonQuery() > 0
+            End Using
+        End Using
+    End Function
+
+    Public Function GetDeviceDetails(deviceId As Integer) As DataRow
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+                    SELECT 
+                        d.pointer AS device_id,
+                        c.category_name,
+                        b.brand_name,
+                        d.model,
+                        d.specs AS device_specs,
+                        d.nsoc_name,
+                        d.property_number
+                    FROM inv_devices d
+                    INNER JOIN inv_brands b 
+                        ON b.pointer = d.brands
+                    INNER JOIN inv_device_category c 
+                        ON c.pointer = d.dev_category_pointer
+                    WHERE d.pointer = @deviceId
+                    LIMIT 1;
+                "
+
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@deviceId", deviceId)
+                    da.Fill(dt)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading device details: " & ex.Message,
+                            "Database Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+
+        If dt.Rows.Count > 0 Then
+            Return dt.Rows(0)
+        End If
+
+        Return Nothing
+    End Function
+
+
+    ' ================================
+    ' AVAILABLE DEVICES FOR UNIT (COMBO)
+    ' ================================
+    Public Function GetDevicesForUnits1(unitId As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+                    SELECT 
+                        d.pointer AS device_id,
+                        c.category_name,
+                        b.brand_name,
+                        d.model,
+                        d.specs AS device_specs,
+                        d.nsoc_name,
+                        d.property_number,
+                        CONCAT(
+                            c.category_name, ' - ',
+                            b.brand_name, ' - ',
+                            d.model, ' - ',
+                            d.specs
+                        ) AS DeviceAndSpecs,
+                        COUNT(*) AS qty,
+                        CONCAT(
+                            c.category_name, ' - ',
+                            b.brand_name, ' - ',
+                            d.model, ' (', COUNT(*), ')'
+                        ) AS DeviceDisplay
+                    FROM inv_devices d
+                    INNER JOIN inv_brands b 
+                        ON b.pointer = d.brands
+                    INNER JOIN inv_device_category c 
+                        ON c.pointer = d.dev_category_pointer
+                    WHERE d.status = 'Working'
+                      AND d.pointer NOT IN (
+                            SELECT inv_devices_pointer
+                            FROM inv_unit_devices
+                            WHERE inv_units_pointer = @unitId
+                      )
+                    GROUP BY 
+                        d.pointer, 
+                        d.dev_category_pointer, 
+                        d.brands, 
+                        d.model, 
+                        d.specs,
+                        d.nsoc_name,
+                        d.property_number
+                    ORDER BY 
+                        c.category_name, 
+                        b.brand_name, 
+                        d.model;
+                "
+
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
+                    da.Fill(dt)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading devices: " & ex.Message, "Database Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+
+        Return dt
+    End Function
+
+    Public Function GetAssignedDevices(unitId As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+            SELECT 
+                d.pointer AS DeviceID,
+                c.category_name,
+                b.brand_name,
+                d.model,
+                d.specs AS device_specs,
+                d.nsoc_name,
+                d.property_number,
+
+                CONCAT(
+                    c.category_name, ' - ',
+                    b.brand_name, ' - ',
+                    d.model, ' - ',
+                    d.specs
+                ) AS DeviceAndSpecs
+
+            FROM inv_unit_devices ud
+            INNER JOIN inv_devices d 
+                ON d.pointer = ud.inv_devices_pointer
+            INNER JOIN inv_brands b 
+                ON b.pointer = d.brands
+            INNER JOIN inv_device_category c 
+                ON c.pointer = d.dev_category_pointer
+
+            WHERE ud.inv_units_pointer = @unitId;
+        "
+
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
+                    da.Fill(dt)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading assigned devices: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
 
 
 

@@ -565,54 +565,47 @@ Public Class Configuration
         fieldPanel.Height = 35
         fieldPanel.Margin = New Padding(0)
 
+        ' === Specs Name TextBox (SAVED INTO inv_category_specs) ===
+        Dim txtSpecName As New TextBox
+        txtSpecName.PlaceholderText = "Specs Name (e.g. Processor)"
+        txtSpecName.Name = "txtSpecName"
+        txtSpecName.Location = New Point(5, 5)
+        txtSpecName.Width = 150
+
+        ' === Specs Value TextBox (SAVED INTO inv_specs TEXT) ===
+        Dim txtSpecValue As New TextBox
+        txtSpecValue.PlaceholderText = "Specs Value (e.g. Intel i5)"
+        txtSpecValue.Name = "txtSpecValue"
+        txtSpecValue.Location = New Point(txtSpecName.Right + 10, 5)
+        txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+
         ' === Remove Button ===
         Dim removeButton As New Button
-        removeButton.Text = "Remove"
-        removeButton.BackColor = Color.FromArgb(255, 204, 204)  ' light red
-        removeButton.FlatStyle = FlatStyle.Flat
-        removeButton.FlatAppearance.BorderColor = Color.FromArgb(200, 100, 100)
-        removeButton.FlatAppearance.BorderSize = 1
-        removeButton.ForeColor = Color.Black
-        removeButton.Font = New Font("Segoe UI", 9, FontStyle.Bold)
-        removeButton.Width = 90
-        removeButton.Height = 27
-        removeButton.Anchor = AnchorStyles.Right Or AnchorStyles.Top
-        removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 4)
+        removeButton.Text = "X"
+        removeButton.Width = 30
+        removeButton.Height = 25
+        removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
         AddHandler removeButton.Click, AddressOf RemoveSpecField
 
-        ' === TextBox ===
-        Dim newSpecBox As New TextBox
-        newSpecBox.PlaceholderText = "Enter specification detail..."
-        newSpecBox.Location = New Point(5, 5)
-        newSpecBox.Height = 25
-        newSpecBox.Width = removeButton.Left - 10
-        newSpecBox.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
-
-        ' === Add to panel ===
-        fieldPanel.Controls.Add(newSpecBox)
+        ' Add controls to panel
+        fieldPanel.Controls.Add(txtSpecName)
+        fieldPanel.Controls.Add(txtSpecValue)
         fieldPanel.Controls.Add(removeButton)
 
-        ' === Add panel to flowpnl ===
+        ' Add to flow panel
         flowpnl.Controls.Add(fieldPanel)
 
-        ' === Resize event to keep alignment if flowpnl resizes ===
-        AddHandler flowpnl.Resize, Sub()
-                                       fieldPanel.Width = flowpnl.ClientSize.Width - 2
-                                       removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 4)
-                                       newSpecBox.Width = removeButton.Left - 10
-                                   End Sub
-    End Sub
-
-
-    ' Handler for the remove button click event
-    Private Sub RemoveSpecField(sender As Object, e As EventArgs)
-        Dim button As Button = DirectCast(sender, Button)
-        flowpnl.Controls.Remove(button.Parent)
+        ' Resize handling
+        AddHandler flowpnl.Resize,
+        Sub()
+            fieldPanel.Width = flowpnl.ClientSize.Width - 2
+            removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
+            txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+        End Sub
     End Sub
 
 
     Private Sub btnInsertSpecs_Click(sender As Object, e As EventArgs) Handles btnInsertSpecs.Click
-        ' Validate category selected
         If catcb1.SelectedIndex = -1 Then
             MessageBox.Show("Please select a category.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
@@ -620,55 +613,55 @@ Public Class Configuration
 
         Dim drv As DataRowView = CType(catcb1.SelectedItem, DataRowView)
         Dim categoryId As Integer = Convert.ToInt32(drv("pointer"))
+        Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
+
         Dim specsList As New List(Of String)()
 
-        ' Read Label + TextBox values from flowpnl
+        ' === Loop through each dynamic row ===
         For Each pnl As Control In flowpnl.Controls
             If TypeOf pnl Is Panel Then
-                Dim lblText As String = ""
-                Dim txtText As String = ""
+
+                Dim specName As String = ""
+                Dim specValue As String = ""
 
                 For Each innerCtrl As Control In pnl.Controls
-                    If TypeOf innerCtrl Is Label Then
-                        lblText = innerCtrl.Text.Trim()    ' e.g. "Processor:"
-                    ElseIf TypeOf innerCtrl Is TextBox Then
-                        txtText = innerCtrl.Text.Trim()
+                    If TypeOf innerCtrl Is TextBox Then
+                        If innerCtrl.Name = "txtSpecName" Then
+                            specName = innerCtrl.Text.Trim()
+                        ElseIf innerCtrl.Name = "txtSpecValue" Then
+                            specValue = innerCtrl.Text.Trim()
+                        End If
                     End If
                 Next
 
-                ' Only add if we have a label
-                If lblText <> "" Then
-                    ' Clean label: remove ending ":" if present
-                    Dim labelClean As String = lblText
-                    If labelClean.EndsWith(":") Then
-                        labelClean = labelClean.Substring(0, labelClean.Length - 1)
-                    End If
+                ' Skip empty rows
+                If specName = "" Then Continue For
 
-                    ' Build "Processor:" even if textbox empty
-                    Dim oneSpec As String = labelClean & If(txtText = "", ":", ": " & txtText)
-                    specsList.Add(oneSpec)
+                ' === DUPLICATE CHECK → OPTION A ===
+                If Not db.IsCategorySpecExist(categoryId, specName) Then
+                    db.InsertCategorySpec(categoryId, specName, createdBy)
                 End If
+
+                ' === Build "Processor: Intel i5" string ===
+                Dim oneSpec As String = specName & If(specValue = "", ":", ": " & specValue)
+                specsList.Add(oneSpec)
+
             End If
         Next
 
-        ' Combine into single string with "; " separator
+        ' === Merge specs to a single string ===
         Dim combinedSpecs As String = String.Join("; ", specsList)
 
-        ' Check if we are updating or inserting
+        ' === INSERT or UPDATE inv_specs ===
         If editingSpecsId > 0 Then
-            ' === UPDATE EXISTING ===
             If db.UpdateSpecs(editingSpecsId, categoryId, combinedSpecs) Then
                 MessageBox.Show("Specifications updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                LoadSpecsDGV()
             Else
                 MessageBox.Show("Failed to update specifications.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
         Else
-            ' === INSERT NEW ===
-            Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
             If db.InsertSpecs(categoryId, combinedSpecs, createdBy) Then
                 MessageBox.Show("Specifications inserted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                LoadSpecsDGV()
             Else
                 MessageBox.Show("Failed to insert specifications.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
@@ -678,7 +671,16 @@ Public Class Configuration
         flowpnl.Controls.Clear()
         editingSpecsId = 0
         btnInsertSpecs.Text = "Insert Specs"
+
+        LoadSpecsDGV()
     End Sub
+
+    Private Sub RemoveSpecField(sender As Object, e As EventArgs)
+        Dim btn As Button = DirectCast(sender, Button)
+        flowpnl.Controls.Remove(btn.Parent)
+    End Sub
+
+
 
 
 
@@ -785,56 +787,73 @@ Public Class Configuration
             Dim specsName As String = selectedRow.Cells("specs").Value.ToString()
 
             If specsdgv.Columns(e.ColumnIndex).Name = "Edit" Then
+
                 If MessageBox.Show($"Are you sure you want to edit the specification: {specsName}?",
                                    "Confirm Edit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
 
                     catcb1.SelectedValue = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
                     Dim specsValue As String = selectedRow.Cells("specs").Value.ToString()
-                    Dim specValues() As String = specsValue.Split(";"c)
 
                     flowpnl.Controls.Clear()
 
-                    For Each spec In specValues
-                        Dim parts() As String = spec.Split(":"c)
-                        Dim labelName As String = parts(0).Trim()
-                        Dim value As String = If(parts.Length > 1, parts(1).Trim(), "") ' Existing value
+                    Dim specPairs() As String = specsValue.Split(";"c)
 
-                        Dim fieldPanel As New Panel()
+                    For Each sp In specPairs
+                        Dim trimmed As String = sp.Trim()
+                        If trimmed = "" Then Continue For
+
+                        Dim parts() As String = trimmed.Split(":"c)
+                        Dim name As String = parts(0).Trim()
+                        Dim value As String = If(parts.Length > 1, parts(1).Trim(), "")
+
+                        ' === Create panel ===
+                        Dim fieldPanel As New Panel
                         fieldPanel.Width = flowpnl.ClientSize.Width - 2
                         fieldPanel.Height = 35
                         fieldPanel.Margin = New Padding(0)
 
-                        ' Label
-                        Dim lbl As New Label()
-                        lbl.Text = labelName & ":"
-                        lbl.Width = 120
-                        lbl.Location = New Point(5, 8)
-                        lbl.TextAlign = ContentAlignment.MiddleLeft
+                        ' === Specs Name TextBox ===
+                        Dim txtSpecName As New TextBox
+                        txtSpecName.Name = "txtSpecName"
+                        txtSpecName.Text = name
+                        txtSpecName.Width = 150
+                        txtSpecName.Location = New Point(5, 5)
 
-                        ' TextBox
-                        Dim txt As New TextBox()
-                        txt.Text = value ' <-- Load existing value
-                        txt.Width = fieldPanel.Width - lbl.Width - 20
-                        txt.Location = New Point(lbl.Right + 5, 5)
-                        txt.Tag = labelName
-                        txt.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
+                        ' === Specs Value TextBox ===
+                        Dim txtSpecValue As New TextBox
+                        txtSpecValue.Name = "txtSpecValue"
+                        txtSpecValue.Text = value
+                        txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+                        txtSpecValue.Location = New Point(txtSpecName.Right + 10, 5)
 
-                        fieldPanel.Controls.Add(lbl)
-                        fieldPanel.Controls.Add(txt)
+                        ' === Remove Button ===
+                        Dim removeButton As New Button
+                        removeButton.Text = "X"
+                        removeButton.Width = 30
+                        removeButton.Height = 25
+                        removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
+                        AddHandler removeButton.Click, AddressOf RemoveSpecField
+
+                        ' Add controls
+                        fieldPanel.Controls.Add(txtSpecName)
+                        fieldPanel.Controls.Add(txtSpecValue)
+                        fieldPanel.Controls.Add(removeButton)
+
                         flowpnl.Controls.Add(fieldPanel)
 
-                        ' Keep alignment on resize
-                        AddHandler flowpnl.Resize, Sub()
-                                                       fieldPanel.Width = flowpnl.ClientSize.Width - 2
-                                                       txt.Width = fieldPanel.Width - lbl.Width - 20
-                                                       txt.Location = New Point(lbl.Right + 5, 5)
-                                                   End Sub
+                        AddHandler flowpnl.Resize,
+                            Sub()
+                                fieldPanel.Width = flowpnl.ClientSize.Width - 2
+                                removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
+                                txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+                            End Sub
                     Next
 
                     editingSpecsId = specsId
                     btnInsertSpecs.Text = "Update Specs"
                 End If
             End If
+
 
         End If
     End Sub
