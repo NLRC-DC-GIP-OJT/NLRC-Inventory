@@ -1,4 +1,6 @@
 ﻿Imports System.Data
+Imports System.Collections.Generic
+Imports System.Drawing
 Imports System.Windows.Forms.VisualStyles.VisualStyleElement.TreeView
 Imports MySql.Data.MySqlClient
 
@@ -7,9 +9,89 @@ Public Class AddNew
     Private previewTable As New DataTable()
     Private currentDevices As DataTable
 
-    Private Sub AddNew_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        LoadCategoriesForAssign()
+    ' ========================
+    ' 🔁 AUTO-RESIZE FIELDS
+    ' ========================
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
 
+    ' ========================
+    ' 🔁 AUTO-RESIZE SUPPORT
+    ' ========================
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        If Me.DesignMode Then Return   ' avoid running in designer
+
+        originalSize = Me.Size
+        originalBounds.Clear()
+        StoreOriginalBounds(Me)
+        layoutInitialized = True
+    End Sub
+
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each ctrl As Control In parent.Controls
+            If Not originalBounds.ContainsKey(ctrl) Then
+                originalBounds.Add(ctrl, ctrl.Bounds)
+            End If
+
+            If ctrl.HasChildren Then
+                StoreOriginalBounds(ctrl)
+            End If
+        Next
+    End Sub
+
+    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
+        Me.SuspendLayout()
+
+        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
+            Dim ctrl As Control = kvp.Key
+            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
+
+            Dim r As Rectangle = kvp.Value
+            ctrl.Bounds = New Rectangle(
+                CInt(r.X * scaleX),
+                CInt(r.Y * scaleY),
+                CInt(r.Width * scaleX),
+                CInt(r.Height * scaleY)
+            )
+
+            ' Optional: scale fonts
+            If ctrl.Font IsNot Nothing Then
+                Dim f As Font = ctrl.Font
+                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
+                If newSize > 4 Then
+                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
+                End If
+            End If
+        Next
+
+        Me.ResumeLayout()
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+
+        If Not layoutInitialized Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+
+        ApplyScale(scaleX, scaleY)
+    End Sub
+
+    ' ========================
+    ' LOAD
+    ' ========================
+    Private Sub AddNew_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Fill parent panel / form area
+        Me.Dock = DockStyle.Fill
+
+        ' initialize auto-resize
+        InitializeLayoutScaling()
+
+        LoadCategoriesForAssign()
 
         ' Setup preview table
         previewTable.Columns.Add("pointer", GetType(Integer))
@@ -30,46 +112,47 @@ Public Class AddNew
         removeButton.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
         unitsdgv1.Columns.Add(removeButton)
 
-
         ' Customize DataGridView appearance after binding
-        AddHandler unitsdgv1.DataBindingComplete, Sub()
-                                                      With unitsdgv1
-                                                          ' Hide internal columns
-                                                          If .Columns.Contains("pointer") Then .Columns("pointer").Visible = False
-                                                          If .Columns.Contains("dev_category_pointer") Then .Columns("dev_category_pointer").Visible = False
+        AddHandler unitsdgv1.DataBindingComplete,
+            Sub()
+                With unitsdgv1
+                    ' Hide internal columns
+                    If .Columns.Contains("pointer") Then .Columns("pointer").Visible = False
+                    If .Columns.Contains("dev_category_pointer") Then .Columns("dev_category_pointer").Visible = False
 
-                                                          ' Rename headers
-                                                          If .Columns.Contains("brands") Then .Columns("brands").HeaderText = "Brand"
-                                                          If .Columns.Contains("model") Then .Columns("model").HeaderText = "Model"
-                                                          If .Columns.Contains("status") Then .Columns("status").HeaderText = "Status"
-                                                          If .Columns.Contains("total_devices") Then .Columns("total_devices").HeaderText = "Total Devices Available"
-                                                          If .Columns.Contains("removeBtn") Then
-                                                              .Columns("removeBtn").DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-                                                              .Columns("removeBtn").Width = 80
-                                                          End If
+                    ' Rename headers
+                    If .Columns.Contains("brands") Then .Columns("brands").HeaderText = "Brand"
+                    If .Columns.Contains("model") Then .Columns("model").HeaderText = "Model"
+                    If .Columns.Contains("status") Then .Columns("status").HeaderText = "Status"
+                    If .Columns.Contains("total_devices") Then .Columns("total_devices").HeaderText = "Total Devices Available"
+                    If .Columns.Contains("removeBtn") Then
+                        .Columns("removeBtn").DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                        .Columns("removeBtn").Width = 80
+                    End If
 
+                    ' Make columns fill the width of the DataGridView
+                    .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-                                                          ' Make columns fill the width of the DataGridView
-                                                          .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                    ' Style header
+                    .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 10, FontStyle.Bold)
+                    .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
 
-                                                          ' Style header
-                                                          .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 10, FontStyle.Bold)
-                                                          .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-
-                                                          ' Make rows read-only and prevent adding/deleting manually
-                                                          .ReadOnly = True
-                                                          .AllowUserToAddRows = False
-                                                          .AllowUserToDeleteRows = False
-                                                          .SelectionMode = DataGridViewSelectionMode.FullRowSelect
-                                                          .MultiSelect = False
-                                                      End With
-                                                  End Sub
-
+                    ' Make rows read-only and prevent adding/deleting manually
+                    .ReadOnly = True
+                    .AllowUserToAddRows = False
+                    .AllowUserToDeleteRows = False
+                    .SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                    .MultiSelect = False
+                End With
+            End Sub
 
         ' Default quantity
         quantitxt.Text = "1"
     End Sub
 
+    ' ========================
+    ' EXISTING LOGIC (unchanged)
+    ' ========================
     Private Sub LoadCategoriesForAssign()
         Dim categories = mdl.GetCategories()
         If categories.Count > 0 Then
@@ -111,7 +194,11 @@ Public Class AddNew
 
             ' Add display_name column showing Brand - Model (Total)
             If Not filteredDevices.Columns.Contains("display_name") Then
-                filteredDevices.Columns.Add("display_name", GetType(String), "brands + ' - ' + model + ' (' + Convert(total_devices, 'System.String') + ')' ")
+                filteredDevices.Columns.Add(
+                    "display_name",
+                    GetType(String),
+                    "brands + ' - ' + model + ' (' + Convert(total_devices, 'System.String') + ')' "
+                )
             End If
 
             ' Bind to ComboBox
@@ -127,9 +214,6 @@ Public Class AddNew
             ResetDeviceSelection()
         End If
     End Sub
-
-
-
 
     Private Sub ResetDeviceSelection()
         devicecb1.DataSource = Nothing
@@ -158,14 +242,11 @@ Public Class AddNew
         Dim selectedRow As DataRowView = CType(devicecb1.SelectedItem, DataRowView)
         Dim stock As Integer = Convert.ToInt32(selectedRow("total_devices"))
 
-        ' Just show the total stock — no subtraction
         devicestocklbl.Text = $"Device Stock: {stock}"
 
-        ' Update total available stock for all filtered devices
         Dim filteredDevices = CType(devicecb1.DataSource, DataTable)
         UpdateAvailableStock(filteredDevices)
     End Sub
-
 
     Private Sub devicecb1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles devicecb1.SelectedIndexChanged
         UpdateStockLabels()
@@ -277,7 +358,6 @@ Public Class AddNew
         End If
     End Sub
 
-    ' Increment quantity
     ' Increment quantity with stock limit check
     Private Sub addQuantityBtn_Click(sender As Object, e As EventArgs) Handles addQuantityBtn.Click
         Dim quantity As Integer = 1
@@ -291,14 +371,13 @@ Public Class AddNew
 
             If quantity > availableStock Then
                 MessageBox.Show($"{brandName} only has {availableStock} stocks available!", "Stock Limit Reached", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return ' Stop increasing the quantity
+                Return
             End If
         Next
 
         quantitxt.Text = quantity.ToString()
         UpdateStockLabels()
     End Sub
-
 
     ' Decrement quantity
     Private Sub minusQuantityBtn_Click(sender As Object, e As EventArgs) Handles minusQuantityBtn.Click
@@ -310,8 +389,6 @@ Public Class AddNew
         quantitxt.Text = quantity.ToString()
         UpdateStockLabels()
     End Sub
-
-
 
     Private Sub unitsdgv1_CellContentClick_1(sender As Object, e As DataGridViewCellEventArgs) Handles unitsdgv1.CellContentClick
         If e.RowIndex >= 0 AndAlso e.ColumnIndex = unitsdgv1.Columns("removeBtn").Index Then
@@ -342,6 +419,5 @@ Public Class AddNew
             parentPanel.Visible = False
         End If
     End Sub
-
 
 End Class

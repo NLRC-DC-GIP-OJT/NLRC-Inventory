@@ -10,6 +10,9 @@ Public Class InvDevice
     Public Property Specs As String
     Public Property Status As String
     Public Property SerialNumber As String
+
+    Public Property NsocName As String
+    Public Property PropertyNumber As String
     Public Property PurchaseDate As Date?
     Public Property WarrantyExpires As Date?
     Public Property Cost As Decimal?
@@ -54,6 +57,13 @@ Public Class Session
     Public Shared LoggedInRole As String
 End Class
 
+Public Class CategoryProperty
+    Public Property Pointer As Integer
+    Public Property CategoryPointer As Integer
+    Public Property PropertyName As String
+    Public Property Required As Boolean
+    Public Property Active As Boolean
+End Class
 
 
 Public Class model
@@ -143,7 +153,9 @@ Public Class model
                              model=@model,
                              specs=@specs,
                              status=@status,
+                             nsoc_name=@nsoc,
                              serial_number=@serial,
+                             property_number=@property,
                              purchase_date=@purchase,
                              warranty_expires=@warranty,
                              notes=@notes,
@@ -153,8 +165,8 @@ Public Class model
                 Else
                     ' INSERT
                     query = "INSERT INTO inv_devices 
-                         (dev_category_pointer, brands, model, specs, status, serial_number, purchase_date, warranty_expires, notes, created_at, updated_at, created_by, updated_by)
-                         VALUES (@category, @brand, @model, @specs, @status, @serial, @purchase, @warranty, @notes, NOW(), NOW(), @userID, @userID)"
+                         (dev_category_pointer, brands, model, specs, status,nsoc_name, serial_number,property_number, purchase_date, warranty_expires, notes, created_at, updated_at, created_by, updated_by)
+                         VALUES (@category, @brand, @model, @specs, @status,@nsoc, @serial,@property, @purchase, @warranty, @notes, NOW(), NOW(), @userID, @userID)"
                 End If
 
                 Using cmd As New MySqlCommand(query, conn)
@@ -162,9 +174,11 @@ Public Class model
                     cmd.Parameters.AddWithValue("@category", device.DevCategoryPointer)
                     cmd.Parameters.AddWithValue("@brand", device.BrandPointer)
                     cmd.Parameters.AddWithValue("@model", device.Model)
+                    cmd.Parameters.AddWithValue("@nsoc", device.NsocName)
                     cmd.Parameters.AddWithValue("@specs", device.Specs)
                     cmd.Parameters.AddWithValue("@status", device.Status)
                     cmd.Parameters.AddWithValue("@serial", device.SerialNumber)
+                    cmd.Parameters.AddWithValue("@property", device.PropertyNumber)
                     cmd.Parameters.AddWithValue("@purchase", device.PurchaseDate)
                     cmd.Parameters.AddWithValue("@warranty", device.WarrantyExpires)
                     cmd.Parameters.AddWithValue("@notes", device.Notes)
@@ -330,6 +344,30 @@ Public Class model
 
         Return categories
     End Function
+
+    ' ========================
+    ' 🔹 GET CATEGORY NAME
+    ' ========================
+    Public Function GetCategoryName(categoryPointer As Integer?) As String
+        If categoryPointer Is Nothing Then Return ""
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Using cmd As New MySqlCommand("SELECT category_name FROM inv_device_category WHERE pointer=@pointer", conn)
+                    cmd.Parameters.AddWithValue("@pointer", categoryPointer)
+                    Dim result = cmd.ExecuteScalar()
+                    Return If(result IsNot Nothing, result.ToString(), "")
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error fetching category name: " & ex.Message,
+                            "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return ""
+        End Try
+    End Function
+
+
+
 
     Public Function GetBrands() As List(Of Brand)
         Dim brands As New List(Of Brand)()
@@ -533,6 +571,7 @@ Public Class model
         Return pointer
     End Function
 
+
     Public Function GetBrandsByCategory(categoryPointer As Integer) As List(Of Brand)
         Dim brands As New List(Of Brand)()
         Try
@@ -684,7 +723,7 @@ Public Class model
     Public Function SaveUnit(unitName As String, assignedPersonnel As Integer?, devicePointers As List(Of Integer), remarks As String) As Boolean
         Try
             If String.IsNullOrWhiteSpace(unitName) OrElse devicePointers Is Nothing OrElse devicePointers.Count = 0 Then
-                MessageBox.Show("Unit name or devices are missing.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                MessageBox.Show("Unit Name or devices are missing.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Return False
             End If
 
@@ -1036,7 +1075,7 @@ Public Class model
                 Dim query As String = "
                     SELECT 
                         u.pointer AS unit_id,
-                        u.unit_name AS `Unit Name`,
+                        u.unit_name AS `UnitName`,
                         CONCAT('(', dc.category_name, ') ', b.brand_name, ' ', d.model) AS `Device`,
                         CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
                         u.remarks AS `Remarks`,
@@ -1267,7 +1306,7 @@ Public Class model
                 End Using
             End Using
         Catch ex As Exception
-            MessageBox.Show("Error checking unit name: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Error checking Unit Name: " & ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
         Return exists
     End Function
@@ -1532,16 +1571,6 @@ Public Class model
         End Using
     End Function
 
-    Public Function DeleteCategory(categoryId As Integer) As Boolean
-        Dim query As String = "DELETE FROM device_categories WHERE pointer=@id"
-        Using conn As New MySqlConnection(connectionString)
-            Using cmd As New MySqlCommand(query, conn)
-                cmd.Parameters.AddWithValue("@id", categoryId)
-                conn.Open()
-                Return cmd.ExecuteNonQuery() > 0
-            End Using
-        End Using
-    End Function
 
     ' === Update Brand ===
     Public Function UpdateBrand(brandId As Integer, categoryPointer As Integer, brandName As String) As Boolean
@@ -1752,7 +1781,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 ' Step 1: Update the unit information
                 Dim updateUnitCmd As New MySqlCommand("
             UPDATE inv_units 
-            SET unit_name = @unitName, assigned_personnel = @assignedPersonnel, updated_by = @updatedBy 
+            SET unit_name= @unitName, assigned_personnel = @assignedPersonnel, updated_by = @updatedBy 
             WHERE pointer = @unitId", conn)
 
                 updateUnitCmd.Parameters.AddWithValue("@unitId", unitId)
@@ -1824,10 +1853,6 @@ ORDER BY c.category_name, b.brand_name, d.model;
         Return dt
     End Function
 
-
-    ' ===============================================================
-    ' SAVE UNIT CHANGES (FINAL VERSION)
-    ' ===============================================================
     ' ===============================================================
     ' SAVE UNIT CHANGES (FINAL VERSION)
     ' ===============================================================
@@ -2017,7 +2042,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 ' 5. UNIT NAME CHANGE HISTORY
                 ' =======================================================
                 If unitName <> originalUnitName Then
-                    InsertUnitHistory(conn, unitId, Nothing, $"Unit name changed from '{originalUnitName}' to '{unitName}'")
+                    InsertUnitHistory(conn, unitId, Nothing, $"Unit Name changed from '{originalUnitName}' to '{unitName}'")
                 End If
 
             End Using
@@ -2131,7 +2156,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
                         INSERT INTO inv_unit_history (units_pointer, remarks, created_by)
                         VALUES (@unitId, @remarks, @user)", conn)
                             cmd.Parameters.AddWithValue("@unitId", unitId)
-                            cmd.Parameters.AddWithValue("@remarks", $"Unit name changed from '{originalUnitName}' to '{newUnitName}'")
+                            cmd.Parameters.AddWithValue("@remarks", $"Unit Name changed from '{originalUnitName}' to '{newUnitName}'")
                             cmd.Parameters.AddWithValue("@user", loggedInUserId)
                             cmd.ExecuteNonQuery()
                         End Using
@@ -2363,7 +2388,7 @@ ORDER BY c.category_name, b.brand_name, d.model;
         UNION ALL
 
         SELECT 'Unit' AS Type,
-               u.unit_name AS Name,
+               u.unit_name AS UnitName,
                u.created_at AS DateAdded,
                ua.UAUsername AS CreatedBy
         FROM inv_units u
@@ -2385,13 +2410,360 @@ ORDER BY c.category_name, b.brand_name, d.model;
         Return dt
     End Function
 
+    Public Function GetUnitsSimple() As DataTable
+        Dim dt As New DataTable()
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+                SELECT 
+                    u.unit_name AS `Unit Name`,
+                    CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
+                    u.remarks AS `Remarks`,
+                    u.status AS `Status`,
+                    IFNULL(c.UAUsername, 'N/A') AS `Created By`,
+                    DATE_FORMAT(u.created_at, '%Y-%m-%d %H:%i:%s') AS `Created At`
+                FROM inv_units AS u
+                LEFT JOIN db_nlrc_intranet.user_info AS i ON u.assigned_personnel = i.user_id
+                LEFT JOIN m_useraccounts AS c ON u.created_by = c.pointer
+                ORDER BY u.pointer DESC
+            "
+
+                Using cmd As New MySqlCommand(query, conn)
+                    Using da As New MySqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error fetching units: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
+    Public Function GetNextPropertyNumber(prefix As String) As String
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                ' Get the latest property number with the same prefix
+                Dim query As String = "
+                SELECT property_number 
+                FROM inv_devices 
+                WHERE property_number LIKE @prefixLike
+                ORDER BY pointer DESC
+                LIMIT 1
+            "
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@prefixLike", prefix & "%")
+
+                    Dim lastProp As Object = cmd.ExecuteScalar()
+
+                    If lastProp IsNot Nothing Then
+                        Dim parts = lastProp.ToString().Split("-"c)
+                        Dim lastNum As Integer = Integer.Parse(parts(parts.Length - 1))
+                        Return prefix & "-" & (lastNum + 1).ToString()
+                    Else
+                        ' If none exists, start at 1
+                        Return prefix & "-1"
+                    End If
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error generating property number: " & ex.Message)
+            Return Nothing
+        End Try
+    End Function
+
+    Public Function GetCategorySpecs(categoryId As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+                SELECT specs_name
+                FROM inv_category_specs
+                WHERE category_pointer = @cat
+                ORDER BY pointer ASC;
+            "
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryId)
+
+                    Using da As New MySqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading category specs: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
+
+    ' ============================
+    ' CATEGORY PROPERTIES: INSERT ONE
+    ' ============================
+    Public Function InsertCategoryProperty(categoryId As Integer,
+                                       propertyName As String,
+                                       required As Boolean,
+                                       active As Boolean,
+                                       createdBy As Integer) As Boolean
+        Dim ok As Boolean = False
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim sql As String =
+                "INSERT INTO inv_category_properties " &
+                "    (category_pointer, property_name, required, active, created_by) " &
+                "VALUES (@cat, @name, @req, @act, @by);"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryId)
+                    cmd.Parameters.AddWithValue("@name", propertyName)
+                    cmd.Parameters.AddWithValue("@req", If(required, 1, 0))
+                    cmd.Parameters.AddWithValue("@act", If(active, 1, 0))
+                    cmd.Parameters.AddWithValue("@by", createdBy)
+
+                    ok = (cmd.ExecuteNonQuery() > 0)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error inserting category property: " & ex.Message)
+        End Try
+
+        Return ok
+    End Function
+
+    ' ============================
+    ' CATEGORY: DELETE
+    ' ============================
+    Public Function DeleteCategory(categoryId As Integer) As Boolean
+        Dim ok As Boolean = False
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim sql As String =
+                "DELETE FROM inv_device_category WHERE pointer = @id;"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@id", categoryId)
+                    ok = (cmd.ExecuteNonQuery() > 0)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error deleting category: " & ex.Message)
+        End Try
+
+        Return ok
+    End Function
+
+    ' ============================
+    ' CATEGORY: UPDATE
+    ' ============================
+    Public Function UpdateDeviceCategory(categoryId As Integer,
+                                     categoryName As String,
+                                     description As String,
+                                     updatedBy As Integer) As Boolean
+        Dim ok As Boolean = False
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim sql As String =
+                "UPDATE inv_device_category " &
+                "SET category_name = @name, " &
+                "    description = @desc, " &
+                "    updated_by = @by, " &
+                "    updated_at = NOW() " &
+                "WHERE pointer = @id;"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@name", categoryName)
+                    cmd.Parameters.AddWithValue("@desc", description)
+                    cmd.Parameters.AddWithValue("@by", updatedBy)
+                    cmd.Parameters.AddWithValue("@id", categoryId)
+
+                    ok = (cmd.ExecuteNonQuery() > 0)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error updating category: " & ex.Message)
+        End Try
+
+        Return ok
+    End Function
+
+    Public Function UpdateCategoryProperty(propPointer As Integer, propName As String, required As Boolean, active As Boolean) As Boolean
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String =
+                "UPDATE inv_properties 
+                 SET property_name=@name,
+                     required=@req,
+                     active=@act
+                 WHERE pointer=@pointer"
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@name", propName)
+                    cmd.Parameters.AddWithValue("@req", If(required, 1, 0))
+                    cmd.Parameters.AddWithValue("@act", If(active, 1, 0))
+                    cmd.Parameters.AddWithValue("@pointer", propPointer)
+
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+
+            Return True
+
+        Catch ex As Exception
+            MessageBox.Show("Error updating property: " & ex.Message)
+            Return False
+        End Try
+    End Function
 
 
+    ' ============================
+    ' CATEGORY: INSERT (RETURN ID)
+    ' ============================
+    Public Function InsertDeviceCategoryReturnId(categoryName As String,
+                                             description As String,
+                                             createdBy As Integer) As Integer
+        Dim newId As Integer = 0
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim sql As String =
+                "INSERT INTO inv_device_category (category_name, description, created_by) " &
+                "VALUES (@name, @desc, @by); " &
+                "SELECT LAST_INSERT_ID();"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@name", categoryName)
+                    cmd.Parameters.AddWithValue("@desc", description)
+                    cmd.Parameters.AddWithValue("@by", createdBy)
+
+                    newId = Convert.ToInt32(cmd.ExecuteScalar())
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error inserting category: " & ex.Message)
+        End Try
+
+        Return newId    ' 0 = failed
+    End Function
+
+    ' ============================
+    ' CATEGORY PROPERTIES: GET ALL FOR CATEGORY
+    ' ============================
+    Public Function GetCategoryProperties(categoryPointer As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String =
+                "SELECT pointer, category_pointer, property_name, required, active 
+                 FROM inv_category_properties 
+                 WHERE category_pointer = @cat 
+                 ORDER BY pointer ASC"
+
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryPointer)
+
+                    Using da As New MySqlDataAdapter(cmd)
+                        da.Fill(dt)
+                    End Using
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading category properties: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
 
 
+    ' ============================
+    ' CATEGORY PROPERTIES: DELETE ALL FOR CATEGORY
+    ' ============================
+    Public Sub DeleteCategoryProperties(categoryId As Integer)
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
 
+                Dim sql As String =
+                "DELETE FROM inv_category_properties " &
+                "WHERE category_pointer = @cat;"
 
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@cat", categoryId)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
 
+        Catch ex As Exception
+            MessageBox.Show("Error deleting category properties: " & ex.Message)
+        End Try
+    End Sub
+
+    Public Function GetCategoryPropertyName(propertyPointer As Integer) As String
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+                Dim query As String = "SELECT property_name FROM inv_category_properties WHERE pointer=@p"
+                Using cmd As New MySqlCommand(query, conn)
+                    cmd.Parameters.AddWithValue("@p", propertyPointer)
+                    Dim result = cmd.ExecuteScalar()
+                    Return If(result IsNot Nothing, result.ToString(), "")
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show("Error fetching property name: " & ex.Message)
+            Return ""
+        End Try
+    End Function
+
+    Public Function UpdateCategoryPropertyFlags(pointer As Integer, required As Boolean, active As Boolean) As Boolean
+        Dim sql As String = "
+        UPDATE inv_category_properties 
+        SET required=@r, active=@a 
+        WHERE pointer=@p
+    "
+
+        Using conn As New MySqlConnection(connectionString)
+            conn.Open()
+            Using cmd As New MySqlCommand(sql, conn)
+                cmd.Parameters.AddWithValue("@r", If(required, 1, 0))
+                cmd.Parameters.AddWithValue("@a", If(active, 1, 0))
+                cmd.Parameters.AddWithValue("@p", pointer)
+                Return cmd.ExecuteNonQuery() > 0
+            End Using
+        End Using
+    End Function
 
 
 

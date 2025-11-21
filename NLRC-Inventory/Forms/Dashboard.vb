@@ -1,7 +1,17 @@
-﻿Public Class Dashboard
+﻿Imports System.Collections.Generic
+Imports System.Drawing
+
+Public Class Dashboard
 
     Private LoggedUser As String
     Private model As New model() ' Your Model class
+
+    ' ========================
+    ' 🔁 AUTO-RESIZE FIELDS
+    ' ========================
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
 
     ' ========================
     ' Constructors
@@ -20,11 +30,81 @@
     ' ========================
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         userlbl.Text = LoggedUser
+
+        ' Init auto-resize based on the designed size/layout
+        InitializeLayoutScaling()
+
+        ' Load default dashboard content
         LoadDashboard()
 
         ' Start timer for clock
         Timer1.Interval = 1000
         Timer1.Start()
+    End Sub
+
+    ' ========================
+    ' 🔁 AUTO-RESIZE SUPPORT
+    ' ========================
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        If Me.DesignMode Then Return ' avoid running in designer
+
+        originalSize = Me.Size
+        originalBounds.Clear()
+        StoreOriginalBounds(Me)
+        layoutInitialized = True
+    End Sub
+
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each ctrl As Control In parent.Controls
+            If Not originalBounds.ContainsKey(ctrl) Then
+                originalBounds.Add(ctrl, ctrl.Bounds)
+            End If
+
+            If ctrl.HasChildren Then
+                StoreOriginalBounds(ctrl)
+            End If
+        Next
+    End Sub
+
+    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
+        Me.SuspendLayout()
+
+        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
+            Dim ctrl As Control = kvp.Key
+            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
+
+            Dim r As Rectangle = kvp.Value
+            ctrl.Bounds = New Rectangle(
+                CInt(r.X * scaleX),
+                CInt(r.Y * scaleY),
+                CInt(r.Width * scaleX),
+                CInt(r.Height * scaleY)
+            )
+
+            ' Optional: scale fonts
+            If ctrl.Font IsNot Nothing Then
+                Dim f As Font = ctrl.Font
+                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
+                If newSize > 4 Then
+                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
+                End If
+            End If
+        Next
+
+        Me.ResumeLayout()
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+
+        If Not layoutInitialized Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+
+        ApplyScale(scaleX, scaleY)
     End Sub
 
     ' ========================

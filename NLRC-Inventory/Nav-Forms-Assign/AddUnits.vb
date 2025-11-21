@@ -1,5 +1,7 @@
 ﻿Imports System.Data
 Imports System.Linq
+Imports System.Collections.Generic
+Imports System.Drawing
 Imports MySql.Data.MySqlClient
 
 Public Class AddUnits
@@ -10,15 +12,93 @@ Public Class AddUnits
     Public Property UnitsSaved As Boolean
     Public Event UnitSaved()
 
+    ' ========================
+    ' 🔁 AUTO-RESIZE FIELDS
+    ' ========================
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
 
+    ' ========================
+    ' 🔁 AUTO-RESIZE SUPPORT
+    ' ========================
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        If Me.DesignMode Then Return   ' avoid running in designer
+
+        originalSize = Me.Size
+        originalBounds.Clear()
+        StoreOriginalBounds(Me)
+        layoutInitialized = True
+    End Sub
+
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each ctrl As Control In parent.Controls
+            If Not originalBounds.ContainsKey(ctrl) Then
+                originalBounds.Add(ctrl, ctrl.Bounds)
+            End If
+
+            If ctrl.HasChildren Then
+                StoreOriginalBounds(ctrl)
+            End If
+        Next
+    End Sub
+
+    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
+        Me.SuspendLayout()
+
+        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
+            Dim ctrl As Control = kvp.Key
+            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
+
+            Dim r As Rectangle = kvp.Value
+            ctrl.Bounds = New Rectangle(
+                CInt(r.X * scaleX),
+                CInt(r.Y * scaleY),
+                CInt(r.Width * scaleX),
+                CInt(r.Height * scaleY)
+            )
+
+            ' Optional: scale fonts
+            If ctrl.Font IsNot Nothing Then
+                Dim f As Font = ctrl.Font
+                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
+                If newSize > 4 Then
+                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
+                End If
+            End If
+        Next
+
+        Me.ResumeLayout()
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+
+        If Not layoutInitialized Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+
+        ApplyScale(scaleX, scaleY)
+    End Sub
+
+    ' =========================
+    ' LOAD
+    ' =========================
     Private Sub AddUnits_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Fill parent container
+        Me.Dock = DockStyle.Fill
+
+        ' init auto-resize based on designed layout
+        InitializeLayoutScaling()
+
         LoadAssignments()
         LoadDevices()
 
-
         AddHandler devicecb.TextChanged, AddressOf FilterDeviceCombo
         AddHandler assigncb.TextChanged, AddressOf FilterAssignCombo
-
 
         unitsdgv.EnableHeadersVisualStyles = False
         unitsdgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
@@ -92,10 +172,6 @@ Public Class AddUnits
         devicecb.DropDownHeight = 350
     End Sub
 
-
-
-
-
     ' =========================
     ' Filter handlers
     ' =========================
@@ -106,7 +182,6 @@ Public Class AddUnits
     Private Sub FilterAssignCombo(sender As Object, e As EventArgs)
         SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList, "Full name", "user_id", AddressOf FilterAssignCombo)
     End Sub
-
 
     ' =========================
     ' Universal ComboBox Filter
@@ -176,18 +251,14 @@ Public Class AddUnits
         devicecb.SelectedIndex = -1
     End Sub
 
-
-
     ' =========================
     ' Validate Unit Name
     ' =========================
-    ' ✅ Validate if Unit Name already exists in database when leaving textbox
     Private Sub unitnametxt_Leave(sender As Object, e As EventArgs) Handles unitnametxt.Leave
         Try
             Dim unitName As String = unitnametxt.Text.Trim()
             If String.IsNullOrWhiteSpace(unitName) Then Exit Sub
 
-            ' ✅ Use the model’s built-in function instead of direct connection
             If mdl.IsUnitNameExists(unitName) Then
                 MessageBox.Show($"The unit name '{unitName}' already exists in the database.",
                                 "Duplicate Unit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -200,27 +271,15 @@ Public Class AddUnits
         End Try
     End Sub
 
-
     ' =========================
     ' Add button unit1pnl
     ' =========================
-
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
         ' Validate required fields
         If String.IsNullOrWhiteSpace(unitnametxt.Text) OrElse assigncb.SelectedIndex = -1 OrElse devicecb.SelectedIndex = -1 Then
             MessageBox.Show("Please fill out all required fields.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
-
-        ' Check if Unit Name already exists in DataGridView (prevent duplicates in grid only)
-        ' Uncomment and use this if needed to avoid duplicate unit names in DataGridView
-        'For Each row As DataGridViewRow In unitsdgv.Rows
-        '    If row.Cells("unit_name").Value?.ToString().Trim().ToLower() = unitnametxt.Text.Trim().ToLower() Then
-        '        MessageBox.Show($"The unit name '{unitnametxt.Text.Trim()}' already exists in the list.", "Duplicate Unit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-        '        unitnametxt.Focus()
-        '        Return
-        '    End If
-        'Next
 
         ' Add columns to DataGridView if not already present AND remove button
         If unitsdgv.Columns.Count = 0 Then
@@ -247,7 +306,7 @@ Public Class AddUnits
         ' Add new row to DataGridView
         unitsdgv.Rows.Add(unitnametxt.Text.Trim(), assigncb.Text, selectedDeviceName, remarktxt.Text.Trim(), selectedDeviceId)
 
-        ' Remove the selected device from originalDeviceList (if necessary)
+        ' Remove the selected device from originalDeviceList
         Dim rowToRemove = originalDeviceList.AsEnumerable().FirstOrDefault(Function(r) r.Field(Of Integer)("device_id") = selectedDeviceId)
         If rowToRemove IsNot Nothing Then
             originalDeviceList.Rows.Remove(rowToRemove)
@@ -266,8 +325,6 @@ Public Class AddUnits
         unitsdgv.FirstDisplayedScrollingRowIndex = unitsdgv.RowCount - 1
         unitsdgv.Rows(unitsdgv.RowCount - 1).Selected = True
     End Sub
-
-
 
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
         If unitsdgv.Rows.Count = 0 Then
@@ -373,7 +430,7 @@ Public Class AddUnits
                 ' Remove the row from DataGridView
                 unitsdgv.Rows.RemoveAt(e.RowIndex)
 
-                ' ✅ Clear the device combo box selection
+                ' Clear the device combo box selection
                 devicecb.SelectedIndex = -1
                 devicecb.Text = ""
             End If

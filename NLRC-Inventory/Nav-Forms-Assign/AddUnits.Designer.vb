@@ -23,9 +23,9 @@ Partial Class AddUnits
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(AddUnits))
-        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
         Panel2 = New Panel()
         Label3 = New Label()
@@ -57,17 +57,19 @@ Partial Class AddUnits
         Panel1.Dock = DockStyle.Top
         Panel1.Location = New Point(0, 0)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1167, 61)
+        Panel1.Size = New Size(1176, 55)
         Panel1.TabIndex = 0
         ' 
         ' Panel2
         ' 
+        Panel2.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        Panel2.AutoSize = True
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
         Panel2.Location = New Point(1105, 10)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(45, 42)
+        Panel2.Size = New Size(51, 42)
         Panel2.TabIndex = 30
         ' 
         ' Label3
@@ -78,12 +80,13 @@ Partial Class AddUnits
         Label3.ForeColor = Color.Black
         Label3.Location = New Point(22, 11)
         Label3.Name = "Label3"
-        Label3.Size = New Size(135, 38)
+        Label3.Size = New Size(288, 38)
         Label3.TabIndex = 8
-        Label3.Text = "Add Unit"
+        Label3.Text = "Add Asset Collection"
         ' 
         ' unit1pnl
         ' 
+        unit1pnl.Anchor = AnchorStyles.Left Or AnchorStyles.Right
         unit1pnl.Controls.Add(addbtn)
         unit1pnl.Controls.Add(remarktxt)
         unit1pnl.Controls.Add(Label5)
@@ -95,7 +98,7 @@ Partial Class AddUnits
         unit1pnl.Controls.Add(unitnametxt)
         unit1pnl.Location = New Point(14, 73)
         unit1pnl.Name = "unit1pnl"
-        unit1pnl.Size = New Size(1136, 241)
+        unit1pnl.Size = New Size(1142, 232)
         unit1pnl.TabIndex = 1
         unit1pnl.Visible = False
         ' 
@@ -104,7 +107,7 @@ Partial Class AddUnits
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1005, 170)
+        addbtn.Location = New Point(1004, 162)
         addbtn.Name = "addbtn"
         addbtn.Size = New Size(113, 55)
         addbtn.TabIndex = 15
@@ -115,7 +118,7 @@ Partial Class AddUnits
         ' 
         remarktxt.BorderStyle = BorderStyle.FixedSingle
         remarktxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        remarktxt.Location = New Point(706, 67)
+        remarktxt.Location = New Point(706, 49)
         remarktxt.Multiline = True
         remarktxt.Name = "remarktxt"
         remarktxt.Size = New Size(411, 97)
@@ -125,7 +128,7 @@ Partial Class AddUnits
         ' 
         Label5.AutoSize = True
         Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(706, 30)
+        Label5.Location = New Point(706, 15)
         Label5.Name = "Label5"
         Label5.Size = New Size(103, 23)
         Label5.TabIndex = 13
@@ -135,7 +138,7 @@ Partial Class AddUnits
         ' 
         Label4.AutoSize = True
         Label4.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label4.Location = New Point(27, 173)
+        Label4.Location = New Point(27, 153)
         Label4.Name = "Label4"
         Label4.Size = New Size(234, 23)
         Label4.TabIndex = 12
@@ -145,7 +148,7 @@ Partial Class AddUnits
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(27, 105)
+        Label2.Location = New Point(27, 88)
         Label2.Name = "Label2"
         Label2.Size = New Size(210, 23)
         Label2.TabIndex = 11
@@ -155,7 +158,7 @@ Partial Class AddUnits
         ' 
         Label1.AutoSize = True
         Label1.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label1.Location = New Point(27, 30)
+        Label1.Location = New Point(27, 23)
         Label1.Name = "Label1"
         Label1.Size = New Size(122, 23)
         Label1.TabIndex = 10
@@ -165,7 +168,7 @@ Partial Class AddUnits
         ' 
         devicecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         devicecb.FormattingEnabled = True
-        devicecb.Location = New Point(277, 164)
+        devicecb.Location = New Point(277, 144)
         devicecb.Name = "devicecb"
         devicecb.Size = New Size(396, 39)
         devicecb.TabIndex = 9
@@ -174,7 +177,7 @@ Partial Class AddUnits
         ' 
         assigncb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         assigncb.FormattingEnabled = True
-        assigncb.Location = New Point(277, 92)
+        assigncb.Location = New Point(277, 79)
         assigncb.Name = "assigncb"
         assigncb.Size = New Size(396, 39)
         assigncb.TabIndex = 8
@@ -183,17 +186,18 @@ Partial Class AddUnits
         ' 
         unitnametxt.BorderStyle = BorderStyle.FixedSingle
         unitnametxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        unitnametxt.Location = New Point(277, 24)
+        unitnametxt.Location = New Point(277, 15)
         unitnametxt.Name = "unitnametxt"
         unitnametxt.Size = New Size(396, 38)
         unitnametxt.TabIndex = 2
         ' 
         ' Panel3
         ' 
+        Panel3.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel3.Controls.Add(unitsdgv)
         Panel3.Location = New Point(14, 337)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1136, 381)
+        Panel3.Size = New Size(1142, 381)
         Panel3.TabIndex = 2
         ' 
         ' unitsdgv
@@ -202,42 +206,43 @@ Partial Class AddUnits
         unitsdgv.AllowUserToDeleteRows = False
         unitsdgv.AllowUserToResizeColumns = False
         unitsdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle4.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle4.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle4.ForeColor = Color.White
-        DataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
-        unitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle1.ForeColor = Color.White
+        DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
+        unitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         unitsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle5.BackColor = SystemColors.Window
-        DataGridViewCellStyle5.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
-        unitsdgv.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle2.BackColor = SystemColors.Window
+        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
+        unitsdgv.DefaultCellStyle = DataGridViewCellStyle2
         unitsdgv.Dock = DockStyle.Fill
         unitsdgv.Location = New Point(0, 0)
         unitsdgv.Name = "unitsdgv"
         unitsdgv.ReadOnly = True
         unitsdgv.RowHeadersVisible = False
         unitsdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle6.BackColor = Color.AliceBlue
-        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle6.ForeColor = Color.Black
-        unitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
-        unitsdgv.Size = New Size(1136, 381)
+        DataGridViewCellStyle3.BackColor = Color.AliceBlue
+        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle3.ForeColor = Color.Black
+        unitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
+        unitsdgv.Size = New Size(1142, 381)
         unitsdgv.TabIndex = 1
         ' 
         ' savebtn
         ' 
+        savebtn.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         savebtn.BackColor = Color.CornflowerBlue
         savebtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
-        savebtn.Location = New Point(1016, 731)
+        savebtn.Location = New Point(1022, 731)
         savebtn.Name = "savebtn"
         savebtn.Size = New Size(113, 55)
         savebtn.TabIndex = 16
@@ -253,7 +258,7 @@ Partial Class AddUnits
         Controls.Add(unit1pnl)
         Controls.Add(Panel1)
         Name = "AddUnits"
-        Size = New Size(1167, 799)
+        Size = New Size(1176, 799)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         unit1pnl.ResumeLayout(False)

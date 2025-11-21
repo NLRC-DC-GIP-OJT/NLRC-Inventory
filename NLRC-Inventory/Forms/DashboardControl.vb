@@ -1,7 +1,19 @@
-﻿Public Class DashboardControl
+﻿Imports System.Data
+Imports System.Linq
+Imports System.Drawing
+Imports System.Windows.Forms
+
+Public Class DashboardControl
 
     Private LoggedUser As String
     Private model As New model()
+
+    ' ========================
+    ' AUTO-RESIZE FIELDS
+    ' ========================
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
 
     ' ========================
     ' Constructors
@@ -16,9 +28,85 @@
     End Sub
 
     ' ========================
+    ' AUTO-RESIZE SUPPORT
+    ' ========================
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        If Me.DesignMode Then Return   ' don’t run inside designer
+
+        ' Remember the original size of the dashboard
+        originalSize = Me.Size
+
+        ' Remember original bounds of every child control
+        originalBounds.Clear()
+        StoreOriginalBounds(Me)
+
+        layoutInitialized = True
+    End Sub
+
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each ctrl As Control In parent.Controls
+            If Not originalBounds.ContainsKey(ctrl) Then
+                originalBounds.Add(ctrl, ctrl.Bounds)
+            End If
+
+            If ctrl.HasChildren Then
+                StoreOriginalBounds(ctrl)
+            End If
+        Next
+    End Sub
+
+    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
+        Me.SuspendLayout()
+
+        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
+            Dim ctrl As Control = kvp.Key
+            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
+
+            Dim r As Rectangle = kvp.Value
+
+            ctrl.Bounds = New Rectangle(
+                CInt(r.X * scaleX),
+                CInt(r.Y * scaleY),
+                CInt(r.Width * scaleX),
+                CInt(r.Height * scaleY)
+            )
+
+            ' Optional: scale fonts a bit
+            If ctrl.Font IsNot Nothing Then
+                Dim f As Font = ctrl.Font
+                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
+                If newSize > 4 Then
+                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
+                End If
+            End If
+        Next
+
+        Me.ResumeLayout()
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+
+        If Not layoutInitialized Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+
+        ApplyScale(scaleX, scaleY)
+    End Sub
+
+    ' ========================
     ' Dashboard Load
     ' ========================
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Make the dashboard fill its parent form / container
+        Me.Dock = DockStyle.Fill
+
+        ' Initialize scaling based on the designer layout
+        InitializeLayoutScaling()
+
         ' Timer for auto-refreshing charts
         Timer2.Interval = 30000 ' every 30 seconds
         Timer2.Start()
@@ -183,7 +271,7 @@
     Private Sub LoadCategoryDeviceGrid()
         Dim dt As DataTable = model.GetDevicesPerCategory()
 
-        ' Set DataGridView basic properties
+        ' Attach DataTable to Grid
         catdgv.DataSource = dt
         catdgv.Columns("Count").Visible = False
         catdgv.RowHeadersVisible = False
@@ -194,7 +282,7 @@
         catdgv.GridColor = Color.White
         catdgv.CellBorderStyle = DataGridViewCellBorderStyle.None
 
-        ' Add Graph column if it doesn't exist
+        ' Add Graph column if needed
         If Not catdgv.Columns.Contains("Graph") Then
             Dim imgCol As New DataGridViewImageColumn()
             imgCol.Name = "Graph"
@@ -203,37 +291,40 @@
             catdgv.Columns.Add(imgCol)
         End If
 
-        ' Set column widths (uses final Width because we deferred with BeginInvoke)
+        ' Set Column Widths
         catdgv.Columns("Category").Width = CInt(catdgv.Width * 0.35)
         catdgv.Columns("Graph").Width = CInt(catdgv.Width * 0.65)
 
-        ' Find maximum count
-        Dim maxCount As Integer = dt.AsEnumerable().Select(Function(r) CInt(r("Count"))).Max()
-        If maxCount = 0 Then maxCount = 1 ' avoid division by zero
-
-        ' Predefined colors for bars
+        ' Colors for each category
         Dim colors As Color() = {Color.Green, Color.Blue, Color.Orange, Color.Red, Color.Purple, Color.CadetBlue, Color.Brown}
 
-        ' Draw bars for each row
+        ' Draw FULL-WIDTH BARS
         For i As Integer = 0 To dt.Rows.Count - 1
-            Dim bmp As New Bitmap(catdgv.Columns("Graph").Width, catdgv.Rows(i).Height)
+
+            Dim cellWidth As Integer = catdgv.Columns("Graph").Width
+            Dim cellHeight As Integer = catdgv.Rows(i).Height
+
+            Dim bmp As New Bitmap(cellWidth, cellHeight)
+
             Using g As Graphics = Graphics.FromImage(bmp)
                 g.Clear(Color.White)
                 g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
 
-                Dim val As Integer = CInt(dt.Rows(i)("Count"))
-                Dim barWidth As Integer = CInt(bmp.Width * val / maxCount)
+                ' Full-width bar
                 Dim barColor As Color = colors(i Mod colors.Length)
+                g.FillRectangle(New SolidBrush(barColor), 0, 0, cellWidth - 2, cellHeight - 2)
+                g.DrawRectangle(Pens.Black, 0, 0, cellWidth - 2, cellHeight - 2)
 
-                g.FillRectangle(New SolidBrush(barColor), 0, 0, barWidth, bmp.Height)
-                g.DrawRectangle(Pens.Black, 0, 0, barWidth, bmp.Height)
-
+                ' Device count
+                Dim val As Integer = CInt(dt.Rows(i)("Count"))
                 Dim font As New Font("Arial", 9, FontStyle.Bold)
                 Dim text As String = val.ToString()
-                Dim textSize = g.MeasureString(text, font)
-                Dim textX As Single = Math.Min(barWidth - textSize.Width - 2, 2)
-                If textX < 2 Then textX = 2
-                Dim textY As Single = (bmp.Height - textSize.Height) / 2
+                Dim textSize As SizeF = g.MeasureString(text, font)
+
+                ' Center the text inside the bar
+                Dim textX As Single = (cellWidth - textSize.Width) / 2
+                Dim textY As Single = (cellHeight - textSize.Height) / 2
+
                 g.DrawString(text, font, Brushes.White, textX, textY)
             End Using
 
@@ -242,6 +333,8 @@
 
         catdgv.Columns("Graph").ReadOnly = True
     End Sub
+
+
 
     ' ========================
     ' LOAD RECENT UNIT ACTIVITIES
@@ -267,7 +360,7 @@
             recentdgv.Columns("ActivityDate").DefaultCellStyle.Format = "MMM dd, yyyy HH:mm"
         End If
 
-        recentdgv.Columns("UnitName").HeaderText = "Unit Name"
+        recentdgv.Columns("UnitName").HeaderText = "UnitName"
         recentdgv.Columns("DeviceModel").HeaderText = "Model"
         recentdgv.Columns("ActivityType").HeaderText = "Type"
         recentdgv.Columns("Remarks").HeaderText = "Remarks"
@@ -279,15 +372,12 @@
     ' ========================
     Private Sub DrawUnitAssignmentGraph()
         Dim data = model.GetUnitStats()
-        Dim categories As String() = {"Unit Name", "Assigned"}
+        Dim categories As String() = {"Completed"}
         Dim topLabels As String(,) = {
-            {"Has", "No"},
             {"Has", "No"}
         }
 
         Dim values(1, 1) As Integer
-        values(0, 0) = data.WithName
-        values(0, 1) = data.WithoutName
         values(1, 0) = data.WithPersonnel
         values(1, 1) = data.WithoutPersonnel
 

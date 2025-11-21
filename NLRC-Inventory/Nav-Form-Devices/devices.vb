@@ -1,5 +1,8 @@
 ﻿Imports System.Runtime.InteropServices
 Imports System.Text
+Imports System.Collections.Generic
+Imports System.Drawing
+Imports System.Windows.Forms
 
 Public Class devices
     Private mdl As New model()
@@ -14,7 +17,127 @@ Public Class devices
     Private WithEvents refreshTimer As New Timer() With {.Interval = 5000} ' 5 seconds
     Private lastDeviceHash As String = ""
 
+    ' ========================
+    ' 🔁 AUTO-RESIZE FIELDS
+    ' ========================
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
+
+    ' 🧱 base sizes for inside DataGridView
+    Private Const BaseRowHeight As Integer = 35
+    Private Const BaseHeaderHeight As Integer = 32
+    Private Const ActionsColWidth As Integer = 80   ' narrow Edit/View column
+
+    ' ========================
+    ' 🔁 AUTO-RESIZE SUPPORT
+    ' ========================
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        If Me.DesignMode Then Return
+
+        originalSize = Me.Size
+        originalBounds.Clear()
+        StoreOriginalBounds(Me)
+        layoutInitialized = True
+    End Sub
+
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each ctrl As Control In parent.Controls
+            If Not originalBounds.ContainsKey(ctrl) Then
+                originalBounds.Add(ctrl, ctrl.Bounds)
+            End If
+            If ctrl.HasChildren Then
+                StoreOriginalBounds(ctrl)
+            End If
+        Next
+    End Sub
+
+    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
+        Me.SuspendLayout()
+
+        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
+            Dim ctrl As Control = kvp.Key
+            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
+
+            Dim r As Rectangle = kvp.Value
+            ctrl.Bounds = New Rectangle(
+                    CInt(r.X * scaleX),
+                    CInt(r.Y * scaleY),
+                    CInt(r.Width * scaleX),
+                    CInt(r.Height * scaleY)
+                )
+
+            ' Optional: scale fonts a bit
+            If ctrl.Font IsNot Nothing Then
+                Dim f As Font = ctrl.Font
+                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
+                If newSize > 4 Then
+                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
+                End If
+            End If
+        Next
+
+        Me.ResumeLayout()
+    End Sub
+
+    ' 🔧 specifically adjust inside of DataGridView (rows / headers / actions width)
+    Private Sub AdjustDevicesGridLayout()
+        If devicesdgv Is Nothing Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        ' scale relative to original usercontrol height
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+        If scaleY <= 0 Then scaleY = 1.0F
+
+        Dim newRowHeight As Integer = CInt(BaseRowHeight * scaleY)
+        If newRowHeight < 22 Then newRowHeight = 22   ' minimum so text is visible
+
+        Dim newHeaderHeight As Integer = CInt(BaseHeaderHeight * scaleY)
+        If newHeaderHeight < 24 Then newHeaderHeight = 24
+
+        ' apply to row template and existing rows
+        devicesdgv.RowTemplate.Height = newRowHeight
+        For Each row As DataGridViewRow In devicesdgv.Rows
+            row.Height = newRowHeight
+        Next
+
+        devicesdgv.ColumnHeadersHeight = newHeaderHeight
+
+        ' keep Actions column a nice narrow fixed width
+        If devicesdgv.Columns.Contains("Actions") Then
+            With devicesdgv.Columns("Actions")
+                .AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+                .Width = ActionsColWidth
+            End With
+        End If
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+
+        If Not layoutInitialized Then Return
+        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
+
+        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
+        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
+
+        ApplyScale(scaleX, scaleY)
+
+        ' also resize inside the grid
+        AdjustDevicesGridLayout()
+    End Sub
+
+    ' ========================
+    ' LOAD
+    ' ========================
     Private Sub devices_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Let the usercontrol fill whatever container it’s placed in
+        Me.Dock = DockStyle.Fill
+
+        ' Initialize auto-resize based on designer layout
+        InitializeLayoutScaling()
+
         LoadDevices()
         LoadFilterCombos()
         SetupComboBoxHints()
@@ -36,10 +159,13 @@ Public Class devices
     End Sub
 
     ' 🧩 Load Devices with filtering and pagination
-    Private Sub LoadDevices(Optional category As String = "All", Optional brand As String = "All", Optional status As String = "All", Optional search As String = "")
+    Private Sub LoadDevices(Optional category As String = "All",
+                            Optional brand As String = "All",
+                            Optional status As String = "All",
+                            Optional search As String = "")
         Try
             Dim dt As DataTable = mdl.GetDevices()
-            devicesdgv.RowTemplate.Height = 35
+            devicesdgv.RowTemplate.Height = BaseRowHeight
 
             If dt Is Nothing OrElse dt.Rows.Count = 0 Then
                 devicesdgv.DataSource = Nothing
@@ -83,16 +209,7 @@ Public Class devices
                 devicePointerColIndex = devicesdgv.Columns("DevicePointer").Index
             End If
 
-            ' Autosize columns except Specs
-            For Each col As DataGridViewColumn In devicesdgv.Columns
-                If col.Name <> "Specifications" Then
-                    col.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-                End If
-            Next
-            If devicesdgv.Columns.Contains("Specifications") Then
-                devicesdgv.Columns("Specifications").AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            End If
-
+            ' === BUTTON COLUMN (same as before) ===
             ' Remove old button columns
             For Each col As DataGridViewColumn In devicesdgv.Columns.OfType(Of DataGridViewButtonColumn).ToList()
                 devicesdgv.Columns.Remove(col)
@@ -106,7 +223,7 @@ Public Class devices
                 .Name = "Actions",
                 .HeaderText = "",
                 .UseColumnTextForButtonValue = False,
-                .Width = 130
+                .Width = 90      ' <- keeps your Edit/View buttons nice and compact
             }
             devicesdgv.Columns.Add(actionsCol)
 
@@ -117,11 +234,37 @@ Public Class devices
                 End If
             Next
 
-            ' Attach paint handler once
+            ' === COLUMN LAYOUT – SPECS BY HEADER ONLY, OTHERS FILL ===
+            devicesdgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+            For Each col As DataGridViewColumn In devicesdgv.Columns
+                Select Case col.Name
+                    Case "Specifications", "Specification", "Specs"
+                        ' Specs column: width based ONLY on header text
+                        col.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader
+                        col.MinimumWidth = 90   ' tweak if you want a bit wider
+
+                    Case "Actions"
+                        ' Keep Actions narrow & fixed for Edit/View
+                        col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+                        col.Width = ActionsColWidth
+
+                    Case Else
+                        ' All other columns just participate in Fill
+                        col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+                End Select
+            Next
+
+
+
+            ' Attach paint handler once (for the Edit/View drawing)
             RemoveHandler devicesdgv.CellPainting, AddressOf devicesdgv_CellPainting_Merged
             AddHandler devicesdgv.CellPainting, AddressOf devicesdgv_CellPainting_Merged
 
             UpdatePaginationControls(allFilteredRows.Count)
+
+            ' 🔧 adjust row/header heights to current resolution
+            AdjustDevicesGridLayout()
 
         Catch ex As Exception
             MessageBox.Show("Error loading devices: " & ex.Message)
@@ -137,13 +280,14 @@ Public Class devices
 
             Dim g As Graphics = e.Graphics
             Dim cellRect As Rectangle = e.CellBounds
-            Dim padding As Integer = 6
+            Dim padding As Integer = 4   ' a bit tighter
 
             Dim buttonHeight As Integer = cellRect.Height - (padding * 2)
             Dim buttonWidth As Integer = (cellRect.Width - (padding * 3)) \ 2
             Dim buttonY As Integer = cellRect.Y + padding
 
-            Dim btnFont As New Font("Segoe UI", 9.5, FontStyle.Regular)
+            ' constant, normal font size
+            Dim btnFont As New Font("Segoe UI", 9.0F, FontStyle.Regular)
 
             Dim editColor As Brush = New SolidBrush(Color.FromArgb(255, 128, 0))
             Dim viewColor As Brush = New SolidBrush(Color.FromArgb(0, 120, 215))
@@ -182,7 +326,7 @@ Public Class devices
         If x < buttonWidth + 5 Then
             EditDevice(deviceId)
         Else
-            ViewDeviceRow(selectedRow)
+            ViewDeviceRow(deviceId)
         End If
     End Sub
 
@@ -229,8 +373,6 @@ Public Class devices
             Console.WriteLine("Auto-refresh error: " & ex.Message)
         End Try
     End Sub
-
-
 
     ' DLL imports
     <DllImport("user32.dll", SetLastError:=True)>
@@ -296,7 +438,6 @@ Public Class devices
                                  End Sub
     End Sub
 
-
     Private Sub SetComboBoxHint(cb As ComboBox, hint As String)
         cb.ForeColor = Color.Gray
         cb.Text = hint
@@ -313,14 +454,17 @@ Public Class devices
         If isLoading OrElse catecb.ForeColor = Color.Gray Then Return
         LoadDevices(catecb.Text, brandscb.Text, statuscb.Text)
     End Sub
+
     Private Sub brandscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles brandscb.SelectedIndexChanged
         If isLoading OrElse brandscb.ForeColor = Color.Gray Then Return
         LoadDevices(catecb.Text, brandscb.Text, statuscb.Text)
     End Sub
+
     Private Sub statuscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles statuscb.SelectedIndexChanged
         If isLoading OrElse statuscb.ForeColor = Color.Gray Then Return
         LoadDevices(catecb.Text, brandscb.Text, statuscb.Text)
     End Sub
+
     Private Sub filtertxt_KeyUp(sender As Object, e As KeyEventArgs) Handles filtertxt.KeyUp
         ' Only filter if user typed actual text (ignore placeholder)
         If filtertxt.ForeColor = Color.Gray Then Return
@@ -328,8 +472,6 @@ Public Class devices
         Dim searchText As String = filtertxt.Text.Trim()
         LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, searchText)
     End Sub
-
-
 
     ' ➕ Add panel toggle
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
@@ -352,187 +494,38 @@ Public Class devices
     End Sub
 
     Private Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
-        If currentPage > 1 Then currentPage -= 1 : LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, filtertxt.Text)
+        If currentPage > 1 Then
+            currentPage -= 1
+            LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, filtertxt.Text)
+        End If
     End Sub
 
     Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
-        If currentPage < totalPages Then currentPage += 1 : LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, filtertxt.Text)
+        If currentPage < totalPages Then
+            currentPage += 1
+            LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, filtertxt.Text)
+        End If
     End Sub
 
 
-
-
-    'CUSTOMIZED CODE AREA - DO NOT DELETE
-    Private Sub ViewDeviceRow(row As DataGridViewRow)
-        ' Collect data
-        Dim details As New List(Of (Header As String, Value As String))
-
-        For Each cell As DataGridViewCell In row.Cells
-            Dim col As DataGridViewColumn = devicesdgv.Columns(cell.ColumnIndex)
-            If Not col.Visible Then Continue For
-
-            Dim headerText As String = col.HeaderText.Trim()
-            Dim valueText As String = If(cell.Value IsNot Nothing, cell.Value.ToString().Trim(), "")
-
-            If headerText.Equals("DevicePointer", StringComparison.OrdinalIgnoreCase) OrElse headerText = "" Then Continue For
-
-            If headerText.Equals("Purchase_Date", StringComparison.OrdinalIgnoreCase) OrElse
-           headerText.Equals("Warranty_Expires", StringComparison.OrdinalIgnoreCase) Then
-                Dim parsedDate As Date
-                If Date.TryParse(valueText, parsedDate) Then
-                    valueText = parsedDate.ToString("MM/dd/yyyy")
-                End If
+    Private Sub ViewDeviceRow(deviceId As Integer)
+        Try
+            Dim device As InvDevice = mdl.GetDeviceById(deviceId)
+            If device Is Nothing Then
+                MessageBox.Show("Device not found.")
+                Return
             End If
 
-            details.Add((headerText, valueText))
-        Next
+            addpnl.Visible = True
+            addpnl.Controls.Clear()
+            Dim editUC As New View(mdl)
+            editUC.Dock = DockStyle.Fill
+            editUC.LoadDevice(device)
+            addpnl.Controls.Add(editUC)
 
-        ' --- Main form setup ---
-        Dim viewForm As New Form With {
-        .Text = "Device Details",
-        .Size = New Size(650, 600),
-        .StartPosition = FormStartPosition.CenterParent,
-        .BackColor = Color.White,
-        .FormBorderStyle = FormBorderStyle.None
-    }
-
-        ' Enable double buffering via reflection (for smoother redraw)
-        Dim formType = GetType(Form)
-        formType.InvokeMember("DoubleBuffered",
-                          Reflection.BindingFlags.SetProperty Or Reflection.BindingFlags.Instance Or Reflection.BindingFlags.NonPublic,
-                          Nothing, viewForm, New Object() {True})
-
-        ' --- Title ---
-        Dim titleLbl As New Label With {
-        .Text = "Device Details",
-        .Font = New Font("Segoe UI Semibold", 14, FontStyle.Bold),
-        .AutoSize = True,
-        .Location = New Point(30, 20),
-        .ForeColor = Color.FromArgb(40, 40, 40)
-    }
-        viewForm.Controls.Add(titleLbl)
-
-        ' --- Add detail labels ---
-        Dim startY As Integer = 70
-        For Each item In details
-            Dim lblHeader As New Label With {
-            .Text = item.Header & ":",
-            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-            .ForeColor = Color.FromArgb(50, 50, 50),
-            .AutoSize = True,
-            .Location = New Point(40, startY)
-        }
-
-            Dim lblValue As New Label With {
-            .Text = item.Value,
-            .Font = New Font("Segoe UI", 10),
-            .ForeColor = Color.FromArgb(80, 80, 80),
-            .MaximumSize = New Size(400, 0),
-            .Location = New Point(200, startY),
-            .AutoSize = True
-        }
-
-            viewForm.Controls.Add(lblHeader)
-            viewForm.Controls.Add(lblValue)
-
-            startY = lblValue.Bottom + 15
-        Next
-
-        ' --- Buttons directly on form ---
-        Dim btnOk As New Button With {
-        .Text = "OK",
-        .Width = 100,
-        .Height = 35,
-        .BackColor = Color.FromArgb(230, 230, 230),
-        .FlatStyle = FlatStyle.Flat,
-        .Font = New Font("Segoe UI", 10),
-        .Location = New Point(viewForm.ClientSize.Width - 230, viewForm.ClientSize.Height - 60),
-        .Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-    }
-        btnOk.FlatAppearance.BorderSize = 0
-
-        Dim btnEdit As New Button With {
-        .Text = "Edit",
-        .Width = 100,
-        .Height = 35,
-        .BackColor = Color.RoyalBlue,
-        .ForeColor = Color.White,
-        .FlatStyle = FlatStyle.Flat,
-        .Font = New Font("Segoe UI", 10),
-        .Location = New Point(viewForm.ClientSize.Width - 120, viewForm.ClientSize.Height - 60),
-        .Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-    }
-        btnEdit.FlatAppearance.BorderSize = 0
-
-        viewForm.Controls.Add(btnOk)
-        viewForm.Controls.Add(btnEdit)
-
-        ' --- Close (X) button --- 
-        Dim closeBtn As New Button With {
-        .Text = "✕",
-        .FlatStyle = FlatStyle.Flat,
-        .Font = New Font("Segoe UI", 10, FontStyle.Bold),
-        .Size = New Size(30, 30),
-        .ForeColor = Color.Gray,
-        .BackColor = Color.Transparent,
-        .Anchor = AnchorStyles.Top Or AnchorStyles.Right
-    }
-        closeBtn.FlatAppearance.BorderSize = 0
-
-        ' Move it 25px from right and 20px from top
-        closeBtn.Location = New Point(viewForm.ClientSize.Width - closeBtn.Width - 25, 20)
-
-        AddHandler closeBtn.Click, Sub() viewForm.Close()
-        viewForm.Controls.Add(closeBtn)
-
-        ' --- Edit logic ---
-        Dim deviceIdObj = row.Cells("DevicePointer").Value
-        Dim deviceId As Integer
-        Integer.TryParse(If(deviceIdObj IsNot Nothing, deviceIdObj.ToString(), "0"), deviceId)
-
-        AddHandler btnOk.Click, Sub() viewForm.Close()
-        AddHandler btnEdit.Click, Sub()
-                                      viewForm.Close()
-                                      EditDevice(deviceId)
-                                  End Sub
-
-        ' --- Draw visible black border ---
-        AddHandler viewForm.Paint,
-        Sub(sender As Object, e As PaintEventArgs)
-            Dim borderColor As Color = Color.Black
-            Dim borderThickness As Integer = 2
-            Dim rect As Rectangle = viewForm.ClientRectangle
-            rect.Inflate(-1, -1)
-            Using pen As New Pen(borderColor, borderThickness)
-                e.Graphics.DrawRectangle(pen, rect)
-            End Using
-        End Sub
-
-        ' --- Show the form ---
-        viewForm.ShowDialog()
+        Catch ex As Exception
+            MessageBox.Show("Error opening view form: " & ex.Message)
+        End Try
     End Sub
 
-
-
 End Class
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

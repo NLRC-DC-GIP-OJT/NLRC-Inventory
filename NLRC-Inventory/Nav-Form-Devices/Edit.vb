@@ -1,193 +1,426 @@
-﻿Public Class Edit
+﻿Imports System.Collections.Generic
+Imports System.Drawing
+Imports System.Windows.Forms
+
+Public Class Edit
+
     Private mdl As model
     Private currentDevice As InvDevice
+    Private categoryPointer As Integer
 
-    ' Constructor
-    Public Sub New()
+    Private originalSize As Size
+    Private originalBounds As New Dictionary(Of Control, Rectangle)
+    Private layoutInitialized As Boolean = False
+
+    Public Sub New(m As model)
         InitializeComponent()
-        Me.mdl = mdl
-    End Sub
-    Public Sub New(mdl As model)
-        InitializeComponent()
-        Me.mdl = mdl
+        mdl = m
     End Sub
 
-    ' Load a device for editing
-    Public Sub LoadDevice(device As InvDevice)
-        Try
-            currentDevice = device
+    Private Sub Edit_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.Dock = DockStyle.Fill
+        InitializeLayoutScaling()
+    End Sub
 
-            ' Load dropdowns
-            LoadCategories()
-            LoadBrands()
+    Private Sub InitializeLayoutScaling()
+        If layoutInitialized Then Return
+        originalSize = Me.Size
+        StoreOriginalBounds(Me)
+        layoutInitialized = True
+    End Sub
 
-            ' Fill device info
-            modeltxt.Text = device.Model
-            serialtxt.Text = If(String.IsNullOrEmpty(device.SerialNumber), "", device.SerialNumber)
-            purchaseDatePicker.Value = device.PurchaseDate.GetValueOrDefault(DateTime.Now)
-            warrantyDatePicker.Value = device.WarrantyExpires.GetValueOrDefault(DateTime.Now)
-            notetxt.Text = device.Notes
-
-            ' Set category and brand combo boxes
-            If catcb.Items.Count > 0 Then catcb.SelectedValue = device.DevCategoryPointer
-            If brandcb.Items.Count > 0 Then brandcb.SelectedValue = device.BrandPointer
-
-            ' Load specs for this category
-            If catcb.SelectedIndex >= 0 Then
-                Dim categoryID As Integer = Convert.ToInt32(catcb.SelectedValue)
-                Dim specs = mdl.GetSpecificationsForCategory(categoryID)
-
-                ' Load specs into ComboBox
-                specscb.DataSource = specs
-                specscb.DisplayMember = "SpecName"   ' 
-                specscb.ValueMember = "Pointer"
-
-                ' Show the actual spec text in the TextBox
-                If Not String.IsNullOrEmpty(device.Specs) Then
-                    Dim specPointer As Integer
-                    If Integer.TryParse(device.Specs, specPointer) Then
-                        Dim matchSpec = specs.Find(Function(s) s.Pointer = specPointer)
-                        If matchSpec IsNot Nothing Then
-                            specstxt.Text = matchSpec.SpecName
-                            specscb.SelectedItem = matchSpec
-                        End If
-                    End If
-                End If
+    Private Sub StoreOriginalBounds(parent As Control)
+        For Each c As Control In parent.Controls
+            If Not originalBounds.ContainsKey(c) Then
+                originalBounds(c) = c.Bounds
             End If
-
-        Catch ex As Exception
-            MessageBox.Show("Error loading device: " & ex.Message)
-        End Try
+            If c.HasChildren Then StoreOriginalBounds(c)
+        Next
     End Sub
 
-    ' Load Categories
+    Private Sub ApplyScale(sx As Single, sy As Single)
+        Me.SuspendLayout()
+        For Each kvp In originalBounds
+            Dim c As Control = kvp.Key
+            Dim b As Rectangle = kvp.Value
+            c.Bounds = New Rectangle(
+                CInt(b.X * sx),
+                CInt(b.Y * sy),
+                CInt(b.Width * sx),
+                CInt(b.Height * sy)
+            )
+        Next
+        Me.ResumeLayout()
+    End Sub
+
+    Protected Overrides Sub OnResize(e As EventArgs)
+        MyBase.OnResize(e)
+        If Not layoutInitialized Then Exit Sub
+        ApplyScale(Me.Width / originalSize.Width, Me.Height / originalSize.Height)
+    End Sub
+
+    ' ================================
+    ' LOAD DEVICE
+    ' ================================
+    Public Sub LoadDevice(device As InvDevice)
+        currentDevice = device
+        categoryPointer = device.DevCategoryPointer
+
+        LoadCategories()
+        LoadSpecs()
+        BuildDynamicFields()
+
+        ' CATEGORY COMBOBOX: same size as textboxes, non-editable
+        If catcb.Items.Count > 0 Then
+            catcb.SelectedValue = categoryPointer
+        End If
+        catcb.DropDownStyle = ComboBoxStyle.DropDownList
+        catcb.Enabled = False
+        catcb.Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold)
+        catcb.Height = 30
+        catcb.BackColor = SystemColors.Window
+        catcb.ForeColor = SystemColors.ControlText
+        catcb.FlatStyle = FlatStyle.Standard
+
+        ' NOTES
+        notetxt.Text = If(device.Notes, "")
+
+        ' DATES
+        If device.PurchaseDate.HasValue Then purchaseDatePicker.Value = device.PurchaseDate.Value
+        If device.WarrantyExpires.HasValue Then warrantyDatePicker.Value = device.WarrantyExpires.Value
+
+        ' ============================
+        ' LOAD SPECSFLOWPNL FROM device.Specs
+        ' ============================
+        specsflowpnl.Controls.Clear()
+
+        If Not String.IsNullOrWhiteSpace(device.Specs) Then
+
+            ' Example: "Processor: Intel i5; RAM: 8GB; Storage: 512GB SSD"
+            Dim specsArray() As String = device.Specs.Split(";"c)
+
+            For Each spec In specsArray
+                If String.IsNullOrWhiteSpace(spec) Then Continue For
+
+                Dim parts() As String = spec.Split(":"c)
+                If parts.Length < 2 Then Continue For
+
+                Dim labelName As String = parts(0).Trim()
+                Dim fieldValue As String = parts(1).Trim()
+
+                ' ---- Row Panel ----
+                Dim row As New Panel With {
+            .Width = specsflowpnl.ClientSize.Width - 2,
+            .Height = 32,
+            .Margin = New Padding(0, 0, 0, 4)
+        }
+
+                ' ---- Label ----
+                Dim lbl As New Label With {
+            .Text = labelName & ":",
+            .AutoSize = False,
+            .Width = 140,
+            .Location = New Point(5, 8)
+        }
+
+                ' ---- TextBox ----
+                Dim txt As New TextBox With {
+            .Text = fieldValue,
+            .Tag = labelName
+        }
+
+                ' Add to panel
+                row.Controls.Add(lbl)
+                row.Controls.Add(txt)
+                specsflowpnl.Controls.Add(row)
+            Next
+        End If
+
+        LayoutSpecsRows()
+
+
+        ApplyUniformSpacing()
+    End Sub
+
+    ' ================================
+    ' LOAD CATEGORIES
+    ' ================================
     Private Sub LoadCategories()
         Dim categories = mdl.GetCategories()
         If categories IsNot Nothing AndAlso categories.Count > 0 Then
             catcb.DataSource = categories
             catcb.DisplayMember = "CategoryName"
             catcb.ValueMember = "Pointer"
-
-            ' Enable autocomplete
-            catcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-            catcb.AutoCompleteSource = AutoCompleteSource.ListItems
         End If
     End Sub
 
-    ' Load Brands
-    Private Sub LoadBrands()
-        Dim brands = mdl.GetBrands()
-        If brands IsNot Nothing AndAlso brands.Count > 0 Then
-            brandcb.DataSource = brands
-            brandcb.DisplayMember = "BrandName"
-            brandcb.ValueMember = "Pointer"
+    ' ================================
+    ' BUILD DYNAMIC FIELDS
+    ' ================================
+    Private Sub BuildDynamicFields()
+        deviceflowpnl.Controls.Clear()
 
-            ' Enable autocomplete
-            brandcb.AutoCompleteMode = AutoCompleteMode.SuggestAppend
-            brandcb.AutoCompleteSource = AutoCompleteSource.ListItems
-        End If
-    End Sub
+        Dim props As DataTable = mdl.GetCategoryProperties(categoryPointer)
 
-    ' When category changes, load specs
-    Private Sub catcb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles catcb.SelectedIndexChanged
-        Dim selectedCategory = TryCast(catcb.SelectedItem, DeviceCategory)
-        If selectedCategory IsNot Nothing Then
-            LoadSpecsForCategory(selectedCategory.Pointer)
-        End If
-    End Sub
+        ' 🔥 Filter ONLY ACTIVE properties
+        Dim activeProps = props.AsEnumerable().
+        Where(Function(r) Convert.ToBoolean(r("active")) = True).
+        ToList()
 
-    ' Load specs for a category
-    Private Sub LoadSpecsForCategory(categoryPointer As Integer)
-        Dim specs As List(Of DeviceSpecification) = mdl.GetSpecificationsForCategory(categoryPointer)
+        deviceflowpnl.FlowDirection = FlowDirection.TopDown
+        deviceflowpnl.WrapContents = False
+        deviceflowpnl.AutoScroll = False
+        deviceflowpnl.Padding = New Padding(0, 10, 0, 0)
 
-        If specs IsNot Nothing AndAlso specs.Count > 0 Then
-            specscb.DataSource = specs
-            specscb.DisplayMember = "Specs"
-            specscb.ValueMember = "Pointer"
+        Dim rowHeight As Integer = 58
+        Dim inputHeight As Integer = 30
+        Dim totalHeight As Integer = 10
 
-            ' Preselect spec matching device's Specs pointer
-            If currentDevice IsNot Nothing AndAlso Not String.IsNullOrEmpty(currentDevice.Specs) Then
-                Dim specID As Integer
-                If Integer.TryParse(currentDevice.Specs, specID) Then
-                    For Each spec As DeviceSpecification In specs
-                        If spec.Pointer = specID Then
-                            specscb.SelectedItem = spec
-                            specstxt.Text = spec.SpecName
-                            Exit For
-                        End If
-                    Next
+        For Each prop As DataRow In activeProps
+            Dim propName As String = prop("property_name").ToString().ToLower()
+            Dim propPointer As Integer = CInt(prop("pointer"))
+
+            Dim rowPanel As New Panel With {
+            .Width = deviceflowpnl.ClientSize.Width - 2,
+            .Height = rowHeight,
+            .Margin = New Padding(0, 0, 0, 18)
+        }
+
+            Dim lbl As New Label With {
+            .Text = prop("property_name").ToString() & ":",
+            .AutoSize = False,
+            .Width = 160,
+            .Height = rowHeight,
+            .TextAlign = ContentAlignment.MiddleLeft,
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold)
+        }
+
+            Dim inputCtrl As Control
+
+            If propName = "brand" Then
+                Dim cb As New ComboBox With {
+                .Name = "cb_" & propPointer,
+                .DropDownStyle = ComboBoxStyle.DropDownList,
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .Height = inputHeight
+            }
+
+                cb.Width = rowPanel.Width - lbl.Width - 20
+                cb.Location = New Point(lbl.Right + 10, (rowPanel.Height - cb.Height) \ 2)
+
+                Dim brands = mdl.GetBrandsByCategory(categoryPointer)
+                If brands IsNot Nothing AndAlso brands.Count > 0 Then
+                    cb.DataSource = brands
+                    cb.DisplayMember = "BrandName"
+                    cb.ValueMember = "Pointer"
+                    If currentDevice IsNot Nothing AndAlso currentDevice.BrandPointer > 0 Then
+                        cb.SelectedValue = currentDevice.BrandPointer
+                    End If
+                Else
+                    cb.Items.Add("No brands available")
+                    cb.SelectedIndex = 0
                 End If
+
+                inputCtrl = cb
+
+            Else
+                Dim txt As New TextBox With {
+                .Name = "txt_" & propPointer,
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .Height = inputHeight
+            }
+
+                txt.Width = rowPanel.Width - lbl.Width - 20
+                txt.Location = New Point(lbl.Right + 10, (rowPanel.Height - txt.Height) \ 2)
+
+                ' Load existing device values
+                Select Case propName
+                    Case "model" : txt.Text = If(currentDevice?.Model, "")
+                    Case "serial number" : txt.Text = If(currentDevice?.SerialNumber, "")
+                    Case "property number" : txt.Text = If(currentDevice?.PropertyNumber, "")
+                    Case "nsoc name" : txt.Text = If(currentDevice?.NsocName, "")
+                End Select
+
+                inputCtrl = txt
             End If
 
+            inputCtrl.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
+
+            rowPanel.Controls.Add(lbl)
+            rowPanel.Controls.Add(inputCtrl)
+            deviceflowpnl.Controls.Add(rowPanel)
+
+            totalHeight += rowPanel.Height + rowPanel.Margin.Bottom
+
+            AddHandler deviceflowpnl.Resize,
+            Sub()
+                rowPanel.Width = deviceflowpnl.ClientSize.Width - 2
+                inputCtrl.Width = rowPanel.Width - lbl.Width - 20
+                inputCtrl.Location = New Point(lbl.Right + 10, (rowPanel.Height - inputCtrl.Height) \ 2)
+            End Sub
+        Next
+
+        deviceflowpnl.Height = totalHeight
+    End Sub
+
+
+
+    ' ================================
+    ' LOAD SPECS
+    ' ================================
+    Private Sub LoadSpecs()
+        Dim specs = mdl.GetSpecificationsForCategory(categoryPointer)
+        If specs IsNot Nothing AndAlso specs.Count > 0 Then
+            specscb.DataSource = specs
+            specscb.DisplayMember = "SpecName"
+            specscb.ValueMember = "Pointer"
+            specscb.SelectedIndex = -1
         Else
             specscb.DataSource = Nothing
             specscb.Items.Clear()
             specscb.Items.Add("No specs available")
-            specscb.SelectedIndex = 0
-            specstxt.Clear()
+
         End If
     End Sub
 
-    ' Update specstxt when user selects spec
     Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles specscb.SelectedIndexChanged
-        Dim selectedSpec = TryCast(specscb.SelectedItem, DeviceSpecification)
-        If selectedSpec IsNot Nothing Then
-            specstxt.Text = selectedSpec.SpecName
+        ' Clear previous rows
+        specsflowpnl.Controls.Clear()
+
+        If specscb.SelectedIndex < 0 OrElse specscb.SelectedItem Is Nothing Then Exit Sub
+
+        ' Selected spec from dropdown
+        Dim selectedSpec As DeviceSpecification = CType(specscb.SelectedItem, DeviceSpecification)
+        Dim specsString As String = selectedSpec.SpecName
+        If String.IsNullOrWhiteSpace(specsString) Then Exit Sub
+
+        ' Split "CPU: Intel; RAM: 8GB" → array
+        Dim specsArray() As String = specsString.Split(";"c)
+
+        For Each spec In specsArray
+            If String.IsNullOrWhiteSpace(spec) Then Continue For
+
+            Dim parts() As String = spec.Split(":"c)
+            Dim labelName As String = parts(0).Trim()
+            Dim fieldValue As String = If(parts.Length > 1, parts(1).Trim(), "")
+
+            Dim rowPanel As New Panel With {
+            .Width = specsflowpnl.ClientSize.Width - 2,
+            .Height = 32,
+            .Margin = New Padding(0, 0, 0, 4)
+        }
+
+            Dim lbl As New Label With {
+            .Text = labelName & ":",
+            .AutoSize = False,
+            .Width = 140,
+            .Location = New Point(5, 8)
+        }
+
+            Dim txt As New TextBox With {
+            .Text = fieldValue,
+            .Tag = labelName
+        }
+
+            rowPanel.Controls.Add(lbl)
+            rowPanel.Controls.Add(txt)
+            specsflowpnl.Controls.Add(rowPanel)
+        Next
+
+        LayoutSpecsRows()
+    End Sub
+
+
+    Private Sub LayoutSpecsRows()
+        Dim totalWidth As Integer = specsflowpnl.ClientSize.Width - 2
+        Dim textLeft As Integer = 5 + 140 + 5
+
+        For Each row As Control In specsflowpnl.Controls
+            If TypeOf row Is Panel Then
+                Dim rowPanel As Panel = DirectCast(row, Panel)
+                rowPanel.Width = totalWidth
+
+                Dim lbl As Label = Nothing
+                Dim txt As TextBox = Nothing
+
+                For Each c As Control In rowPanel.Controls
+                    If TypeOf c Is Label Then lbl = DirectCast(c, Label)
+                    If TypeOf c Is TextBox Then txt = DirectCast(c, TextBox)
+                Next
+
+                If lbl IsNot Nothing Then
+                    lbl.Location = New Point(5, (rowPanel.Height - lbl.Height) \ 2)
+                End If
+
+                If txt IsNot Nothing Then
+                    txt.Location = New Point(textLeft, (rowPanel.Height - txt.Height) \ 2)
+                    txt.Width = totalWidth - textLeft - 5
+                End If
+            End If
+        Next
+    End Sub
+
+    ' ================================
+    ' SAVE / CANCEL
+    ' ================================
+    Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
+        If currentDevice Is Nothing Then Exit Sub
+        Dim userID As Integer = Session.LoggedInUserPointer
+
+        If specscb.SelectedValue IsNot Nothing Then
+            currentDevice.Specs = specscb.SelectedValue.ToString()
+        End If
+
+        currentDevice.Notes = notetxt.Text.Trim()
+        currentDevice.PurchaseDate = purchaseDatePicker.Value
+        currentDevice.WarrantyExpires = warrantyDatePicker.Value
+
+        For Each row As Control In deviceflowpnl.Controls
+            If TypeOf row Is Panel Then
+                For Each ctrl As Control In row.Controls
+                    If TypeOf ctrl Is TextBox Then
+                        Dim propPointer As Integer = CInt(ctrl.Name.Replace("txt_", ""))
+                        Dim value As String = ctrl.Text.Trim()
+                        Dim propName As String = mdl.GetCategoryPropertyName(propPointer).ToLower()
+                        Select Case propName
+                            Case "model" : currentDevice.Model = value
+                            Case "serial number" : currentDevice.SerialNumber = value
+                            Case "property number" : currentDevice.PropertyNumber = value
+                            Case "nsoc name" : currentDevice.NsocName = value
+                        End Select
+                    ElseIf TypeOf ctrl Is ComboBox Then
+                        Dim cb As ComboBox = DirectCast(ctrl, ComboBox)
+                        Dim b As Brand = TryCast(cb.SelectedItem, Brand)
+                        If b IsNot Nothing Then currentDevice.BrandPointer = b.Pointer
+                    End If
+                Next
+            End If
+        Next
+
+        If mdl.Save(currentDevice, userID) Then
+            MessageBox.Show("Device updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Dim parentPanel = TryCast(Me.Parent, Panel)
+            If parentPanel IsNot Nothing Then parentPanel.Visible = False
         Else
-            specstxt.Clear()
+            MessageBox.Show("Update failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
 
-    Private Sub savebtn_Click_1(sender As Object, e As EventArgs) Handles savebtn.Click
-        Try
-            If currentDevice Is Nothing Then
-                MessageBox.Show("No device loaded for editing.")
-                Exit Sub
-            End If
-
-            ' Update device fields
-            Dim selectedCategory = TryCast(catcb.SelectedItem, DeviceCategory)
-            Dim selectedBrand = TryCast(brandcb.SelectedItem, Brand)
-
-            If selectedCategory IsNot Nothing Then currentDevice.DevCategoryPointer = selectedCategory.Pointer
-            If selectedBrand IsNot Nothing Then currentDevice.BrandPointer = selectedBrand.Pointer
-
-            currentDevice.Model = modeltxt.Text.Trim
-            currentDevice.SerialNumber = serialtxt.Text.Trim
-            currentDevice.PurchaseDate = purchaseDatePicker.Value
-            currentDevice.WarrantyExpires = warrantyDatePicker.Value
-            currentDevice.Notes = notetxt.Text.Trim
-
-            ' Save selected spec pointer
-            Dim selectedSpec = TryCast(specscb.SelectedItem, DeviceSpecification)
-            If selectedSpec Is Nothing Then
-                MessageBox.Show("Please select a valid specification.", "Missing Specification", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Exit Sub
-            End If
-            currentDevice.Specs = selectedSpec.Pointer.ToString()
-
-            ' 🔹 FIX: pass logged-in user ID
-            Dim userID As Integer = Session.LoggedInUserPointer
-            If mdl.Save(currentDevice, userID) Then
-                MessageBox.Show("Device updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Dim parentPanel = TryCast(Parent, Panel)
-                If parentPanel IsNot Nothing Then parentPanel.Visible = False
-            Else
-                MessageBox.Show("Error updating device.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            End If
-
-        Catch ex As Exception
-            MessageBox.Show("Save error: " & ex.Message)
-        End Try
-    End Sub
-
-
-    Private Sub cancelbtn_Click_1(sender As Object, e As EventArgs) Handles cancelbtn.Click
-        Dim parentPanel = TryCast(Parent, Panel)
+    Private Sub cancelbtn_Click(sender As Object, e As EventArgs) Handles cancelbtn.Click
+        Dim parentPanel = TryCast(Me.Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
 
-    Private Sub Panel1_Paint(sender As Object, e As PaintEventArgs) Handles Panel1.Paint
-
+    Private Sub ApplyUniformSpacing()
+        Dim spacing As Integer = 12
+        For Each ctrl As Control In Me.Controls
+            If Not TypeOf ctrl Is Panel AndAlso Not TypeOf ctrl Is FlowLayoutPanel Then
+                ctrl.Margin = New Padding(0, 0, 0, spacing)
+            End If
+        Next
+        For Each row As Control In deviceflowpnl.Controls
+            row.Margin = New Padding(0, 0, 0, spacing)
+        Next
     End Sub
+
 End Class

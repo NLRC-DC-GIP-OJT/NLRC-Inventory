@@ -29,7 +29,6 @@ Partial Class EditUnit
         Label2 = New Label()
         Label3 = New Label()
         Label4 = New Label()
-        Label5 = New Label()
         deviceflowpnl = New FlowLayoutPanel()
         specsflowpnl = New FlowLayoutPanel()
         unitnametxt = New TextBox()
@@ -45,21 +44,24 @@ Partial Class EditUnit
         Label7 = New Label()
         remarkstxt = New TextBox()
         assignbtn = New Button()
+        Panel5 = New Panel()
+        specsbtn = New Button()
         Panel1.SuspendLayout()
         Panel3.SuspendLayout()
         Panel4.SuspendLayout()
+        Panel5.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
         ' 
+        Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.Controls.Add(Panel2)
         Panel1.Controls.Add(Label1)
-        Panel1.Dock = DockStyle.Top
         Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 4, 3, 4)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1118, 47)
+        Panel1.Size = New Size(1121, 47)
         Panel1.TabIndex = 0
         ' 
         ' Panel2
@@ -79,15 +81,15 @@ Partial Class EditUnit
         Label1.Font = New Font("Arial Rounded MT Bold", 15.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         Label1.Location = New Point(7, 8)
         Label1.Name = "Label1"
-        Label1.Size = New Size(329, 32)
+        Label1.Size = New Size(350, 32)
         Label1.TabIndex = 1
-        Label1.Text = "Update Unit Information"
+        Label1.Text = "Update Asset Information"
         ' 
         ' Label2
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(7, 71)
+        Label2.Location = New Point(26, 67)
         Label2.Name = "Label2"
         Label2.Size = New Size(117, 23)
         Label2.TabIndex = 1
@@ -97,7 +99,7 @@ Partial Class EditUnit
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label3.Location = New Point(540, 66)
+        Label3.Location = New Point(526, 63)
         Label3.Name = "Label3"
         Label3.Size = New Size(131, 23)
         Label3.TabIndex = 2
@@ -107,21 +109,11 @@ Partial Class EditUnit
         ' 
         Label4.AutoSize = True
         Label4.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label4.Location = New Point(16, 115)
+        Label4.Location = New Point(26, 117)
         Label4.Name = "Label4"
         Label4.Size = New Size(94, 23)
         Label4.TabIndex = 3
         Label4.Text = "Devices:"
-        ' 
-        ' Label5
-        ' 
-        Label5.AutoSize = True
-        Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(540, 236)
-        Label5.Name = "Label5"
-        Label5.Size = New Size(77, 23)
-        Label5.TabIndex = 4
-        Label5.Text = "Specs:"
         ' 
         ' deviceflowpnl
         ' 
@@ -132,7 +124,7 @@ Partial Class EditUnit
         deviceflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         deviceflowpnl.Location = New Point(0, 0)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(433, 353)
+        deviceflowpnl.Size = New Size(473, 331)
         deviceflowpnl.TabIndex = 18
         deviceflowpnl.WrapContents = False
         ' 
@@ -145,7 +137,7 @@ Partial Class EditUnit
         specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         specsflowpnl.Location = New Point(0, 0)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(545, 257)
+        specsflowpnl.Size = New Size(557, 230)
         specsflowpnl.TabIndex = 19
         specsflowpnl.WrapContents = False
         ' 
@@ -153,16 +145,16 @@ Partial Class EditUnit
         ' 
         unitnametxt.BorderStyle = BorderStyle.FixedSingle
         unitnametxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        unitnametxt.Location = New Point(130, 69)
+        unitnametxt.Location = New Point(165, 63)
         unitnametxt.Name = "unitnametxt"
-        unitnametxt.Size = New Size(329, 31)
+        unitnametxt.Size = New Size(308, 31)
         unitnametxt.TabIndex = 20
         ' 
         ' assigntxt
         ' 
         assigntxt.BorderStyle = BorderStyle.FixedSingle
         assigntxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        assigntxt.Location = New Point(694, 58)
+        assigntxt.Location = New Point(694, 59)
         assigntxt.Name = "assigntxt"
         assigntxt.Size = New Size(391, 31)
         assigntxt.TabIndex = 21
@@ -170,18 +162,18 @@ Partial Class EditUnit
         ' Panel3
         ' 
         Panel3.Controls.Add(deviceflowpnl)
-        Panel3.Location = New Point(26, 216)
+        Panel3.Location = New Point(26, 238)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(433, 353)
+        Panel3.Size = New Size(473, 331)
         Panel3.TabIndex = 22
         ' 
         ' devicecb
         ' 
         devicecb.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         devicecb.FormattingEnabled = True
-        devicecb.Location = New Point(130, 112)
+        devicecb.Location = New Point(165, 117)
         devicecb.Name = "devicecb"
-        devicecb.Size = New Size(329, 31)
+        devicecb.Size = New Size(307, 31)
         devicecb.TabIndex = 25
         ' 
         ' adddevicebtn
@@ -189,32 +181,35 @@ Partial Class EditUnit
         adddevicebtn.BackColor = Color.SlateGray
         adddevicebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         adddevicebtn.ForeColor = Color.White
-        adddevicebtn.Location = New Point(287, 165)
+        adddevicebtn.Location = New Point(328, 168)
         adddevicebtn.Name = "adddevicebtn"
-        adddevicebtn.Size = New Size(172, 44)
+        adddevicebtn.Size = New Size(171, 46)
         adddevicebtn.TabIndex = 26
         adddevicebtn.Text = "Add Device"
         adddevicebtn.UseVisualStyleBackColor = False
         ' 
         ' savebtn
         ' 
+        savebtn.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
+        savebtn.AutoSize = True
         savebtn.BackColor = Color.MediumBlue
         savebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
-        savebtn.Location = New Point(934, 581)
+        savebtn.Location = New Point(396, 296)
         savebtn.Name = "savebtn"
-        savebtn.Size = New Size(151, 44)
+        savebtn.Size = New Size(151, 52)
         savebtn.TabIndex = 27
         savebtn.Text = "Save "
         savebtn.UseVisualStyleBackColor = False
         ' 
         ' Panel4
         ' 
+        Panel4.Controls.Add(savebtn)
         Panel4.Controls.Add(savespecsbtn)
         Panel4.Controls.Add(specsflowpnl)
-        Panel4.Location = New Point(540, 271)
+        Panel4.Location = New Point(527, 285)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(545, 298)
+        Panel4.Size = New Size(557, 355)
         Panel4.TabIndex = 28
         ' 
         ' savespecsbtn
@@ -222,9 +217,9 @@ Partial Class EditUnit
         savespecsbtn.FlatAppearance.BorderSize = 2
         savespecsbtn.FlatStyle = FlatStyle.Flat
         savespecsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        savespecsbtn.Location = New Point(122, 263)
+        savespecsbtn.Location = New Point(123, 244)
         savespecsbtn.Name = "savespecsbtn"
-        savespecsbtn.Size = New Size(298, 32)
+        savespecsbtn.Size = New Size(298, 44)
         savespecsbtn.TabIndex = 30
         savespecsbtn.Text = "Save Specification Field"
         savespecsbtn.UseVisualStyleBackColor = True
@@ -242,7 +237,7 @@ Partial Class EditUnit
         ' 
         Label6.AutoSize = True
         Label6.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(541, 110)
+        Label6.Location = New Point(527, 107)
         Label6.Name = "Label6"
         Label6.Size = New Size(130, 23)
         Label6.TabIndex = 30
@@ -252,7 +247,7 @@ Partial Class EditUnit
         ' 
         Label7.AutoSize = True
         Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(541, 176)
+        Label7.Location = New Point(527, 168)
         Label7.Name = "Label7"
         Label7.Size = New Size(103, 23)
         Label7.TabIndex = 31
@@ -265,7 +260,7 @@ Partial Class EditUnit
         remarkstxt.Location = New Point(694, 149)
         remarkstxt.Multiline = True
         remarkstxt.Name = "remarkstxt"
-        remarkstxt.Size = New Size(391, 81)
+        remarkstxt.Size = New Size(391, 78)
         remarkstxt.TabIndex = 32
         ' 
         ' assignbtn
@@ -273,12 +268,41 @@ Partial Class EditUnit
         assignbtn.FlatAppearance.BorderSize = 2
         assignbtn.FlatStyle = FlatStyle.Flat
         assignbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        assignbtn.Location = New Point(994, 103)
+        assignbtn.Location = New Point(994, 101)
         assignbtn.Name = "assignbtn"
-        assignbtn.Size = New Size(91, 32)
+        assignbtn.Size = New Size(91, 39)
         assignbtn.TabIndex = 33
         assignbtn.Text = "Add"
         assignbtn.UseVisualStyleBackColor = True
+        ' 
+        ' Panel5
+        ' 
+        Panel5.Controls.Add(specsbtn)
+        Panel5.Controls.Add(Label6)
+        Panel5.Controls.Add(Label7)
+        Panel5.Controls.Add(devicecb)
+        Panel5.Controls.Add(Label2)
+        Panel5.Controls.Add(unitnametxt)
+        Panel5.Controls.Add(adddevicebtn)
+        Panel5.Controls.Add(Label4)
+        Panel5.Controls.Add(Label3)
+        Panel5.Dock = DockStyle.Fill
+        Panel5.Location = New Point(0, 0)
+        Panel5.Name = "Panel5"
+        Panel5.Size = New Size(1121, 645)
+        Panel5.TabIndex = 34
+        ' 
+        ' specsbtn
+        ' 
+        specsbtn.FlatAppearance.BorderSize = 2
+        specsbtn.FlatStyle = FlatStyle.Flat
+        specsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        specsbtn.Location = New Point(527, 238)
+        specsbtn.Name = "specsbtn"
+        specsbtn.Size = New Size(558, 36)
+        specsbtn.TabIndex = 33
+        specsbtn.Text = "Specifications"
+        specsbtn.UseVisualStyleBackColor = True
         ' 
         ' EditUnit
         ' 
@@ -286,28 +310,22 @@ Partial Class EditUnit
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(assignbtn)
         Controls.Add(remarkstxt)
-        Controls.Add(Label7)
-        Controls.Add(Label6)
         Controls.Add(assigncb)
         Controls.Add(Panel4)
-        Controls.Add(savebtn)
-        Controls.Add(adddevicebtn)
-        Controls.Add(devicecb)
         Controls.Add(Panel3)
         Controls.Add(assigntxt)
-        Controls.Add(unitnametxt)
-        Controls.Add(Label5)
-        Controls.Add(Label4)
-        Controls.Add(Label3)
-        Controls.Add(Label2)
         Controls.Add(Panel1)
+        Controls.Add(Panel5)
         Margin = New Padding(3, 4, 3, 4)
         Name = "EditUnit"
-        Size = New Size(1118, 643)
+        Size = New Size(1121, 645)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel3.ResumeLayout(False)
         Panel4.ResumeLayout(False)
+        Panel4.PerformLayout()
+        Panel5.ResumeLayout(False)
+        Panel5.PerformLayout()
         ResumeLayout(False)
         PerformLayout()
     End Sub
@@ -317,7 +335,6 @@ Partial Class EditUnit
     Friend WithEvents Label2 As Label
     Friend WithEvents Label3 As Label
     Friend WithEvents Label4 As Label
-    Friend WithEvents Label5 As Label
     Friend WithEvents Panel2 As Panel
     Friend WithEvents deviceflowpnl As FlowLayoutPanel
     Friend WithEvents specsflowpnl As FlowLayoutPanel
@@ -334,5 +351,7 @@ Partial Class EditUnit
     Friend WithEvents Label7 As Label
     Friend WithEvents remarkstxt As TextBox
     Friend WithEvents assignbtn As Button
+    Friend WithEvents Panel5 As Panel
+    Friend WithEvents specsbtn As Button
 
 End Class

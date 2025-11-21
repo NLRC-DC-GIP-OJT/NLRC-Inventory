@@ -58,14 +58,14 @@ Partial Class AddNew
         ' 
         ' Panel1
         ' 
+        Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
         Panel1.Controls.Add(Panel4)
         Panel1.Controls.Add(Label3)
-        Panel1.Dock = DockStyle.Top
         Panel1.Location = New Point(0, 0)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1167, 61)
+        Panel1.Size = New Size(1170, 61)
         Panel1.TabIndex = 1
         ' 
         ' Panel4
@@ -86,12 +86,13 @@ Partial Class AddNew
         Label3.ForeColor = Color.Black
         Label3.Location = New Point(22, 11)
         Label3.Name = "Label3"
-        Label3.Size = New Size(345, 38)
+        Label3.Size = New Size(361, 38)
         Label3.TabIndex = 8
-        Label3.Text = "CREATE MULTIPLE UNITS"
+        Label3.Text = "CREATE MULTIPLE ASSETS"
         ' 
         ' unit2pnl
         ' 
+        unit2pnl.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         unit2pnl.Controls.Add(addbtn1)
         unit2pnl.Controls.Add(devicestocklbl)
         unit2pnl.Controls.Add(checkstocklbl)
@@ -102,7 +103,7 @@ Partial Class AddNew
         unit2pnl.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         unit2pnl.Location = New Point(15, 67)
         unit2pnl.Name = "unit2pnl"
-        unit2pnl.Size = New Size(1135, 154)
+        unit2pnl.Size = New Size(1138, 154)
         unit2pnl.TabIndex = 19
         unit2pnl.Visible = False
         ' 
@@ -253,10 +254,11 @@ Partial Class AddNew
         ' 
         ' Panel2
         ' 
+        Panel2.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel2.Controls.Add(unitsdgv1)
         Panel2.Location = New Point(15, 227)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1135, 464)
+        Panel2.Size = New Size(1138, 467)
         Panel2.TabIndex = 20
         ' 
         ' unitsdgv1
@@ -292,7 +294,7 @@ Partial Class AddNew
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         unitsdgv1.RowsDefaultCellStyle = DataGridViewCellStyle3
-        unitsdgv1.Size = New Size(1135, 464)
+        unitsdgv1.Size = New Size(1138, 467)
         unitsdgv1.TabIndex = 2
         ' 
         ' Panel3
@@ -328,7 +330,7 @@ Partial Class AddNew
         Controls.Add(unit2pnl)
         Controls.Add(Panel1)
         Name = "AddNew"
-        Size = New Size(1167, 799)
+        Size = New Size(1170, 802)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         unit2pnl.ResumeLayout(False)

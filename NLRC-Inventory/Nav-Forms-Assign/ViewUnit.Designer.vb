@@ -28,13 +28,13 @@ Partial Class ViewUnit
         assigntxt = New TextBox()
         unitnametxt = New TextBox()
         specsflowpnl = New FlowLayoutPanel()
-        Label5 = New Label()
         Label4 = New Label()
         Label3 = New Label()
         Label2 = New Label()
         Panel1 = New Panel()
         Panel2 = New Panel()
         Label1 = New Label()
+        specsbtn = New Button()
         Panel3.SuspendLayout()
         Panel1.SuspendLayout()
         SuspendLayout()
@@ -49,9 +49,9 @@ Partial Class ViewUnit
         ' 
         ' deviceflowpnl
         ' 
+        deviceflowpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
         deviceflowpnl.AutoScroll = True
         deviceflowpnl.BorderStyle = BorderStyle.FixedSingle
-        deviceflowpnl.Dock = DockStyle.Fill
         deviceflowpnl.FlowDirection = FlowDirection.TopDown
         deviceflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         deviceflowpnl.Location = New Point(0, 0)
@@ -64,41 +64,32 @@ Partial Class ViewUnit
         ' 
         assigntxt.BorderStyle = BorderStyle.FixedSingle
         assigntxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        assigntxt.Location = New Point(760, 73)
+        assigntxt.Location = New Point(760, 67)
         assigntxt.Name = "assigntxt"
-        assigntxt.Size = New Size(292, 31)
+        assigntxt.Size = New Size(319, 31)
         assigntxt.TabIndex = 30
         ' 
         ' unitnametxt
         ' 
         unitnametxt.BorderStyle = BorderStyle.FixedSingle
         unitnametxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        unitnametxt.Location = New Point(154, 74)
+        unitnametxt.Location = New Point(171, 70)
         unitnametxt.Name = "unitnametxt"
-        unitnametxt.Size = New Size(414, 31)
+        unitnametxt.Size = New Size(397, 31)
         unitnametxt.TabIndex = 29
         ' 
         ' specsflowpnl
         ' 
+        specsflowpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Right
         specsflowpnl.AutoScroll = True
         specsflowpnl.BorderStyle = BorderStyle.FixedSingle
         specsflowpnl.FlowDirection = FlowDirection.TopDown
         specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        specsflowpnl.Location = New Point(610, 164)
+        specsflowpnl.Location = New Point(613, 164)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(442, 399)
+        specsflowpnl.Size = New Size(480, 397)
         specsflowpnl.TabIndex = 28
         specsflowpnl.WrapContents = False
-        ' 
-        ' Label5
-        ' 
-        Label5.AutoSize = True
-        Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(605, 128)
-        Label5.Name = "Label5"
-        Label5.Size = New Size(77, 23)
-        Label5.TabIndex = 27
-        Label5.Text = "Specs:"
         ' 
         ' Label4
         ' 
@@ -114,7 +105,7 @@ Partial Class ViewUnit
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label3.Location = New Point(601, 77)
+        Label3.Location = New Point(610, 74)
         Label3.Name = "Label3"
         Label3.Size = New Size(131, 23)
         Label3.TabIndex = 25
@@ -124,7 +115,7 @@ Partial Class ViewUnit
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(21, 76)
+        Label2.Location = New Point(21, 71)
         Label2.Name = "Label2"
         Label2.Size = New Size(117, 23)
         Label2.TabIndex = 24
@@ -132,14 +123,14 @@ Partial Class ViewUnit
         ' 
         ' Panel1
         ' 
+        Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.Controls.Add(Panel2)
         Panel1.Controls.Add(Label1)
-        Panel1.Dock = DockStyle.Top
         Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 4, 3, 4)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1118, 47)
+        Panel1.Size = New Size(1116, 47)
         Panel1.TabIndex = 23
         ' 
         ' Panel2
@@ -163,21 +154,34 @@ Partial Class ViewUnit
         Label1.TabIndex = 1
         Label1.Text = "View Unit Information"
         ' 
+        ' specsbtn
+        ' 
+        specsbtn.FlatAppearance.BorderSize = 2
+        specsbtn.FlatStyle = FlatStyle.Flat
+        specsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        specsbtn.Location = New Point(610, 113)
+        specsbtn.Name = "specsbtn"
+        specsbtn.Size = New Size(483, 36)
+        specsbtn.TabIndex = 35
+        specsbtn.Text = "Specifications"
+        specsbtn.UseVisualStyleBackColor = True
+        ' 
         ' ViewUnit
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
+        BorderStyle = BorderStyle.FixedSingle
+        Controls.Add(specsbtn)
         Controls.Add(Panel3)
         Controls.Add(assigntxt)
         Controls.Add(unitnametxt)
         Controls.Add(specsflowpnl)
-        Controls.Add(Label5)
         Controls.Add(Label4)
         Controls.Add(Label3)
         Controls.Add(Label2)
         Controls.Add(Panel1)
         Name = "ViewUnit"
-        Size = New Size(1118, 643)
+        Size = New Size(1116, 641)
         Panel3.ResumeLayout(False)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
@@ -190,12 +194,12 @@ Partial Class ViewUnit
     Friend WithEvents assigntxt As TextBox
     Friend WithEvents unitnametxt As TextBox
     Friend WithEvents specsflowpnl As FlowLayoutPanel
-    Friend WithEvents Label5 As Label
     Friend WithEvents Label4 As Label
     Friend WithEvents Label3 As Label
     Friend WithEvents Label2 As Label
     Friend WithEvents Panel1 As Panel
     Friend WithEvents Panel2 As Panel
     Friend WithEvents Label1 As Label
+    Friend WithEvents specsbtn As Button
 
 End Class
