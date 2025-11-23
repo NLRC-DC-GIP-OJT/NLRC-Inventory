@@ -183,12 +183,15 @@ Public Class AddUnits
         SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList, "Full name", "user_id", AddressOf FilterAssignCombo)
     End Sub
 
+    ' =========================
+    ' Universal ComboBox Filter
+    ' =========================
     Private Sub SafeComboFilter(cb As ComboBox, source As DataTable, displayCol As String, valueCol As String, handler As EventHandler)
         If isFiltering Then Exit Sub
         isFiltering = True
 
         Try
-            If cb Is Nothing OrElse Not cb.Focused OrElse source Is Nothing OrElse source.Rows.Count = 0 Then Exit Sub
+            If Not cb.Focused OrElse source Is Nothing OrElse source.Rows.Count = 0 Then Exit Sub
 
             Dim searchText As String = cb.Text.Trim().ToLower()
             Dim filtered As DataTable
@@ -196,13 +199,8 @@ Public Class AddUnits
             If String.IsNullOrWhiteSpace(searchText) Then
                 filtered = source.Copy()
             Else
-                ' Filter safely, skip DBNull values
-                Dim rows = source.AsEnumerable().Where(Function(r)
-                                                           Dim valObj = r(displayCol)
-                                                           If valObj Is DBNull.Value OrElse valObj Is Nothing Then Return False
-                                                           Return valObj.ToString().ToLower().Contains(searchText)
-                                                       End Function)
-
+                Dim rows = source.AsEnumerable().
+                        Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
                 filtered = If(rows.Any(), rows.CopyToDataTable(), Nothing)
             End If
 
@@ -244,7 +242,6 @@ Public Class AddUnits
             isFiltering = False
         End Try
     End Sub
-
 
     ' =========================
     ' Clear fields

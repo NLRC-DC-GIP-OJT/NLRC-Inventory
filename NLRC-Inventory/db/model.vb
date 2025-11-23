@@ -69,7 +69,7 @@ End Class
 
 Public Class model
 
-    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;"
+    Private ReadOnly connectionString As String = "Server=127.0.0.1;Port=3306;Database=main_nlrc_db;Uid=root;Pwd=;"
 
     Public Function EncryptPassword(ByVal password As String) As String
         password = password.Trim()
@@ -692,7 +692,7 @@ Public Class model
     Public Function GetAssignments() As DataTable
         Dim dt As New DataTable()
         Try
-            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;")
+            Using conn As New MySqlConnection("Server=127.0.0.1;Port=3306;Database=db_nlrc_intranet;Uid=root;Pwd=;")
                 conn.Open()
                 Dim query As String = "SELECT user_id, CONCAT(LAST_M, ', ', FIRST_M) AS `Full name` FROM user_info ORDER BY LAST_M, FIRST_M;"
                 Using cmd As New MySqlCommand(query, conn)
@@ -723,14 +723,15 @@ Public Class model
                 conn.Open()
                 Dim query As String = "
                 SELECT 
-                    d.pointer AS device_id,
-                    CONCAT(c.category_name, ' - ', b.brand_name, ' - ', d.model, ' (', COUNT(*) OVER (PARTITION BY d.dev_category_pointer, d.brands, d.model), ')') AS Device,
-                    d.specs,
-                    d.status
-                FROM inv_devices d
-                INNER JOIN inv_brands b ON b.pointer = d.brands
-                INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
-                WHERE d.status = 'Working';"
+                d.pointer AS device_id,
+                CONCAT(c.category_name, ' - ', b.brand_name, ' - ', d.model) AS Device,
+                d.specs,
+                d.status
+            FROM inv_devices d
+            INNER JOIN inv_brands b ON b.pointer = d.brands
+            INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
+            WHERE d.status = 'Working';
+            "
 
                 Using da As New MySqlDataAdapter(query, conn)
                     da.Fill(dt)
@@ -1139,20 +1140,22 @@ Public Class model
 
                 Dim query As String = "
                 SELECT 
-                u.pointer AS unit_id,
-                u.unit_name AS `Unit Name`,
-                COUNT(ud.inv_devices_pointer) AS `Device No`,
-                CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
-                i.user_id AS personnel_id,
-                DATE_FORMAT(u.created_at, '%Y-%m-%d') AS `Created At`,
-                DATE_FORMAT(u.updated_at, '%Y-%m-%d') AS `Updated At`
-            FROM inv_units AS u
-            LEFT JOIN inv_unit_devices AS ud ON u.pointer = ud.inv_units_pointer
-            LEFT JOIN db_nlrc_intranet.user_info AS i ON u.assigned_personnel = i.user_id
-            GROUP BY u.pointer
-            ORDER BY u.pointer DESC;
-
+                    u.pointer AS unit_id,
+                    u.unit_name AS `Unit Name`,
+                    COUNT(DISTINCT ud.inv_devices_pointer) AS `Device No`,
+                    CONCAT(i.LAST_M, ', ', i.FIRST_M) AS `Assigned To`,
+                    i.user_id AS personnel_id,
+                    DATE_FORMAT(u.created_at, '%Y-%m-%d') AS `Created At`,
+                    DATE_FORMAT(u.updated_at, '%Y-%m-%d') AS `Updated At`
+                FROM inv_units AS u
+                LEFT JOIN inv_unit_devices AS ud 
+                    ON u.pointer = ud.inv_units_pointer
+                LEFT JOIN db_nlrc_intranet.user_info AS i 
+                    ON u.assigned_personnel = i.user_id
+                GROUP BY u.pointer
+                ORDER BY u.pointer DESC;
             "
+
 
                 Using cmd As New MySqlCommand(query, conn)
                     Using da As New MySqlDataAdapter(cmd)
@@ -1177,28 +1180,36 @@ Public Class model
 
                 ' Updated query with category, model, and specs in the desired format
                 Dim query As String = "
-                        SELECT 
-                u.pointer AS UnitID,                                          
-                ud.inv_devices_pointer AS DeviceID,                             
+                SELECT 
+                u.pointer AS UnitID,
+                ud.inv_devices_pointer AS DeviceID,
+
+                -- Add nsoc name and property number
+                d.nsoc_name,
+                d.property_number,
+
                 CONCAT(
-                    c.category_name, ' - ',      -- Category
-                    b.brand_name, ' - ',         -- Brand
-                    d.model, ' - ',              -- Model
-                    IFNULL(s.specs, 'No specs available')  -- Specs
-                ) AS DeviceAndSpecs 
+                    c.category_name, ' - ',
+                    b.brand_name, ' - ',
+                    d.model, ' - ',
+                    IFNULL(s.specs, 'No specs available')
+                ) AS DeviceAndSpecs
+
             FROM inv_units AS u
             JOIN inv_unit_devices AS ud 
-                ON u.pointer = ud.inv_units_pointer                             
-            JOIN inv_devices AS d 
-                ON ud.inv_devices_pointer = d.pointer                          
-            LEFT JOIN inv_brands AS b   
-                ON d.brands = b.pointer                                       
-            LEFT JOIN inv_specs AS s 
-                ON d.specs = s.pointer                                         
-            LEFT JOIN inv_device_category AS c  
-                ON d.dev_category_pointer = c.pointer  
-            WHERE u.pointer = @unitPointer                                      
+                ON u.pointer = ud.inv_units_pointer
+            JOIN inv_devices AS d
+                ON ud.inv_devices_pointer = d.pointer
+            LEFT JOIN inv_brands AS b
+                ON d.brands = b.pointer
+            LEFT JOIN inv_specs AS s
+                ON d.specs = s.pointer
+            LEFT JOIN inv_device_category AS c
+                ON d.dev_category_pointer = c.pointer
+
+            WHERE u.pointer = 1
             ORDER BY d.pointer;
+
 
             "
 
@@ -2030,14 +2041,21 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 Next
 
                 ' =======================================================
-                ' 4. EDITED SPECS
+                ' 4. EDITED SPECS AND INV_DEVICES FIELDS
                 ' =======================================================
                 For Each kvp In editedSpecs
                     Dim devId As Integer = kvp.Key
                     Dim specsDict = kvp.Value
 
-                    ' Build specs string ( EXACT format as inv_specs.specs )
-                    Dim newSpecsString As String = String.Join(";", specsDict.Select(Function(x) $"{x.Key}: {x.Value}"))
+                    ' Extract NSOC Name and Property Number
+                    Dim nsocName As String = If(specsDict.ContainsKey("NSOC Name"), specsDict("NSOC Name"), Nothing)
+                    Dim propertyNumber As String = If(specsDict.ContainsKey("Property#"), specsDict("Property#"), Nothing)
+
+                    ' Remove these from specsDict before building actual specs string
+                    Dim specsOnlyDict = specsDict.Where(Function(x) x.Key <> "NSOC Name" AndAlso x.Key <> "Property#").ToDictionary(Function(x) x.Key, Function(x) x.Value)
+
+                    ' Build specs string for inv_specs table
+                    Dim newSpecsString As String = String.Join(";", specsOnlyDict.Select(Function(x) $"{x.Key}: {x.Value}"))
 
                     ' (A) GET CATEGORY ID FOR THIS DEVICE
                     Dim categoryId As Integer
@@ -2059,16 +2077,14 @@ ORDER BY c.category_name, b.brand_name, d.model;
                     End Using
 
                     Dim specPointer As Integer
-
                     If existingPointer IsNot Nothing Then
-                        ' SPECS ALREADY EXISTS — REUSE POINTER
                         specPointer = CInt(existingPointer)
                     Else
                         ' INSERT NEW SPECS ROW
                         Using cmd As New MySqlCommand("
-                        INSERT INTO inv_specs (category_id, specs, created_by, created_at)
-                        VALUES (@cat, @sp, @user, NOW()); 
-                        SELECT LAST_INSERT_ID();", conn)
+                    INSERT INTO inv_specs (category_id, specs, created_by, created_at)
+                    VALUES (@cat, @sp, @user, NOW()); 
+                    SELECT LAST_INSERT_ID();", conn)
                             cmd.Parameters.AddWithValue("@cat", categoryId)
                             cmd.Parameters.AddWithValue("@sp", newSpecsString)
                             cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
@@ -2076,16 +2092,22 @@ ORDER BY c.category_name, b.brand_name, d.model;
                         End Using
                     End If
 
-                    ' UPDATE DEVICE SPECS POINTER
+                    ' UPDATE DEVICE SPECS POINTER + NSOC Name + Property Number
                     Using cmd As New MySqlCommand("
-                    UPDATE inv_devices SET specs=@p WHERE pointer=@dev", conn)
+                    UPDATE inv_devices 
+                    SET specs=@p, nsoc_name=@nsoc, property_number=@prop, updated_by=@user, updated_at=NOW()
+                    WHERE pointer=@dev", conn)
                         cmd.Parameters.AddWithValue("@p", specPointer)
+                        cmd.Parameters.AddWithValue("@nsoc", If(nsocName, DBNull.Value))
+                        cmd.Parameters.AddWithValue("@prop", If(propertyNumber, DBNull.Value))
+                        cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
                         cmd.Parameters.AddWithValue("@dev", devId)
                         cmd.ExecuteNonQuery()
                     End Using
 
                     InsertUnitHistory(conn, unitId, devId, "Device specs updated")
                 Next
+
 
                 ' =======================================================
                 ' 5. UNIT NAME CHANGE HISTORY
@@ -2909,71 +2931,73 @@ ORDER BY c.category_name, b.brand_name, d.model;
     ' AVAILABLE DEVICES FOR UNIT (COMBO)
     ' ================================
     Public Function GetDevicesForUnits1(unitId As Integer) As DataTable
-        Dim dt As New DataTable()
+Dim dt As New DataTable()
 
         Try
-            Using conn As New MySqlConnection(connectionString)
-                conn.Open()
+    Using conn As New MySqlConnection(connectionString)
+        conn.Open()
 
-                Dim query As String = "
-                    SELECT 
-                        d.pointer AS device_id,
-                        c.category_name,
-                        b.brand_name,
-                        d.model,
-                        d.specs AS device_specs,
-                        d.nsoc_name,
-                        d.property_number,
-                        CONCAT(
-                            c.category_name, ' - ',
-                            b.brand_name, ' - ',
-                            d.model, ' - ',
-                            d.specs
-                        ) AS DeviceAndSpecs,
-                        COUNT(*) AS qty,
-                        CONCAT(
-                            c.category_name, ' - ',
-                            b.brand_name, ' - ',
-                            d.model, ' (', COUNT(*), ')'
-                        ) AS DeviceDisplay
-                    FROM inv_devices d
-                    INNER JOIN inv_brands b 
-                        ON b.pointer = d.brands
-                    INNER JOIN inv_device_category c 
-                        ON c.pointer = d.dev_category_pointer
-                    WHERE d.status = 'Working'
-                      AND d.pointer NOT IN (
-                            SELECT inv_devices_pointer
-                            FROM inv_unit_devices
-                            WHERE inv_units_pointer = @unitId
-                      )
-                    GROUP BY 
-                        d.pointer, 
-                        d.dev_category_pointer, 
-                        d.brands, 
-                        d.model, 
-                        d.specs,
-                        d.nsoc_name,
-                        d.property_number
-                    ORDER BY 
-                        c.category_name, 
-                        b.brand_name, 
-                        d.model;
-                "
+        Dim query As String = "
+           SELECT 
+            d.pointer AS device_id,
+            c.category_name,
+            b.brand_name,
+            d.model,
+            s.specs AS actual_specs,
+            d.nsoc_name,
+            d.property_number,
+            CONCAT(
+                c.category_name, ' - ',
+                b.brand_name, ' - ',
+                d.model,
+                IF(s.specs IS NOT NULL AND s.specs != '', CONCAT(' - ', s.specs), ''),
+                IF(d.nsoc_name IS NOT NULL AND d.nsoc_name != '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
+                IF(d.property_number IS NOT NULL AND d.property_number != '', CONCAT(' | Property#: ', d.property_number), '')
+            ) AS DeviceAndSpecs,
+            COUNT(*) AS qty,
+            CONCAT(
+                c.category_name, ' - ',
+                b.brand_name, ' - ',
+                d.model, 
+                IF(d.nsoc_name IS NOT NULL AND d.nsoc_name != '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
+                IF(d.property_number IS NOT NULL AND d.property_number != '', CONCAT(' | Property#: ', d.property_number), ''),
+                ' (', COUNT(*), ')'
+            ) AS DeviceDisplay
+        FROM inv_devices d
+        INNER JOIN inv_brands b ON b.pointer = d.brands
+        INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
+        LEFT JOIN inv_specs s ON d.specs = s.pointer
+        WHERE d.status = 'Working'
+          AND d.pointer NOT IN (
+                SELECT inv_devices_pointer
+                FROM inv_unit_devices
+                WHERE inv_units_pointer = @unitId
+          )
+        GROUP BY 
+            d.pointer, c.category_name, b.brand_name, d.model, s.specs, d.nsoc_name, d.property_number
+        ORDER BY 
+            c.category_name, b.brand_name, d.model;
 
-                Using da As New MySqlDataAdapter(query, conn)
-                    da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
-                    da.Fill(dt)
-                End Using
-            End Using
+        "
 
-        Catch ex As Exception
-            MessageBox.Show("Error loading devices: " & ex.Message, "Database Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
+        Using da As New MySqlDataAdapter(query, conn)
+            da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
+            da.Fill(dt)
+        End Using
+    End Using
 
-        Return dt
-    End Function
+Catch ex As Exception
+    MessageBox.Show("Error loading devices: " & ex.Message, "Database Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error)
+End Try
+
+Return dt
+
+
+End Function
+
+
+
 
     Public Function GetAssignedDevices(unitId As Integer) As DataTable
         Dim dt As New DataTable()
@@ -3024,6 +3048,51 @@ ORDER BY c.category_name, b.brand_name, d.model;
     End Function
 
 
+    Public Function GetDevicesWithNsocByUnitPointer(unitPointer As Integer) As DataTable
+        Dim dt As New DataTable()
+
+        Try
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
+
+                Dim query As String = "
+                SELECT 
+                    ud.inv_units_pointer AS UnitID,
+                    d.pointer AS DeviceID,
+                    c.category_name AS Category,
+                    b.brand_name AS Brand,
+                    d.model AS Model,
+                    d.specs AS DeviceSpecs,
+                    d.nsoc_name,
+                    d.property_number,
+                    CONCAT(
+                        c.category_name, ' - ',
+                        b.brand_name, ' - ',
+                        d.model,
+                        IF(d.specs IS NOT NULL AND d.specs != '', CONCAT(' - ', d.specs), ''),
+                        IF(d.nsoc_name IS NOT NULL AND d.nsoc_name != '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
+                        IF(d.property_number IS NOT NULL AND d.property_number != '', CONCAT(' | Property#: ', d.property_number), '')
+                    ) AS DeviceFullSpecs
+                FROM inv_unit_devices ud
+                INNER JOIN inv_devices d ON ud.inv_devices_pointer = d.pointer
+                INNER JOIN inv_brands b ON b.pointer = d.brands
+                INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
+                WHERE ud.inv_units_pointer = @unitPointer
+                ORDER BY d.pointer;
+            "
+
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@unitPointer", unitPointer)
+                    da.Fill(dt)
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error fetching devices with NSOC: " & ex.Message)
+        End Try
+
+        Return dt
+    End Function
 
 
 
