@@ -33,12 +33,12 @@ Public Class EditUnit
     Private deviceBaseDisplay As New Dictionary(Of Integer, String)  ' Category - Brand - Model
 
     Private specsTable As New TableLayoutPanel With {
-        .AutoSize = True,
-        .ColumnCount = 2,
-        .RowCount = 0,
-        .Dock = DockStyle.Fill,
-        .Padding = New Padding(10)
-    }
+            .AutoSize = True,
+            .ColumnCount = 2,
+            .RowCount = 0,
+            .Dock = DockStyle.Fill,
+            .Padding = New Padding(10)
+        }
 
     ' ========================
     ' 🔁 AUTO-RESIZE FIELDS
@@ -81,11 +81,11 @@ Public Class EditUnit
 
             Dim r As Rectangle = kvp.Value
             ctrl.Bounds = New Rectangle(
-                CInt(r.X * scaleX),
-                CInt(r.Y * scaleY),
-                CInt(r.Width * scaleX),
-                CInt(r.Height * scaleY)
-            )
+                    CInt(r.X * scaleX),
+                    CInt(r.Y * scaleY),
+                    CInt(r.Width * scaleX),
+                    CInt(r.Height * scaleY)
+                )
 
             ' Optional: scale fonts a bit
             If ctrl.Font IsNot Nothing Then
@@ -115,7 +115,12 @@ Public Class EditUnit
     Private Sub EditUnit_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.Dock = DockStyle.Fill
         InitializeLayoutScaling()
+
+        deviceflowpnl.FlowDirection = FlowDirection.TopDown
+        deviceflowpnl.WrapContents = False
+        deviceflowpnl.AutoScroll = True
     End Sub
+
 
     ' ========================
     ' LOAD UNIT
@@ -156,18 +161,25 @@ Public Class EditUnit
 
             ' Build full specs: NSOC Name + Property# + actual specs
             Dim specsParts As New List(Of String)
-            If dr.Table.Columns.Contains("nsoc_name") AndAlso Not IsDBNull(dr("nsoc_name")) AndAlso dr("nsoc_name").ToString().Trim() <> "" Then
+
+            If dr.Table.Columns.Contains("nsoc_name") AndAlso
+                Not IsDBNull(dr("nsoc_name")) AndAlso dr("nsoc_name").ToString().Trim() <> "" Then
                 specsParts.Add("NSOC Name:" & dr("nsoc_name").ToString().Trim())
             End If
-            If dr.Table.Columns.Contains("property_number") AndAlso Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
+
+            If dr.Table.Columns.Contains("property_number") AndAlso
+                Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
                 specsParts.Add("Property No:" & dr("property_number").ToString().Trim())
             End If
-            Dim rawSpecs = dr("DeviceAndSpecs").ToString()
-            Dim specsOnly = CleanSpecs(rawSpecs)
-            If specsOnly <> "" Then specsParts.Add(specsOnly)
 
+            ' ❗ FIX: DO NOT ADD FULL DeviceAndSpecs — extract ONLY specs
+            Dim rawSpecs = dr("DeviceAndSpecs").ToString().Trim()
+            Dim onlySpecs = ExtractOnlySpecs(rawSpecs)
+
+            If onlySpecs <> "" Then specsParts.Add(onlySpecs)
 
             Dim fullSpecs As String = String.Join(";", specsParts)
+
 
             ' Save to dictionaries
             deviceDisplayNames(devId) = baseText
@@ -288,7 +300,7 @@ Public Class EditUnit
 
         Dim drv As DataRowView = CType(devicecb.SelectedItem, DataRowView)
         Dim specsString As String = If(drv IsNot Nothing AndAlso drv.Row.Table.Columns.Contains("HiddenSpecs"),
-                                CleanSpecs(drv("HiddenSpecs").ToString()), "")
+                                    CleanSpecs(drv("HiddenSpecs").ToString()), "")
 
 
         ' Add device
@@ -307,38 +319,38 @@ Public Class EditUnit
 
     Private Sub AddDeviceToPanel(deviceId As Integer, displayText As String, fullSpecs As String)
         Dim container As New Panel With {
-            .Height = 45,
-            .Width = 380,
-            .Margin = New Padding(5)
-        }
+                .Height = 45,
+                .Width = 470,
+                .Margin = New Padding(5)
+            }
 
         Dim btn As New Button With {
-            .Text = displayText,
-            .Tag = fullSpecs,
-            .Dock = DockStyle.Fill,
-            .Height = 40,
-            .BackColor = Color.LightGray,
-            .TextAlign = ContentAlignment.MiddleLeft,
-            .AutoEllipsis = True
-        }
+                .Text = displayText,
+                .Tag = fullSpecs,
+                .Dock = DockStyle.Fill,
+                .Height = 40,
+                .BackColor = Color.LightGray,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .AutoEllipsis = True
+            }
 
         AddHandler btn.Click, Sub() ShowSpecs(fullSpecs, deviceId)
 
         Dim removeBtn As New Button With {
-            .Text = "Remove",
-            .Width = 80,
-            .Dock = DockStyle.Right,
-            .BackColor = Color.LightCoral,
-            .ForeColor = Color.White
-        }
+                .Text = "Remove",
+                .Width = 120,
+                .Dock = DockStyle.Right,
+                .BackColor = Color.LightCoral,
+                .ForeColor = Color.White
+            }
 
         AddHandler removeBtn.Click, Sub()
                                         Dim result = MessageBox.Show(
-                                            $"Are you sure you want to remove {displayText}?",
-                                            "Confirm Removal",
-                                            MessageBoxButtons.YesNo,
-                                            MessageBoxIcon.Warning
-                                        )
+                                                $"Are you sure you want to remove {displayText}?",
+                                                "Confirm Removal",
+                                                MessageBoxButtons.YesNo,
+                                                MessageBoxIcon.Warning
+                                            )
                                         If result = DialogResult.No Then Exit Sub
 
                                         deviceflowpnl.Controls.Remove(container)
@@ -359,20 +371,35 @@ Public Class EditUnit
         specsTable.RowCount = 0
         currentSpecDeviceId = deviceId
 
+        ' Get existing specs or parse from fullSpecs
         Dim dict As Dictionary(Of String, String) = If(editedSpecs.ContainsKey(deviceId), editedSpecs(deviceId), ParseSpecs(fullSpecs))
 
         For Each kvp In dict
             specsTable.RowCount += 1
-            specsTable.Controls.Add(New Label With {
-                                        .Text = kvp.Key & ":",
-                                        .Width = 120,
-                                        .AutoSize = False,
-                                        .TextAlign = ContentAlignment.MiddleLeft
-                                    }, 0, specsTable.RowCount - 1)
 
-            specsTable.Controls.Add(New TextBox With {.Text = kvp.Value, .Dock = DockStyle.Fill}, 1, specsTable.RowCount - 1)
+            ' Label for spec name
+            Dim lbl As New Label With {
+            .Text = kvp.Key & ":",
+            .Width = 150,                    ' Adjust label width
+            .AutoSize = False,
+            .TextAlign = ContentAlignment.MiddleLeft,
+            .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+        }
+            specsTable.Controls.Add(lbl, 0, specsTable.RowCount - 1)
+
+            ' TextBox for spec value
+            Dim tb As New TextBox With {
+            .Text = kvp.Value,
+            .Width = 350,                    ' Adjust TextBox width
+            .Height = 25,                    ' Adjust TextBox height
+            .Font = New Font("Segoe UI", 9),
+            .Multiline = False,              ' Change to True if multiline needed
+            .Dock = DockStyle.None            ' Use None when setting fixed size
+        }
+            specsTable.Controls.Add(tb, 1, specsTable.RowCount - 1)
         Next
     End Sub
+
 
     Private Function NormalizeSpecs(raw As String) As String
         If String.IsNullOrWhiteSpace(raw) Then Return String.Empty
@@ -548,9 +575,9 @@ Public Class EditUnit
 
         ' Remove NSOC and Property entries if they exist
         Dim cleaned As String = System.Text.RegularExpressions.Regex.Replace(rawSpecs,
-        "(?i)\s*NSOC\s*[:=][^;]+", "")  ' remove NSOC:...
+            "(?i)\s*NSOC\s*[:=][^;]+", "")  ' remove NSOC:...
         cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned,
-        "(?i)\s*Property\s*[:=][^;]+", "")  ' remove Property:...
+            "(?i)\s*Property\s*[:=][^;]+", "")  ' remove Property:...
 
         ' Remove double semicolons and trim
         cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, ";;+", ";")
@@ -558,15 +585,6 @@ Public Class EditUnit
 
         Return cleaned
     End Function
-
-
-
-
-
-
-
-
-
 
 
 End Class

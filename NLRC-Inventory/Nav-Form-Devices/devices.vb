@@ -4,6 +4,8 @@ Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.Windows.Forms
 
+
+
 Public Class devices
     Private mdl As New model()
     Private devicePointerColIndex As Integer = -1
@@ -159,10 +161,12 @@ Public Class devices
     End Sub
 
     ' 🧩 Load Devices with filtering and pagination
+    ' 🧩 Load Devices with filtering and pagination
+    ' 🧩 Load Devices with filtering and pagination
     Private Sub LoadDevices(Optional category As String = "All",
-                            Optional brand As String = "All",
-                            Optional status As String = "All",
-                            Optional search As String = "")
+                        Optional brand As String = "All",
+                        Optional status As String = "All",
+                        Optional search As String = "")
         Try
             Dim dt As DataTable = mdl.GetDevices()
             devicesdgv.RowTemplate.Height = BaseRowHeight
@@ -203,14 +207,20 @@ Public Class devices
                 devicesdgv.DataSource = Nothing
             End If
 
-            ' Hide DevicePointer
+            ' ===== HIDE TECHNICAL COLUMNS =====
             If devicesdgv.Columns.Contains("DevicePointer") Then
                 devicesdgv.Columns("DevicePointer").Visible = False
                 devicePointerColIndex = devicesdgv.Columns("DevicePointer").Index
             End If
+            If devicesdgv.Columns.Contains("Category") Then
+                devicesdgv.Columns("Category").Visible = False
+            End If
+            If devicesdgv.Columns.Contains("Brand") Then
+                devicesdgv.Columns("Brand").Visible = False
+            End If
 
-            ' === BUTTON COLUMN (same as before) ===
-            ' Remove old button columns
+            ' ===== BUTTON COLUMN (Actions) =====
+            ' Remove any old button columns
             For Each col As DataGridViewColumn In devicesdgv.Columns.OfType(Of DataGridViewButtonColumn).ToList()
                 devicesdgv.Columns.Remove(col)
             Next
@@ -219,13 +229,39 @@ Public Class devices
             If devicesdgv.Columns.Contains("Actions") Then
                 devicesdgv.Columns.Remove("Actions")
             End If
+
             Dim actionsCol As New DataGridViewButtonColumn() With {
-                .Name = "Actions",
-                .HeaderText = "",
-                .UseColumnTextForButtonValue = False,
-                .Width = 90      ' <- keeps your Edit/View buttons nice and compact
-            }
+            .Name = "Actions",
+            .HeaderText = "",
+            .UseColumnTextForButtonValue = False,
+            .Width = ActionsColWidth
+        }
             devicesdgv.Columns.Add(actionsCol)
+
+            ' ===== FIX DISPLAY ORDER (PUT ACTIONS AT THE END) =====
+            Dim orderedCols As String() = {
+            "NSOC Name",
+            "Device",
+            "Property Number",
+            "Specifications",
+            "Status",
+            "Serial Number",
+            "Purchase Date",
+            "Warranty Expires"
+        }
+
+            Dim displayIndex As Integer = 0
+            For Each colName As String In orderedCols
+                If devicesdgv.Columns.Contains(colName) Then
+                    devicesdgv.Columns(colName).DisplayIndex = displayIndex
+                    displayIndex += 1
+                End If
+            Next
+
+            ' Always move Actions to the far right
+            If devicesdgv.Columns.Contains("Actions") Then
+                devicesdgv.Columns("Actions").DisplayIndex = devicesdgv.Columns.Count - 1
+            End If
 
             ' Make non-action columns read-only
             For Each col As DataGridViewColumn In devicesdgv.Columns
@@ -240,22 +276,17 @@ Public Class devices
             For Each col As DataGridViewColumn In devicesdgv.Columns
                 Select Case col.Name
                     Case "Specifications", "Specification", "Specs"
-                        ' Specs column: width based ONLY on header text
                         col.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader
-                        col.MinimumWidth = 90   ' tweak if you want a bit wider
+                        col.MinimumWidth = 90
 
                     Case "Actions"
-                        ' Keep Actions narrow & fixed for Edit/View
                         col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None
                         col.Width = ActionsColWidth
 
                     Case Else
-                        ' All other columns just participate in Fill
                         col.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
                 End Select
             Next
-
-
 
             ' Attach paint handler once (for the Edit/View drawing)
             RemoveHandler devicesdgv.CellPainting, AddressOf devicesdgv_CellPainting_Merged
@@ -270,6 +301,8 @@ Public Class devices
             MessageBox.Show("Error loading devices: " & ex.Message)
         End Try
     End Sub
+
+
 
 
     ' 🎨 Draw merged Edit + View buttons inside one column
@@ -528,4 +561,58 @@ Public Class devices
         End Try
     End Sub
 
+    Private Sub exportbtn_Click(sender As Object, e As EventArgs) Handles exportbtn.Click
+        Try
+            If allFilteredRows Is Nothing OrElse allFilteredRows.Count = 0 Then
+                MessageBox.Show("No data to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Return
+            End If
+
+            Dim saveDlg As New SaveFileDialog With {
+                .Filter = "CSV File (*.csv)|*.csv",
+                .FileName = "Devices_Export.csv"
+            }
+
+            If saveDlg.ShowDialog() <> DialogResult.OK Then Exit Sub
+
+            Using sw As New IO.StreamWriter(saveDlg.FileName, False, System.Text.Encoding.UTF8)
+
+                ' HEADERS (same order as your DataGridView)
+                Dim headers As String() = {
+                    "NSOC Name",
+                    "Device (Category - Brand - Model)",
+                    "Property Number",
+                    "Specifications",
+                    "Status",
+                    "Serial Number",
+                    "Purchase Date",
+                    "Warranty Expires"
+                }
+
+                sw.WriteLine(String.Join(",", headers.Select(Function(s) $"""{s}""")))
+
+                ' ROWS (export ALL PAGES, not only current view)
+                For Each r As DataRow In allFilteredRows
+                    Dim line As New List(Of String)
+
+                    line.Add($"""{r("NSOC Name").ToString()}""")
+                    line.Add($"""{r("Device").ToString()}""")
+                    line.Add($"""{r("Property Number").ToString()}""")
+                    line.Add($"""{r("Specifications").ToString()}""")
+                    line.Add($"""{r("Status").ToString()}""")
+                    line.Add($"""{r("Serial Number").ToString()}""")
+                    line.Add($"""{r("Purchase Date").ToString()}""")
+                    line.Add($"""{r("Warranty Expires").ToString()}""")
+
+                    sw.WriteLine(String.Join(",", line))
+                Next
+            End Using
+
+            MessageBox.Show("Export successful!", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        Catch ex As Exception
+            MessageBox.Show("Error exporting: " & ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+    
 End Class

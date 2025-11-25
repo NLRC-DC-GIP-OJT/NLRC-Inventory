@@ -22,9 +22,9 @@ Partial Class devices
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(devices))
         Panel1 = New Panel()
         devicesdgv = New DataGridView()
@@ -32,6 +32,7 @@ Partial Class devices
         filtertxt = New TextBox()
         statuscb = New ComboBox()
         Panel2 = New Panel()
+        exportbtn = New Button()
         catecb = New ComboBox()
         brandscb = New ComboBox()
         Label3 = New Label()
@@ -61,33 +62,33 @@ Partial Class devices
         devicesdgv.AllowUserToDeleteRows = False
         devicesdgv.AllowUserToResizeColumns = False
         devicesdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle4.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle4.ForeColor = Color.White
-        DataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
-        devicesdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle1.ForeColor = Color.White
+        DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
+        devicesdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
         devicesdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle5.BackColor = SystemColors.Window
-        DataGridViewCellStyle5.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
-        devicesdgv.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle2.BackColor = SystemColors.Window
+        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
+        devicesdgv.DefaultCellStyle = DataGridViewCellStyle2
         devicesdgv.Dock = DockStyle.Fill
         devicesdgv.Location = New Point(0, 0)
         devicesdgv.Name = "devicesdgv"
         devicesdgv.ReadOnly = True
         devicesdgv.RowHeadersVisible = False
         devicesdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle6.BackColor = Color.AliceBlue
-        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle6.ForeColor = Color.Black
-        devicesdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
+        DataGridViewCellStyle3.BackColor = Color.AliceBlue
+        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle3.ForeColor = Color.Black
+        devicesdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
         devicesdgv.Size = New Size(1318, 743)
         devicesdgv.TabIndex = 0
         ' 
@@ -96,9 +97,9 @@ Partial Class devices
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1149, 11)
+        addbtn.Location = New Point(1168, 8)
         addbtn.Name = "addbtn"
-        addbtn.Size = New Size(139, 55)
+        addbtn.Size = New Size(130, 55)
         addbtn.TabIndex = 8
         addbtn.Text = "Add Device"
         addbtn.UseVisualStyleBackColor = False
@@ -107,18 +108,18 @@ Partial Class devices
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
         filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(840, 16)
+        filtertxt.Location = New Point(617, 19)
         filtertxt.Name = "filtertxt"
-        filtertxt.Size = New Size(301, 38)
+        filtertxt.Size = New Size(230, 38)
         filtertxt.TabIndex = 9
         ' 
         ' statuscb
         ' 
         statuscb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         statuscb.FormattingEnabled = True
-        statuscb.Location = New Point(551, 17)
+        statuscb.Location = New Point(464, 18)
         statuscb.Name = "statuscb"
-        statuscb.Size = New Size(199, 39)
+        statuscb.Size = New Size(147, 39)
         statuscb.TabIndex = 12
         ' 
         ' Panel2
@@ -127,6 +128,7 @@ Partial Class devices
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BorderStyle = BorderStyle.FixedSingle
+        Panel2.Controls.Add(exportbtn)
         Panel2.Controls.Add(addbtn)
         Panel2.Controls.Add(filtertxt)
         Panel2.Controls.Add(catecb)
@@ -138,22 +140,34 @@ Partial Class devices
         Panel2.Size = New Size(1314, 77)
         Panel2.TabIndex = 13
         ' 
+        ' exportbtn
+        ' 
+        exportbtn.BackColor = Color.CornflowerBlue
+        exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        exportbtn.ForeColor = Color.White
+        exportbtn.Location = New Point(1032, 8)
+        exportbtn.Name = "exportbtn"
+        exportbtn.Size = New Size(130, 55)
+        exportbtn.TabIndex = 15
+        exportbtn.Text = "Export"
+        exportbtn.UseVisualStyleBackColor = False
+        ' 
         ' catecb
         ' 
         catecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         catecb.FormattingEnabled = True
-        catecb.Location = New Point(152, 16)
+        catecb.Location = New Point(152, 17)
         catecb.Name = "catecb"
-        catecb.Size = New Size(183, 39)
+        catecb.Size = New Size(147, 39)
         catecb.TabIndex = 14
         ' 
         ' brandscb
         ' 
         brandscb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         brandscb.FormattingEnabled = True
-        brandscb.Location = New Point(343, 17)
+        brandscb.Location = New Point(305, 18)
         brandscb.Name = "brandscb"
-        brandscb.Size = New Size(201, 39)
+        brandscb.Size = New Size(153, 39)
         brandscb.TabIndex = 13
         ' 
         ' Label3
@@ -206,9 +220,9 @@ Partial Class devices
         ' addpnl
         ' 
         addpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        addpnl.Location = New Point(271, 104)
+        addpnl.Location = New Point(264, 53)
         addpnl.Name = "addpnl"
-        addpnl.Size = New Size(738, 700)
+        addpnl.Size = New Size(864, 820)
         addpnl.TabIndex = 17
         addpnl.Visible = False
         ' 
@@ -259,5 +273,6 @@ Partial Class devices
     Friend WithEvents addpnl As Panel
     Friend WithEvents Label3 As Label
     Friend WithEvents Panel3 As Panel
+    Friend WithEvents exportbtn As Button
 
 End Class

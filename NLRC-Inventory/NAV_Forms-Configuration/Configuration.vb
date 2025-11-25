@@ -2,6 +2,8 @@
 Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports System.Linq
+
 
 Public Class Configuration
 
@@ -9,6 +11,9 @@ Public Class Configuration
     Private editingBrandId As Integer = 0
     Private editingSpecsId As Integer = 0
     Private editingCategoryId As Integer = 0
+    Private showConfig As Boolean = False
+
+
 
     ' ========================
     ' 🔁 AUTO-RESIZE FIELDS
@@ -52,11 +57,11 @@ Public Class Configuration
             Dim r As Rectangle = kvp.Value
 
             ctrl.Bounds = New Rectangle(
-                CInt(r.X * scaleX),
-                CInt(r.Y * scaleY),
-                CInt(r.Width * scaleX),
-                CInt(r.Height * scaleY)
-            )
+                                CInt(r.X * scaleX),
+                                CInt(r.Y * scaleY),
+                                CInt(r.Width * scaleX),
+                                CInt(r.Height * scaleY)
+                            )
 
             ' Optional: scale fonts a bit
             If ctrl.Font IsNot Nothing Then
@@ -93,110 +98,105 @@ Public Class Configuration
 
         ' 🔁 initialize auto-resize using the designed layout
         InitializeLayoutScaling()
+
+        LoadFixedProperties()
     End Sub
 
     ' === Insert / Update Category + Properties (no destxt) ===
     Private Sub catbtn_Click(sender As Object, e As EventArgs) Handles catbtn.Click
         Dim categoryName As String = cattxt.Text.Trim()
-        Dim description As String = ""
 
-        If String.IsNullOrWhiteSpace(categoryName) Then
-            MessageBox.Show("Please enter a category name.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Exit Sub
-        End If
-
-        If editingCategoryId = 0 AndAlso db.IsCategoryExists(categoryName) Then
-            MessageBox.Show("This category already exists!", "Duplicate Category", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        If categoryName = "" Then
+            MessageBox.Show("Enter category name.")
             Exit Sub
         End If
 
         Dim userId As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
+        Dim categoryId As Integer = 0
 
-        ' ===============================
+        ' ===========================
         ' INSERT NEW CATEGORY
-        ' ===============================
+        ' ===========================
         If editingCategoryId = 0 Then
 
-            Dim newCategoryId As Integer = db.InsertDeviceCategoryReturnId(categoryName, description, userId)
-            If newCategoryId <= 0 Then
-                MessageBox.Show("Failed to insert category.", "Error")
-                Return
+            ' 1) Insert into inv_device_category and get pointer
+            categoryId = db.InsertDeviceCategoryReturnId(categoryName, "", userId)
+
+            If categoryId <= 0 Then
+                MessageBox.Show("Failed to insert category.")
+                Exit Sub
             End If
 
-            ' Insert new properties
-            Dim properties As New List(Of (Name As String, Required As Boolean, Active As Boolean))()
+            ' 2) Insert fixed properties into inv_category_properties
+            For Each pnl As Control In propertyflowpnl.Controls
+                If TypeOf pnl Is Panel Then
 
-            For Each row As Control In propertyflowpnl.Controls
-                If TypeOf row Is Panel Then
+                    Dim lbl As Label = pnl.Controls.OfType(Of Label)().FirstOrDefault()
+                    Dim chkReq As CheckBox = pnl.Controls.OfType(Of CheckBox)().FirstOrDefault(Function(x) x.Name.StartsWith("chkRequired"))
+                    Dim chkAct As CheckBox = pnl.Controls.OfType(Of CheckBox)().FirstOrDefault(Function(x) x.Name.StartsWith("chkActive"))
 
-                    Dim propName As String = ""
-                    Dim required As Boolean = True
-                    Dim active As Boolean = True
-
-                    For Each ctrl As Control In row.Controls
-                        If TypeOf ctrl Is TextBox AndAlso ctrl.Name = "txtPropertyName" Then
-                            propName = ctrl.Text.Trim()
-                        ElseIf TypeOf ctrl Is CheckBox AndAlso ctrl.Name = "chkRequired" Then
-                            required = CType(ctrl, CheckBox).Checked
-                        ElseIf TypeOf ctrl Is CheckBox AndAlso ctrl.Name = "chkActive" Then
-                            active = CType(ctrl, CheckBox).Checked
-                        End If
-                    Next
-
-                    If propName <> "" Then
-                        properties.Add((propName, required, active))
+                    If lbl IsNot Nothing AndAlso chkReq IsNot Nothing AndAlso chkAct IsNot Nothing Then
+                        Dim propName As String = lbl.Text.Trim()
+                        db.InsertCategoryProperty(categoryId, propName, chkReq.Checked, chkAct.Checked, userId)
                     End If
+
                 End If
             Next
 
-            For Each p In properties
-                db.InsertCategoryProperty(newCategoryId, p.Name, p.Required, p.Active, userId)
-            Next
-
-            MessageBox.Show("Category created successfully!", "Success")
+            MessageBox.Show("Category and its properties inserted successfully!", "Success",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         Else
-
-            ' ===============================
+            ' ===========================
             ' UPDATE EXISTING CATEGORY
-            ' ===============================
-            db.UpdateDeviceCategory(editingCategoryId, categoryName, description, userId)
+            ' ===========================
+            categoryId = editingCategoryId
+            db.UpdateDeviceCategory(categoryId, categoryName, "", userId)
 
-            ' 🔥 UPDATE ONLY REQUIRED + ACTIVE FLAGS
-            For Each row As Control In propertyflowpnl.Controls
-                If TypeOf row Is Panel Then
+            ' ===========================
+            ' UPDATE PROPERTIES
+            ' ===========================
+            For Each pnl As Control In propertyflowpnl.Controls
+                If TypeOf pnl Is Panel Then
 
-                    Dim propId As Integer = Convert.ToInt32(row.Tag)
-                    Dim required As Boolean = False
-                    Dim active As Boolean = False
+                    Dim lbl As Label = pnl.Controls.OfType(Of Label)().FirstOrDefault()
+                    Dim chkReq As CheckBox = pnl.Controls.OfType(Of CheckBox)().FirstOrDefault(Function(x) x.Name.StartsWith("chkRequired"))
+                    Dim chkAct As CheckBox = pnl.Controls.OfType(Of CheckBox)().FirstOrDefault(Function(x) x.Name.StartsWith("chkActive"))
 
-                    For Each ctrl As Control In row.Controls
-                        If TypeOf ctrl Is CheckBox AndAlso ctrl.Name = "chkRequired" Then
-                            required = CType(ctrl, CheckBox).Checked
-                        ElseIf TypeOf ctrl Is CheckBox AndAlso ctrl.Name = "chkActive" Then
-                            active = CType(ctrl, CheckBox).Checked
-                        End If
-                    Next
+                    Dim propName As String = lbl.Text.Trim()
+                    Dim propPointer As Integer = If(pnl.Tag Is Nothing, 0, Convert.ToInt32(pnl.Tag))
 
-                    db.UpdateCategoryPropertyFlags(propId, required, active)
+                    If propPointer > 0 Then
+                        ' ⭐ UPDATE EXISTING PROPERTY
+                        db.UpdateCategoryProperty(propPointer, propName, chkReq.Checked, chkAct.Checked)
+                    Else
+                        ' ⭐ IF NOT FOUND (rare, but safe) — INSERT NEW PROPERTY
+                        db.InsertCategoryProperty(categoryId, propName, chkReq.Checked, chkAct.Checked, userId)
+                    End If
 
                 End If
             Next
 
-            MessageBox.Show("Category updated successfully!", "Success")
-
+            MessageBox.Show("Category and properties updated successfully!")
         End If
 
-        ' RESET FORM
+
+        ' ===========================
+        ' RESET FORM FOR NEXT CATEGORY
+        ' ===========================
         cattxt.Clear()
-        propertyflowpnl.Controls.Clear()
         editingCategoryId = 0
         catbtn.Text = "Insert Category"
 
         LoadDeviceCategories()
         LoadCategoryComboBox()
         LoadCategoryForSpecs()
+
+        ' redraw NSOC / Property Number / Brand / Model / Serial / Cost
+        LoadFixedProperties()
     End Sub
+
+
 
 
 
@@ -283,70 +283,47 @@ Public Class Configuration
         Dim colName As String = devicedgv.Columns(e.ColumnIndex).Name
 
         If colName = "Edit" Then
-            If MessageBox.Show($"Are you sure you want to edit category: {categoryName}?",
-                           "Confirm Edit",
-                           MessageBoxButtons.YesNo,
-                           MessageBoxIcon.Question) = DialogResult.Yes Then
+            If MessageBox.Show($"Edit category {categoryName}?", "Confirm Edit", MessageBoxButtons.YesNo) = DialogResult.Yes Then
 
-                cattxt.Text = selectedRow.Cells("CategoryName").Value.ToString()
+                cattxt.Text = categoryName
                 editingCategoryId = categoryId
                 catbtn.Text = "Update Category"
 
-                ' Load properties
-                propertyflowpnl.Controls.Clear()
-                Dim dtProps As DataTable = db.GetCategoryProperties(categoryId)
+                ' Reload fixed rows
+                LoadFixedProperties()
 
-                If dtProps IsNot Nothing Then
-                    For Each row As DataRow In dtProps.Rows
+                ' Load existing values
+                Dim dt As DataTable = db.GetCategoryProperties(categoryId)
 
-                        Dim propName As String = row("property_name").ToString().Trim()
-                        Dim isRequired As Boolean = Convert.ToBoolean(row("required"))
-                        Dim isActive As Boolean = Convert.ToBoolean(row("active"))
+                If dt IsNot Nothing Then
+                    For Each row As DataRow In dt.Rows
+                        Dim pname As String = row("property_name").ToString().Trim()
+                        Dim req As Boolean = Convert.ToBoolean(row("required"))
+                        Dim act As Boolean = Convert.ToBoolean(row("active"))
+                        Dim propPtr As Integer = Convert.ToInt32(row("pointer"))
 
-                        Dim rowPanel As New Panel()
-                        rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
-                        rowPanel.Height = 30
-                        rowPanel.Margin = New Padding(0, 2, 0, 2)
+                        For Each pnl As Control In propertyflowpnl.Controls
+                            If TypeOf pnl Is Panel Then
 
-                        ' 🔥 STORE PROPERTY POINTER
-                        rowPanel.Tag = row("pointer")
+                                Dim lbl As Label = pnl.Controls.OfType(Of Label).FirstOrDefault()
+                                Dim chkReq As CheckBox = pnl.Controls.OfType(Of CheckBox).First(Function(x) x.Name.StartsWith("chkRequired"))
+                                Dim chkAct As CheckBox = pnl.Controls.OfType(Of CheckBox).First(Function(x) x.Name.StartsWith("chkActive"))
 
-                        ' PROPERTY NAME LABEL
-                        Dim lblProp As New Label()
-                        lblProp.Text = propName
-                        lblProp.Width = 220
-                        lblProp.Location = New Point(5, 6)
-                        lblProp.TextAlign = ContentAlignment.MiddleLeft
-
-                        ' REQUIRED CHECKBOX
-                        Dim chkReq As New CheckBox()
-                        chkReq.Name = "chkRequired"
-                        chkReq.Text = "Required"
-                        chkReq.Checked = isRequired
-                        chkReq.AutoSize = True
-                        chkReq.Location = New Point(lblProp.Right + 10, 6)
-
-                        ' ACTIVE CHECKBOX
-                        Dim chkAct As New CheckBox()
-                        chkAct.Name = "chkActive"
-                        chkAct.Text = "Active"
-                        chkAct.Checked = isActive
-                        chkAct.AutoSize = True
-                        chkAct.Location = New Point(chkReq.Right + 10, 6)
-
-                        ' ADD CONTROLS
-                        rowPanel.Controls.Add(lblProp)
-                        rowPanel.Controls.Add(chkReq)
-                        rowPanel.Controls.Add(chkAct)
-
-                        propertyflowpnl.Controls.Add(rowPanel)
-
+                                If lbl.Text.Trim() = pname Then
+                                    chkReq.Checked = req
+                                    chkAct.Checked = act
+                                    pnl.Tag = propPtr  ' Store property pointer for update
+                                    Exit For
+                                End If
+                            End If
+                        Next
                     Next
                 End If
+
             End If
         End If
-
     End Sub
+
 
 
 
@@ -483,7 +460,7 @@ Public Class Configuration
     ' Load specs_name into flowpnl for selected category
     ' ==========================
     Private Sub catcb1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles catcb1.SelectedIndexChanged
-        ' Clear previous controls
+        ' Clear previous controls   
         flowpnl.Controls.Clear()
         editingSpecsId = 0
         btnInsertSpecs.Text = "Insert Specs"
@@ -498,7 +475,6 @@ Public Class Configuration
         Dim categoryId As Integer = Convert.ToInt32(drv("pointer"))
 
         ' Get specs_name list for this category
-        ' Data from table inv_category_specs (specs_name column)
         Dim dtSpecs As DataTable = db.GetCategorySpecs(categoryId)
         If dtSpecs Is Nothing OrElse dtSpecs.Rows.Count = 0 Then Return
 
@@ -520,36 +496,66 @@ Public Class Configuration
             fieldPanel.Height = 35
             fieldPanel.Margin = New Padding(0)
 
-            ' === Label: "Processor:" ===
-            Dim lbl As New Label()
-            lbl.Text = fieldName & ":"
-            lbl.Width = 120
-            lbl.Location = New Point(5, 8)
-            lbl.TextAlign = ContentAlignment.MiddleLeft
+            ' === Spec Name TextBox (READ-ONLY) ===
+            Dim txtSpecName As New TextBox()
+            txtSpecName.Name = "txtSpecName"
+            txtSpecName.Text = fieldName
+            txtSpecName.ReadOnly = True
+            txtSpecName.Width = 150
+            txtSpecName.Location = New Point(5, 5)
 
-            ' === TextBox: EMPTY (you will type the value) ===
-            Dim txt As New TextBox()
-            txt.Text = "" ' no default value
-            txt.Width = fieldPanel.Width - lbl.Width - 20
-            txt.Location = New Point(lbl.Right + 5, 5)
-            txt.Tag = fieldName              ' store spec name
-            txt.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
+            ' === Spec Value TextBox (user input) ===
+            Dim txtSpecValue As New TextBox()
+            txtSpecValue.Name = "txtSpecValue"
+            txtSpecValue.Text = ""
+            txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 20
+            txtSpecValue.Location = New Point(txtSpecName.Right + 5, 5)
+            txtSpecValue.Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top
 
             ' Add controls to panel and panel to flowpnl
-            fieldPanel.Controls.Add(lbl)
-            fieldPanel.Controls.Add(txt)
+            fieldPanel.Controls.Add(txtSpecName)
+            fieldPanel.Controls.Add(txtSpecValue)
             flowpnl.Controls.Add(fieldPanel)
 
             ' Keep layout correct when flowpnl resizes
             AddHandler flowpnl.Resize,
             Sub()
                 fieldPanel.Width = flowpnl.ClientSize.Width - 2
-                txt.Width = fieldPanel.Width - lbl.Width - 20
-                txt.Location = New Point(lbl.Right + 5, 5)
+                txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 20
+                txtSpecValue.Location = New Point(txtSpecName.Right + 5, 5)
             End Sub
         Next
     End Sub
 
+
+    Private Sub AddSpecRow()
+        Dim pnl As New Panel With {
+                        .Width = flowpnl.Width - 30,
+                        .Height = 35,
+                        .Margin = New Padding(3)
+                    }
+
+        Dim txtSpecName As New TextBox With {
+                        .Name = "txtSpecName",
+                        .Width = 150,
+                        .PlaceholderText = "Spec name (e.g. Processor)"
+                    }
+
+        Dim txtSpecValue As New TextBox With {
+                        .Name = "txtSpecValue",
+                        .Width = 250,
+                        .PlaceholderText = "Value (e.g. i7, 16GB)"
+                    }
+
+        pnl.Controls.Add(txtSpecName)
+        pnl.Controls.Add(txtSpecValue)
+
+        ' Position textboxes inside panel
+        txtSpecName.Location = New Point(5, 5)
+        txtSpecValue.Location = New Point(160, 5)
+
+        flowpnl.Controls.Add(pnl)
+    End Sub
 
 
 
@@ -597,11 +603,11 @@ Public Class Configuration
 
         ' Resize handling
         AddHandler flowpnl.Resize,
-        Sub()
-            fieldPanel.Width = flowpnl.ClientSize.Width - 2
-            removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
-            txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
-        End Sub
+                        Sub()
+                            fieldPanel.Width = flowpnl.ClientSize.Width - 2
+                            removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
+                            txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+                        End Sub
     End Sub
 
 
@@ -679,18 +685,6 @@ Public Class Configuration
         Dim btn As Button = DirectCast(sender, Button)
         flowpnl.Controls.Remove(btn.Parent)
     End Sub
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     ' === Load specs into specsdgv ===
@@ -789,7 +783,7 @@ Public Class Configuration
             If specsdgv.Columns(e.ColumnIndex).Name = "Edit" Then
 
                 If MessageBox.Show($"Are you sure you want to edit the specification: {specsName}?",
-                                   "Confirm Edit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+                                                   "Confirm Edit", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
 
                     catcb1.SelectedValue = Convert.ToInt32(selectedRow.Cells("category_pointer").Value)
                     Dim specsValue As String = selectedRow.Cells("specs").Value.ToString()
@@ -842,11 +836,11 @@ Public Class Configuration
                         flowpnl.Controls.Add(fieldPanel)
 
                         AddHandler flowpnl.Resize,
-                            Sub()
-                                fieldPanel.Width = flowpnl.ClientSize.Width - 2
-                                removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
-                                txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
-                            End Sub
+                                            Sub()
+                                                fieldPanel.Width = flowpnl.ClientSize.Width - 2
+                                                removeButton.Location = New Point(fieldPanel.Width - removeButton.Width - 5, 5)
+                                                txtSpecValue.Width = fieldPanel.Width - txtSpecName.Width - 120
+                                            End Sub
                     Next
 
                     editingSpecsId = specsId
@@ -895,10 +889,10 @@ Public Class Configuration
         btnRemove.Height = 22
         btnRemove.Location = New Point(rowPanel.Width - btnRemove.Width - 5, 4)
         AddHandler btnRemove.Click,
-            Sub()
-                propertyflowpnl.Controls.Remove(rowPanel)
-                rowPanel.Dispose
-            End Sub
+                            Sub()
+                                propertyflowpnl.Controls.Remove(rowPanel)
+                                rowPanel.Dispose()
+                            End Sub
 
         rowPanel.Controls.Add(txtProp)
         rowPanel.Controls.Add(chkReq)
@@ -909,10 +903,107 @@ Public Class Configuration
 
         ' Resize behavior
         AddHandler propertyflowpnl.Resize,
-            Sub()
-                rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
-                btnRemove.Location = New Point(rowPanel.Width - btnRemove.Width - 5, 4)
-            End Sub
+                            Sub()
+                                rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
+                                btnRemove.Location = New Point(rowPanel.Width - btnRemove.Width - 5, 4)
+                            End Sub
     End Sub
+
+    Private Sub addpropertybtn_Click(sender As Object, e As EventArgs)
+        Dim rowPanel As New Panel
+        rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
+        rowPanel.Height = 30
+        rowPanel.Margin = New Padding(0, 2, 0, 2)
+
+        ' === Property Name TextBox ONLY ===
+        Dim txtProp As New TextBox
+        txtProp.Name = "txtPropertyName"
+        txtProp.PlaceholderText = "Property name"
+        txtProp.Location = New Point(5, 4)
+        txtProp.Width = rowPanel.Width - 40
+
+        ' === Remove button ===
+        Dim btnRemove As New Button
+        btnRemove.Text = "X"
+        btnRemove.Width = 25
+        btnRemove.Height = 22
+        btnRemove.Location = New Point(rowPanel.Width - 30, 4)
+
+        AddHandler btnRemove.Click,
+                        Sub()
+                            propertyflowpnl.Controls.Remove(rowPanel)
+                            rowPanel.Dispose()
+                        End Sub
+
+        rowPanel.Controls.Add(txtProp)
+        rowPanel.Controls.Add(btnRemove)
+        propertyflowpnl.Controls.Add(rowPanel)
+
+        AddHandler propertyflowpnl.Resize,
+                        Sub()
+                            rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
+                            btnRemove.Location = New Point(rowPanel.Width - 30, 4)
+                            txtProp.Width = rowPanel.Width - 40
+                        End Sub
+    End Sub
+
+    Private Sub configurebtn_Click(sender As Object, e As EventArgs)
+        showConfig = Not showConfig   ' TOGGLE
+
+        For Each pnl As Control In propertyflowpnl.Controls
+            If TypeOf pnl Is Panel Then
+                For Each ctrl As Control In pnl.Controls
+                    If TypeOf ctrl Is CheckBox Then
+                        ctrl.Visible = showConfig   ' Show or hide
+                    End If
+                Next
+            End If
+        Next
+    End Sub
+
+    Private Sub LoadFixedProperties()
+        propertyflowpnl.Controls.Clear()
+
+        Dim fields As String() = {
+                    "NSOC Name",
+                    "Property Number",
+                    "Brand",
+                    "Model",
+                    "Serial Number",
+                    "Cost"
+                }
+
+        For Each fieldName In fields
+            Dim rowPanel As New Panel()
+            rowPanel.Width = propertyflowpnl.ClientSize.Width - 2
+            rowPanel.Height = 30
+            rowPanel.Margin = New Padding(0, 2, 0, 2)
+
+            Dim lbl As New Label()
+            lbl.Text = fieldName
+            lbl.Width = 150
+            lbl.Location = New Point(5, 6)
+
+            Dim chkReq As New CheckBox()
+            chkReq.Name = "chkRequired_" & fieldName.Replace(" ", "_")
+            chkReq.Text = "Required"
+            chkReq.Checked = True           ' DEFAULT ALWAYS CHECKED
+            chkReq.Location = New Point(lbl.Right + 10, 6)
+
+            Dim chkAct As New CheckBox()
+            chkAct.Name = "chkActive_" & fieldName.Replace(" ", "_")
+            chkAct.Text = "Active"
+            chkAct.Checked = True           ' DEFAULT ALWAYS CHECKED
+            chkAct.Location = New Point(chkReq.Right + 10, 6)
+
+            rowPanel.Controls.Add(lbl)
+            rowPanel.Controls.Add(chkReq)
+            rowPanel.Controls.Add(chkAct)
+
+            propertyflowpnl.Controls.Add(rowPanel)
+        Next
+    End Sub
+
+
 
 End Class

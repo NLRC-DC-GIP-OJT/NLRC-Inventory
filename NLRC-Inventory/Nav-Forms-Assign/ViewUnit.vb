@@ -184,6 +184,7 @@ Public Class ViewUnit
 
             Dim valLbl As New Label With {
                 .Text = kvp.Value,
+                .Width = 300,
                 .Dock = DockStyle.Fill,
                 .AutoSize = False,
                 .TextAlign = ContentAlignment.MiddleLeft,

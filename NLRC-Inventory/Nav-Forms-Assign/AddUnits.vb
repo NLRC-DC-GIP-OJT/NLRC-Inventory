@@ -380,8 +380,12 @@ Public Class AddUnits
         ' Combine remarks
         Dim allRemarks As String = String.Join("; ", remarksList)
 
+        ' Who is creating this (fallback 360)
+        Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0, Session.LoggedInUserPointer, 360)
+
         ' Call SaveUnit
-        Dim success As Boolean = mdl.SaveUnit(unitName, assignedPersonnel, devicePointers, allRemarks)
+        Dim success As Boolean = mdl.SaveUnit(unitName, assignedPersonnel, devicePointers, allRemarks, createdBy)
+
 
         If success Then
             MessageBox.Show("Unit saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)

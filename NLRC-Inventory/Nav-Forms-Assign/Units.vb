@@ -64,7 +64,11 @@ Public Class Units
             assignedToCboCol.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
             assignedToCboCol.Items.AddRange(personnelNames.ToArray())
 
-            allunitsdgv.Columns.Insert(2, assignedToCboCol) ' Insert as 3rd column: after Unit Name & Device No
+            ' >>> CHANGED PART HERE <<<
+            'allunitsdgv.Columns.Insert(2, assignedToCboCol) ' OLD LINE
+            Dim insertIndex As Integer = Math.Min(2, allunitsdgv.Columns.Count)
+            allunitsdgv.Columns.Insert(insertIndex, assignedToCboCol)
+            ' >>> END OF CHANGE <<<
 
             ' --- Fix column order: Unit Name | Device No | Assigned To | Created At | Updated At ---
             Dim fixedOrder As String() = {"Unit Name", "Device No", "Assigned To", "Created At", "Updated At"}
@@ -77,22 +81,22 @@ Public Class Units
             ' Add Edit/View buttons at the far right
             If Not allunitsdgv.Columns.Contains("Edit") Then
                 Dim editBtn As New DataGridViewButtonColumn() With {
-                    .HeaderText = "",
-                    .Name = "Edit",
-                    .Text = "Edit",
-                    .UseColumnTextForButtonValue = True,
-                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
-                }
+                .HeaderText = "",
+                .Name = "Edit",
+                .Text = "Edit",
+                .UseColumnTextForButtonValue = True,
+                .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
+            }
                 allunitsdgv.Columns.Add(editBtn)
             End If
             If Not allunitsdgv.Columns.Contains("View") Then
                 Dim viewBtn As New DataGridViewButtonColumn() With {
-                    .HeaderText = "",
-                    .Name = "View",
-                    .Text = "View",
-                    .UseColumnTextForButtonValue = True,
-                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
-                }
+                .HeaderText = "",
+                .Name = "View",
+                .Text = "View",
+                .UseColumnTextForButtonValue = True,
+                .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
+            }
                 allunitsdgv.Columns.Add(viewBtn)
             End If
 
@@ -102,6 +106,7 @@ Public Class Units
             MessageBox.Show("Error loading units: " & ex.Message)
         End Try
     End Sub
+
 
     ' ----------------- Edit/View Buttons -----------------
     Private Sub allunitsdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles allunitsdgv.CellContentClick

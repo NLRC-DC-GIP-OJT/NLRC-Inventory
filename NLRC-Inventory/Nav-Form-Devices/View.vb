@@ -22,6 +22,14 @@ Public Class View
     ' ================================
     Public Sub LoadDevice(device As InvDevice)
 
+        ' ================================================
+        ' 🔥 Convert specs pointer (ex: "5") → actual text
+        ' ================================================
+        Dim specPointer As Integer
+        If Integer.TryParse(device.Specs, specPointer) Then
+            device.Specs = mdl.GetSpecsByPointer(specPointer)
+        End If
+
         currentDevice = device
         deviceflowpnl.Controls.Clear()
         specsflowpnl.Controls.Clear()
@@ -216,8 +224,8 @@ Public Class View
 
     End Function
 
-    Private Sub cancelbtn_Click(sender As Object, e As EventArgs) Handles cancelbtn.Click
-        Dim parentPanel = TryCast(Me.Parent, Panel)
+    Private Sub cancelbtn_Click(sender As Object, e As EventArgs)
+        Dim parentPanel = TryCast(Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
 

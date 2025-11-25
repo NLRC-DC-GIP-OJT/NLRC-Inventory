@@ -118,7 +118,7 @@ Partial Class Dashboard
         Panel3.Controls.Add(dashbtn)
         Panel3.Location = New Point(27, 32)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(301, 870)
+        Panel3.Size = New Size(327, 870)
         Panel3.TabIndex = 3
         ' 
         ' Button5
@@ -128,7 +128,7 @@ Partial Class Dashboard
         Button5.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         Button5.Location = New Point(0, 777)
         Button5.Name = "Button5"
-        Button5.Size = New Size(301, 93)
+        Button5.Size = New Size(327, 93)
         Button5.TabIndex = 4
         Button5.Text = "LOGOUT"
         Button5.UseVisualStyleBackColor = True
@@ -143,9 +143,9 @@ Partial Class Dashboard
         confibtn.Location = New Point(0, 282)
         confibtn.Name = "confibtn"
         confibtn.Padding = New Padding(25, 0, 0, 0)
-        confibtn.Size = New Size(301, 91)
+        confibtn.Size = New Size(327, 91)
         confibtn.TabIndex = 3
-        confibtn.Text = "SETTINGS"
+        confibtn.Text = "       SETTINGS"
         confibtn.UseVisualStyleBackColor = True
         ' 
         ' unitbtn
@@ -158,7 +158,7 @@ Partial Class Dashboard
         unitbtn.Location = New Point(0, 189)
         unitbtn.Name = "unitbtn"
         unitbtn.Padding = New Padding(25, 0, 0, 0)
-        unitbtn.Size = New Size(301, 93)
+        unitbtn.Size = New Size(327, 93)
         unitbtn.TabIndex = 2
         unitbtn.Text = "UNITS"
         unitbtn.UseVisualStyleBackColor = True
@@ -173,9 +173,9 @@ Partial Class Dashboard
         devicebtn.Location = New Point(0, 93)
         devicebtn.Name = "devicebtn"
         devicebtn.Padding = New Padding(22, 0, 0, 0)
-        devicebtn.Size = New Size(301, 96)
+        devicebtn.Size = New Size(327, 96)
         devicebtn.TabIndex = 1
-        devicebtn.Text = "    DEVICES" & vbCrLf & "       COMPONENTS"
+        devicebtn.Text = "    DEVICES" & vbCrLf & "                COMPONENTS"
         devicebtn.UseVisualStyleBackColor = True
         ' 
         ' dashbtn
@@ -188,9 +188,9 @@ Partial Class Dashboard
         dashbtn.Location = New Point(0, 0)
         dashbtn.Name = "dashbtn"
         dashbtn.Padding = New Padding(21, 0, 0, 0)
-        dashbtn.Size = New Size(301, 93)
+        dashbtn.Size = New Size(327, 93)
         dashbtn.TabIndex = 0
-        dashbtn.Text = "            DASHBOARD"
+        dashbtn.Text = "              DASHBOARD"
         dashbtn.UseVisualStyleBackColor = True
         ' 
         ' Panel5
@@ -219,26 +219,27 @@ Partial Class Dashboard
         ' Label1
         ' 
         Label1.AutoSize = True
-        Label1.Location = New Point(206, 21)
+        Label1.Font = New Font("Arial Rounded MT Bold", 22.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label1.Location = New Point(195, 20)
         Label1.Name = "Label1"
-        Label1.Size = New Size(508, 38)
+        Label1.Size = New Size(687, 43)
         Label1.TabIndex = 0
         Label1.Text = "National Labor Relations Commission"
         ' 
         ' Label2
         ' 
         Label2.AutoSize = True
-        Label2.Font = New Font("Segoe UI", 18F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(206, 64)
+        Label2.Font = New Font("Arial Rounded MT Bold", 22.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label2.Location = New Point(195, 67)
         Label2.Name = "Label2"
-        Label2.Size = New Size(259, 41)
+        Label2.Size = New Size(330, 43)
         Label2.TabIndex = 2
         Label2.Text = "Inventory System"
         ' 
         ' userlbl
         ' 
         userlbl.AutoSize = True
-        userlbl.Location = New Point(1282, 21)
+        userlbl.Location = New Point(1367, 20)
         userlbl.Name = "userlbl"
         userlbl.Size = New Size(102, 38)
         userlbl.TabIndex = 6
@@ -247,7 +248,7 @@ Partial Class Dashboard
         ' Label4
         ' 
         Label4.AutoSize = True
-        Label4.Location = New Point(1111, 21)
+        Label4.Location = New Point(1214, 20)
         Label4.Name = "Label4"
         Label4.Size = New Size(147, 38)
         Label4.TabIndex = 5
