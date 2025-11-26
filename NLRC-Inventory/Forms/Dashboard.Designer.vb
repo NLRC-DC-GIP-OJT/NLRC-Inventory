@@ -126,8 +126,11 @@ Partial Class Dashboard
         Button5.AutoSize = True
         Button5.Dock = DockStyle.Bottom
         Button5.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        Button5.Image = CType(resources.GetObject("Button5.Image"), Image)
+        Button5.ImageAlign = ContentAlignment.MiddleLeft
         Button5.Location = New Point(0, 777)
         Button5.Name = "Button5"
+        Button5.Padding = New Padding(40, 0, 0, 0)
         Button5.Size = New Size(327, 93)
         Button5.TabIndex = 4
         Button5.Text = "LOGOUT"

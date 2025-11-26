@@ -12,6 +12,12 @@ Public Class Edit
         Public Property NewValue As String
     End Class
 
+    Private Class FieldInfo
+        Public Property Required As Boolean
+        Public Property PropName As String
+    End Class
+
+
 
     Private mdl As model
     Private currentDevice As InvDevice
@@ -83,6 +89,9 @@ Public Class Edit
 
         currentDevice = device
         categoryPointer = device.DevCategoryPointer
+
+        ' 🔹 LOAD HISTORY FOR THIS DEVICE
+        LoadHistory(currentDevice.Pointer)
 
         LoadCategories()
         LoadSpecs()
@@ -160,21 +169,28 @@ Public Class Edit
             Dim propName As String = rawName.Trim().ToLower()
             Dim propPointer As Integer = CInt(prop("pointer"))
 
+            ' read "required" from table (if it exists)
+            Dim isRequired As Boolean = False
+            If props.Columns.Contains("required") Then
+                isRequired = Convert.ToBoolean(prop("required"))
+            End If
+
             Dim rowPanel As New Panel With {
-                .Width = deviceflowpnl.ClientSize.Width - 2,
-                .Margin = New Padding(0, 0, 0, 15)
-            }
+            .Width = deviceflowpnl.ClientSize.Width - 2,
+            .Margin = New Padding(0, 0, 0, 15)
+        }
 
             ' LABEL
             Dim lbl As New Label With {
-                .Text = rawName & ":",
-                .AutoSize = False,
-                .Width = 160,
-                .Height = 24,
-                .Location = New Point(5, 5),
-                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                .TextAlign = ContentAlignment.MiddleLeft
-            }
+            .Text = rawName & If(isRequired, " *", "") & ":",
+            .AutoSize = False,
+            .Width = 160,
+            .Height = 24,
+            .Location = New Point(5, 5),
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+            .TextAlign = ContentAlignment.MiddleLeft,
+            .ForeColor = If(isRequired, Color.Red, Color.Black)
+        }
 
             rowPanel.Controls.Add(lbl)
 
@@ -186,29 +202,32 @@ Public Class Edit
                 rowPanel.Height = 75
 
                 Dim cb As New ComboBox With {
-                    .Name = "cb_" & propPointer,
-                    .DropDownStyle = ComboBoxStyle.DropDownList,
-                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                    .Left = lbl.Right + 10,
-                    .Top = 5,
-                    .Width = rowPanel.Width - lbl.Width - 20,
-                    .Height = 28
-                }
+                .Name = "cb_" & propPointer,
+                .DropDownStyle = ComboBoxStyle.DropDownList,
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .Left = lbl.Right + 10,
+                .Top = 5,
+                .Width = rowPanel.Width - lbl.Width - 20,
+                .Height = 28
+            }
 
                 Dim brands = mdl.GetBrandsByCategory(categoryPointer)
                 cb.DataSource = brands
                 cb.DisplayMember = "BrandName"
                 cb.ValueMember = "Pointer"
 
+                ' store required info (no color change)
+                cb.Tag = New FieldInfo With {.Required = isRequired, .PropName = rawName}
+
                 Dim txtBrand As New TextBox With {
-                    .Name = "txtBrand_" & propPointer,
-                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                    .Top = cb.Bottom + 5,
-                    .Left = cb.Left,
-                    .Width = cb.Width,
-                    .Height = 28,
-                    .ReadOnly = True
-                }
+                .Name = "txtBrand_" & propPointer,
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .Top = cb.Bottom + 5,
+                .Left = cb.Left,
+                .Width = cb.Width,
+                .Height = 28,
+                .ReadOnly = True
+            }
 
                 ' Load existing brand
                 If currentDevice.BrandPointer.HasValue Then
@@ -218,10 +237,10 @@ Public Class Edit
                 End If
 
                 AddHandler cb.SelectedIndexChanged,
-                    Sub()
-                        Dim sel As Brand = TryCast(cb.SelectedItem, Brand)
-                        If sel IsNot Nothing Then txtBrand.Text = sel.BrandName
-                    End Sub
+                Sub()
+                    Dim sel As Brand = TryCast(cb.SelectedItem, Brand)
+                    If sel IsNot Nothing Then txtBrand.Text = sel.BrandName
+                End Sub
 
                 rowPanel.Controls.Add(cb)
                 rowPanel.Controls.Add(txtBrand)
@@ -233,15 +252,18 @@ Public Class Edit
                 rowPanel.Height = 40
 
                 Dim txt As New TextBox With {
-                    .Name = "txt_" & propPointer,
-                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                    .Left = lbl.Right + 10,
-                    .Top = 5,
-                    .Width = rowPanel.Width - lbl.Width - 20,
-                    .AutoSize = False,         ' ★★ FIX: manual height
-                    .Height = 28,                ' ★★ FIX: full visible height
-                    .BorderStyle = BorderStyle.FixedSingle
-                     }
+                .Name = "txt_" & propPointer,
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .Left = lbl.Right + 10,
+                .Top = 5,
+                .Width = rowPanel.Width - lbl.Width - 20,
+                .AutoSize = False,
+                .Height = 28,
+                .BorderStyle = BorderStyle.FixedSingle
+            }
+
+                ' store required info (no color change)
+                txt.Tag = New FieldInfo With {.Required = isRequired, .PropName = rawName}
 
                 ' Load existing values
                 Select Case True
@@ -261,6 +283,8 @@ Public Class Edit
         Next
 
     End Sub
+
+
 
     ' ★★ FIX: one central resize handler so textboxes resize properly
     Private Sub deviceflowpnl_Resize(sender As Object, e As EventArgs) Handles deviceflowpnl.Resize
@@ -294,6 +318,12 @@ Public Class Edit
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
         If currentDevice Is Nothing Then Exit Sub
         Dim userID As Integer = Session.LoggedInUserPointer
+
+        ' ✅ Validate required fields first
+        If Not ValidateRequiredFields() Then
+            ' validation already showed which field is missing
+            Exit Sub
+        End If
 
         ' ============================
         ' 1. BUILD A "NEW DEVICE" SNAPSHOT
@@ -363,9 +393,7 @@ Public Class Edit
             End If
         Next
 
-        ' ============================
         ' 3. BUILD NEW SPECS STRING → newDevice.Specs
-        ' ============================
         Dim newSpecList As New List(Of String)
         For Each row As Control In specsflowpnl.Controls
             If TypeOf row Is Panel Then
@@ -383,6 +411,10 @@ Public Class Edit
             End If
         Next
         newDevice.Specs = String.Join("; ", newSpecList)
+
+        ' 🔹 MAKE NOTES COME FROM NOTETXT
+        newDevice.Notes = notetxt.Text.Trim()
+
 
         ' ============================
         ' 4. BUILD CHANGE SUMMARY + LIST OF CHANGES
@@ -567,19 +599,26 @@ Public Class Edit
             ' one history row per changed field
             For Each ch In changes
                 mdl.InsertDeviceHistory(
-                currentDevice.Pointer,
-                ch.FieldName,
-                ch.OldValue,
-                ch.NewValue,
-                userID)
+                    currentDevice.Pointer,
+                    ch.FieldName,
+                    ch.OldValue,
+                    ch.NewValue,
+                    userID)
             Next
 
+            ' 🔄 REFRESH HISTORY GRID SO NEW ROWS APPEAR IMMEDIATELY
+            LoadHistory(currentDevice.Pointer)
+
             MessageBox.Show("Device updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Me.Parent.Visible = False
+
+            ' If you still want to close the Edit panel after save,
+            ' leave this line. If you want to stay and view history, remove it.
+            'Me.Parent.Visible = False
         Else
             MessageBox.Show("Update failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
+
 
 
 
@@ -679,6 +718,263 @@ Public Class Edit
 
         Return sb.ToString()
     End Function
+
+
+    Private Sub LoadHistory(devicePointer As Integer)
+        Dim dt As DataTable = mdl.GetDeviceHistory(devicePointer)
+
+        ' ==== transform specs rows: only show changed specs ====
+        For Each row As DataRow In dt.Rows
+            Dim remarks As String = If(row("remarks") Is DBNull.Value, "", row("remarks").ToString())
+
+            If remarks.ToLower().Contains("specs") Then
+                Dim oldRaw As String = If(row("updated_from") Is DBNull.Value, "", row("updated_from").ToString())
+                Dim newRaw As String = If(row("updated_to") Is DBNull.Value, "", row("updated_to").ToString())
+
+                Dim oldDisp As String = ""
+                Dim newDisp As String = ""
+
+                BuildSpecsDiffDisplay(oldRaw, newRaw, oldDisp, newDisp)
+
+                row("updated_from") = oldDisp
+                row("updated_to") = newDisp
+            End If
+        Next
+
+        ' ==== bind AFTER transformation ====
+        historydgv.DataSource = dt
+
+        ' Hide technical columns
+        If historydgv.Columns.Contains("pointer") Then
+            historydgv.Columns("pointer").Visible = False
+        End If
+        If historydgv.Columns.Contains("device_pointer") Then
+            historydgv.Columns("device_pointer").Visible = False
+        End If
+        If historydgv.Columns.Contains("updated_by") Then
+            historydgv.Columns("updated_by").Visible = False
+        End If
+
+        ' Nice headers
+        If historydgv.Columns.Contains("updated_from") Then
+            historydgv.Columns("updated_from").HeaderText = "From"
+        End If
+        If historydgv.Columns.Contains("updated_to") Then
+            historydgv.Columns("updated_to").HeaderText = "To"
+        End If
+        If historydgv.Columns.Contains("remarks") Then
+            historydgv.Columns("remarks").HeaderText = "Remarks"
+        End If
+        If historydgv.Columns.Contains("date") Then
+            historydgv.Columns("date").HeaderText = "Date"
+        End If
+        If historydgv.Columns.Contains("updated_by_name") Then
+            historydgv.Columns("updated_by_name").HeaderText = "Updated By"
+        End If
+
+        With historydgv
+
+            ' 🔹 Remove visible selection color
+            .DefaultCellStyle.SelectionBackColor = .DefaultCellStyle.BackColor
+            .DefaultCellStyle.SelectionForeColor = .DefaultCellStyle.ForeColor
+
+            .RowHeadersDefaultCellStyle.SelectionBackColor = .RowHeadersDefaultCellStyle.BackColor
+            .RowHeadersDefaultCellStyle.SelectionForeColor = .RowHeadersDefaultCellStyle.ForeColor
+
+            .ColumnHeadersDefaultCellStyle.SelectionBackColor = .ColumnHeadersDefaultCellStyle.BackColor
+            .ColumnHeadersDefaultCellStyle.SelectionForeColor = .ColumnHeadersDefaultCellStyle.ForeColor
+
+            ' ==== BASIC LOOK ====
+            .DefaultCellStyle.WrapMode = DataGridViewTriState.True
+            .AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells
+
+            .DefaultCellStyle.Font = New Font("Segoe UI", 8.5F, FontStyle.Regular)
+            .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+            .ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False
+            .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft
+
+            ' ⭐ FIX: remove big top space / top-align cells
+            .RowsDefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
+            .DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
+            .DefaultCellStyle.Padding = New Padding(0, 0, 0, 0)
+            .RowTemplate.Height = 18   ' tweak if you want taller rows
+
+            .CellBorderStyle = DataGridViewCellBorderStyle.None
+            .ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None
+            .GridColor = Me.BackColor
+            .EnableHeadersVisualStyles = False
+
+            .ReadOnly = True
+            .SelectionMode = DataGridViewSelectionMode.FullRowSelect
+            .RowHeadersVisible = False
+
+            ' we control widths manually
+            .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
+
+            .AllowUserToOrderColumns = False
+            .AllowUserToResizeColumns = False
+            .AllowUserToResizeRows = False
+            .ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing
+
+            For Each col As DataGridViewColumn In .Columns
+                col.SortMode = DataGridViewColumnSortMode.NotSortable
+            Next
+
+            ' ==== WIDTHS: give Remarks / Date / Updated By enough space ====
+            Dim totalW As Integer = .ClientSize.Width
+
+            Dim wFrom As Integer = CInt(totalW * 0.3)
+            Dim wTo As Integer = CInt(totalW * 0.3)
+            Dim wRemarks As Integer = 110      ' enough to show "Remarks"
+            Dim wDate As Integer = 110         ' enough to show full date header
+            Dim wUser As Integer = totalW - (wFrom + wTo + wRemarks + wDate)
+            If wUser < 90 Then wUser = 90      ' minimum width for "Updated By"
+
+            If .Columns.Contains("updated_from") Then .Columns("updated_from").Width = wFrom
+            If .Columns.Contains("updated_to") Then .Columns("updated_to").Width = wTo
+            If .Columns.Contains("remarks") Then .Columns("remarks").Width = wRemarks
+            If .Columns.Contains("date") Then .Columns("date").Width = wDate
+            If .Columns.Contains("updated_by_name") Then .Columns("updated_by_name").Width = wUser
+        End With
+    End Sub
+
+
+
+
+
+    ' Parse "Label: value; Label2: value2" → Dictionary(label → value)
+    Private Function ParseSpecsToDict(specString As String) As Dictionary(Of String, String)
+        Dim dict As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+
+        If String.IsNullOrWhiteSpace(specString) Then Return dict
+
+        Dim parts() As String = specString.Split(";"c)
+
+        For Each raw In parts
+            Dim part As String = raw.Trim()
+            If part = "" Then Continue For
+
+            Dim kv() As String = part.Split(":"c)
+            Dim label As String = kv(0).Trim()
+            Dim value As String = If(kv.Length > 1, kv(1).Trim(), "")
+
+            If Not dict.ContainsKey(label) Then
+                dict.Add(label, value)
+            Else
+                dict(label) = value
+            End If
+        Next
+
+        Return dict
+    End Function
+
+    ' Build *display* text for old/new specs showing ONLY changed items
+    Private Sub BuildSpecsDiffDisplay(oldSpec As String,
+                                  newSpec As String,
+                                  ByRef oldDisplay As String,
+                                  ByRef newDisplay As String)
+
+        Dim oldDict = ParseSpecsToDict(oldSpec)
+        Dim newDict = ParseSpecsToDict(newSpec)
+
+        Dim allKeys As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        For Each k In oldDict.Keys
+            allKeys.Add(k)
+        Next
+        For Each k In newDict.Keys
+            allKeys.Add(k)
+        Next
+
+        Dim sbOld As New StringBuilder()
+        Dim sbNew As New StringBuilder()
+
+        For Each label In allKeys
+            Dim oldVal As String = If(oldDict.ContainsKey(label), oldDict(label), "")
+            Dim newVal As String = If(newDict.ContainsKey(label), newDict(label), "")
+
+            ' only show specs that actually changed
+            If oldVal <> newVal Then
+                If oldVal <> "" Then
+                    If sbOld.Length > 0 Then sbOld.AppendLine()
+                    sbOld.Append($"{label}: {oldVal}")
+                End If
+
+                If newVal <> "" Then
+                    If sbNew.Length > 0 Then sbNew.AppendLine()
+                    sbNew.Append($"{label}: {newVal}")
+                End If
+            End If
+        Next
+
+        oldDisplay = sbOld.ToString()
+        newDisplay = sbNew.ToString()
+    End Sub
+
+
+
+
+
+    Private Function FormatSpecsForDisplay(specString As String) As String
+        If String.IsNullOrWhiteSpace(specString) Then Return ""
+
+        Dim sb As New StringBuilder()
+        Dim parts() As String = specString.Split(";"c)
+
+        For Each raw In parts
+            Dim part As String = raw.Trim()
+            If part = "" Then Continue For
+
+            If sb.Length > 0 Then sb.AppendLine()
+            sb.Append(part)   ' keeps "Processor: value"
+        Next
+
+        Return sb.ToString()
+    End Function
+
+
+    ' ========================
+    ' 🔍 VALIDATE REQUIRED FIELDS (EDIT) - NO COLOR
+    ' ========================
+    Private Function ValidateRequiredFields() As Boolean
+        For Each row As Control In deviceflowpnl.Controls
+            If TypeOf row Is Panel Then
+                For Each ctrl As Control In row.Controls
+
+                    If TypeOf ctrl Is TextBox OrElse TypeOf ctrl Is ComboBox Then
+                        Dim info As FieldInfo = TryCast(ctrl.Tag, FieldInfo)
+
+                        ' only check controls that have FieldInfo and are required
+                        If info Is Nothing OrElse Not info.Required Then Continue For
+
+                        Dim hasValue As Boolean = False
+
+                        If TypeOf ctrl Is TextBox Then
+                            Dim txt As TextBox = DirectCast(ctrl, TextBox)
+                            hasValue = Not String.IsNullOrWhiteSpace(txt.Text)
+
+                        ElseIf TypeOf ctrl Is ComboBox Then
+                            Dim cb As ComboBox = DirectCast(ctrl, ComboBox)
+                            hasValue = (cb.SelectedIndex >= 0)
+                        End If
+
+                        If Not hasValue Then
+                            MessageBox.Show(info.PropName & " is required.",
+                                            "Validation Error",
+                                            MessageBoxButtons.OK,
+                                            MessageBoxIcon.Warning)
+                            ctrl.Focus()
+                            Return False
+                        End If
+                    End If
+
+                Next
+            End If
+        Next
+
+        Return True
+    End Function
+
+
 
 
 End Class

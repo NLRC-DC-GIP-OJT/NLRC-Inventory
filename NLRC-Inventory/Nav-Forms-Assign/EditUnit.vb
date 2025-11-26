@@ -19,6 +19,9 @@ Public Class EditUnit
     Private removedDevices As New List(Of Integer)
     Private addedDevices As New List(Of Integer)
 
+    Private originalDeviceList As DataTable          ' for devicecb filtering
+    Private isFiltering As Boolean = False           ' shared flag for both combos
+
     ' TEMP SPECS STORAGE
     Private editedSpecs As New Dictionary(Of Integer, Dictionary(Of String, String))()
 
@@ -119,6 +122,10 @@ Public Class EditUnit
         deviceflowpnl.FlowDirection = FlowDirection.TopDown
         deviceflowpnl.WrapContents = False
         deviceflowpnl.AutoScroll = True
+
+        ' 🔍 enable type-to-search behavior (like Select2)
+        AddHandler devicecb.TextChanged, AddressOf FilterDeviceCombo
+        AddHandler assigncb.TextChanged, AddressOf FilterAssignCombo
     End Sub
 
 
@@ -236,7 +243,14 @@ Public Class EditUnit
         deviceFullSpecs.Clear()
         deviceBaseDisplay.Clear()
 
-        dt.Columns.Add("HiddenSpecs", GetType(String))
+        If dt Is Nothing OrElse dt.Rows.Count = 0 Then
+            MessageBox.Show("No devices found in the database.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        If Not dt.Columns.Contains("HiddenSpecs") Then
+            dt.Columns.Add("HiddenSpecs", GetType(String))
+        End If
 
         For Each row As DataRow In dt.Rows
             Dim id = CInt(row("device_id"))
@@ -244,40 +258,66 @@ Public Class EditUnit
 
             Dim base = $"{row("category_name")} - {row("brand_name")} - {row("model")}"
             Dim hiddenSpecs As New List(Of String)
-            If Not IsDBNull(row("nsoc_name")) AndAlso row("nsoc_name").ToString().Trim() <> "" Then hiddenSpecs.Add("NSOC Name:" & row("nsoc_name").ToString())
-            If Not IsDBNull(row("property_number")) AndAlso row("property_number").ToString().Trim() <> "" Then hiddenSpecs.Add("Property No:" & row("property_number").ToString())
-            If Not IsDBNull(row("actual_specs")) AndAlso row("actual_specs").ToString().Trim() <> "" Then hiddenSpecs.Add(row("actual_specs").ToString())
+
+            If Not IsDBNull(row("nsoc_name")) AndAlso row("nsoc_name").ToString().Trim() <> "" Then
+                hiddenSpecs.Add("NSOC Name:" & row("nsoc_name").ToString())
+            End If
+            If Not IsDBNull(row("property_number")) AndAlso row("property_number").ToString().Trim() <> "" Then
+                hiddenSpecs.Add("Property No:" & row("property_number").ToString())
+            End If
+            If Not IsDBNull(row("actual_specs")) AndAlso row("actual_specs").ToString().Trim() <> "" Then
+                hiddenSpecs.Add(row("actual_specs").ToString())
+            End If
 
             row("HiddenSpecs") = String.Join(";", hiddenSpecs)
             deviceFullSpecs(id) = row("HiddenSpecs").ToString()
             deviceBaseDisplay(id) = base
         Next
 
+        ' dt must already have DeviceDisplay (from your SP/query)
         devicecb.DataSource = dt
         devicecb.DisplayMember = "DeviceDisplay"
         devicecb.ValueMember = "device_id"
         devicecb.SelectedIndex = -1
         devicecb.Text = "Select Device"
+
+        ' 🔍 like Select2
+        devicecb.DropDownStyle = ComboBoxStyle.DropDown
+        devicecb.IntegralHeight = False
+        devicecb.DropDownHeight = 350
+
+        ' keep a copy for filtering
+        originalDeviceList = dt.Copy()
     End Sub
+
 
     Private Sub UpdateComboList()
         Dim dt As New DataTable()
         dt.Columns.Add("device_id", GetType(Integer))
         dt.Columns.Add("DeviceDisplay", GetType(String))
         dt.Columns.Add("DeviceFullSpecs", GetType(String))
+        dt.Columns.Add("HiddenSpecs", GetType(String))
 
         For Each kv In deviceBaseDisplay
             Dim id = kv.Key
             Dim baseText = kv.Value
             Dim qty = If(deviceQuantities.ContainsKey(id), deviceQuantities(id), 0)
             Dim fullSpecs = If(deviceFullSpecs.ContainsKey(id), deviceFullSpecs(id), baseText)
-            dt.Rows.Add(id, $"{baseText} ({qty})", fullSpecs)
+            dt.Rows.Add(id, $"{baseText} ({qty})", fullSpecs, fullSpecs)
         Next
 
         devicecb.DataSource = dt
         devicecb.DisplayMember = "DeviceDisplay"
         devicecb.ValueMember = "device_id"
+
+        ' 🔍 keep updated source for filtering
+        originalDeviceList = dt.Copy()
+
+        devicecb.DropDownStyle = ComboBoxStyle.DropDown
+        devicecb.IntegralHeight = False
+        devicecb.DropDownHeight = 350
     End Sub
+
 
     Private Sub adddevicebtn_Click(sender As Object, e As EventArgs) Handles adddevicebtn.Click
         If devicecb.SelectedIndex = -1 Then
@@ -471,9 +511,35 @@ Public Class EditUnit
     ' ==========================
     ' SAVE UNIT CHANGES
     ' ==========================
+    ' ==========================
+    ' SAVE UNIT CHANGES
+    ' ==========================
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
+        ' ---- 1. BASIC VALIDATION FOR UNIT NAME ----
+        Dim newUnitName As String = unitnametxt.Text.Trim()
+
+        If String.IsNullOrWhiteSpace(newUnitName) Then
+            MessageBox.Show("Unit name is required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            unitnametxt.Focus()
+            Return
+        End If
+
+        ' ---- 2. CHECK UNIQUENESS (BUT ALLOW ORIGINAL NAME) ----
+        ' Only check the database if the name was actually changed
+        If Not newUnitName.Equals(originalUnitName, StringComparison.OrdinalIgnoreCase) Then
+            If mdl.IsUnitNameExists(newUnitName) Then
+                MessageBox.Show($"The unit name '{newUnitName}' already exists in the database.",
+                            "Duplicate Unit",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning)
+                unitnametxt.Focus()
+                unitnametxt.SelectAll()
+                Return
+            End If
+        End If
+
+        ' ---- 3. PROCEED WITH YOUR EXISTING SAVE LOGIC ----
         Dim newAssignedId As Integer = If(selectedAssignedId.HasValue, selectedAssignedId.Value, originalAssignedId)
-        Dim newUnitName = unitnametxt.Text.Trim()
         Dim remarksText = remarkstxt.Text.Trim()
         Dim sb As New StringBuilder()
         sb.AppendLine("You are about to save the following changes:" & vbCrLf)
@@ -516,9 +582,19 @@ Public Class EditUnit
         If MessageBox.Show(sb.ToString(), "Confirm Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then Return
 
         ' Only pass the devices with actual changes to the save function
-        mdl.SaveUnitChanges(unitId, newAssignedId, removedDevices, addedDevices, editedDevicesWithChanges.ToDictionary(Function(k) k.Key, Function(k) k.Value), newUnitName, remarksText)
+        mdl.SaveUnitChanges(
+        unitId,
+        newAssignedId,
+        removedDevices,
+        addedDevices,
+        editedDevicesWithChanges.ToDictionary(Function(k) k.Key, Function(k) k.Value),
+        newUnitName,
+        remarksText
+    )
+
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
+
 
     ' ==========================
     ' HELPER: Compare two dictionaries
@@ -537,11 +613,23 @@ Public Class EditUnit
 
     Private Sub LoadAssignments()
         originalAssignList = mdl.GetAssignments()
+
+        If originalAssignList Is Nothing OrElse originalAssignList.Rows.Count = 0 Then
+            MessageBox.Show("No users found in the database.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
         assigncb.DataSource = originalAssignList.Copy()
         assigncb.DisplayMember = "Full name"
         assigncb.ValueMember = "user_id"
         assigncb.SelectedIndex = -1
+
+        ' 🔍 allow typing + dropdown like Select2
+        assigncb.DropDownStyle = ComboBoxStyle.DropDown
+        assigncb.IntegralHeight = False
+        assigncb.DropDownHeight = 350
     End Sub
+
 
 
 
@@ -585,6 +673,77 @@ Public Class EditUnit
 
         Return cleaned
     End Function
+
+    ' =========================
+    ' Filter handlers (like AddUnits)
+    ' =========================
+    Private Sub FilterDeviceCombo(sender As Object, e As EventArgs)
+        SafeComboFilter(DirectCast(sender, ComboBox), originalDeviceList, "DeviceDisplay", "device_id", AddressOf FilterDeviceCombo)
+    End Sub
+
+    Private Sub FilterAssignCombo(sender As Object, e As EventArgs)
+        SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList, "Full name", "user_id", AddressOf FilterAssignCombo)
+    End Sub
+
+    ' =========================
+    ' Universal ComboBox Filter
+    ' =========================
+    Private Sub SafeComboFilter(cb As ComboBox, source As DataTable, displayCol As String, valueCol As String, handler As EventHandler)
+        If isFiltering Then Exit Sub
+        isFiltering = True
+
+        Try
+            If Not cb.Focused OrElse source Is Nothing OrElse source.Rows.Count = 0 Then Exit Sub
+
+            Dim searchText As String = cb.Text.Trim().ToLower()
+            Dim filtered As DataTable
+
+            If String.IsNullOrWhiteSpace(searchText) Then
+                filtered = source.Copy()
+            Else
+                Dim rows = source.AsEnumerable().
+                Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
+                filtered = If(rows.Any(), rows.CopyToDataTable(), Nothing)
+            End If
+
+            Dim currentText As String = cb.Text
+            Dim selStart As Integer = cb.SelectionStart
+
+            RemoveHandler cb.TextChanged, handler
+            cb.BeginUpdate()
+
+            If filtered IsNot Nothing Then
+                If Not filtered.Columns.Contains(valueCol) Then
+                    filtered.Columns.Add(valueCol, GetType(Integer))
+                End If
+
+                cb.DataSource = filtered
+            Else
+                Dim noResult As New DataTable()
+                noResult.Columns.Add(displayCol, GetType(String))
+                noResult.Columns.Add(valueCol, GetType(Integer))
+                noResult.Rows.Add("No results found", -1)
+                cb.DataSource = noResult
+            End If
+
+            cb.DisplayMember = displayCol
+            cb.ValueMember = valueCol
+            cb.EndUpdate()
+
+            cb.DroppedDown = True
+            Cursor.Current = Cursors.IBeam
+            cb.Text = currentText
+            cb.SelectionStart = Math.Min(selStart, cb.Text.Length)
+            cb.SelectionLength = 0
+
+            Application.DoEvents()
+            cb.DroppedDown = True
+
+            AddHandler cb.TextChanged, handler
+        Finally
+            isFiltering = False
+        End Try
+    End Sub
 
 
 End Class

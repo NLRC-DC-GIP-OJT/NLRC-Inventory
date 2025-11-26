@@ -3162,20 +3162,20 @@ End Function
                 conn.Open()
 
                 Dim sql As String =
-                    "INSERT INTO inv_device_history " &
-                    " (device_pointer, updated_from, updated_to, remarks, updated_by) " &
-                    "VALUES (@dev, @from, @to, @remarks, @by);"
+                "INSERT INTO inv_device_history " &
+                " (device_pointer, updated_from, updated_to, remarks, updated_by, `date`) " &
+                "VALUES (@dev, @from, @to, @remarks, @by, NOW());"
 
                 Using cmd As New MySqlCommand(sql, conn)
                     cmd.Parameters.AddWithValue("@dev", devicePointer)
                     cmd.Parameters.AddWithValue("@from",
-                                                If(String.IsNullOrEmpty(oldValue),
-                                                   CType(DBNull.Value, Object),
-                                                   oldValue))
+                                            If(String.IsNullOrEmpty(oldValue),
+                                               CType(DBNull.Value, Object),
+                                               oldValue))
                     cmd.Parameters.AddWithValue("@to",
-                                                If(String.IsNullOrEmpty(newValue),
-                                                   CType(DBNull.Value, Object),
-                                                   newValue))
+                                            If(String.IsNullOrEmpty(newValue),
+                                               CType(DBNull.Value, Object),
+                                               newValue))
                     cmd.Parameters.AddWithValue("@remarks", fieldName & " changed")
                     cmd.Parameters.AddWithValue("@by", updatedBy)
 
@@ -3189,6 +3189,7 @@ End Function
         End Try
     End Function
 
+
     ' ============================
     ' DEVICE HISTORY: GET BY DEVICE
     ' ============================
@@ -3200,10 +3201,19 @@ End Function
                 conn.Open()
 
                 Dim sql As String =
-                    "SELECT pointer, device_pointer, updated_from, updated_to, remarks, updated_by " &
-                    "FROM inv_device_history " &
-                    "WHERE device_pointer = @dev " &
-                    "ORDER BY pointer DESC;"
+                    "SELECT h.pointer,
+                        h.device_pointer,
+                        h.updated_from,
+                        h.updated_to,
+                        h.remarks,
+                        h.updated_by,
+                        h.date,
+                        u.UAUsername AS updated_by_name
+                 FROM inv_device_history h
+                 LEFT JOIN m_useraccounts u
+                        ON u.pointer = h.updated_by
+                 WHERE h.device_pointer = @dev
+                 ORDER BY h.date DESC, h.pointer DESC;"
 
                 Using cmd As New MySqlCommand(sql, conn)
                     cmd.Parameters.AddWithValue("@dev", devicePointer)
@@ -3222,8 +3232,41 @@ End Function
     End Function
 
 
+    Public Function GetRecentDeviceHistory(limit As Integer) As DataTable
+        Dim dt As New DataTable()
 
+        Dim sql As String = "
+        SELECT 
+            h.pointer,
+            c.category_name AS DeviceCategory,
+            h.updated_from,
+            h.updated_to,
+            h.remarks,
+            h.date,
+            u.UAUsername AS updated_by_name
+        FROM inv_device_history h
+        LEFT JOIN inv_devices d 
+               ON d.pointer = h.device_pointer
+        LEFT JOIN inv_device_category c 
+               ON c.pointer = d.dev_category_pointer
+        LEFT JOIN m_useraccounts u
+               ON u.pointer = h.updated_by
+        ORDER BY h.date DESC, h.pointer DESC
+        LIMIT 10;"
 
+        Using conn As New MySqlConnection(connectionString)
+            Using cmd As New MySqlCommand(sql, conn)
+                Using da As New MySqlDataAdapter(cmd)
+                    da.Fill(dt)
+                End Using
+            End Using
+        End Using
+
+        Return dt
+    End Function
 
 
 End Class
+
+
+

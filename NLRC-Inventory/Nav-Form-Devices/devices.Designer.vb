@@ -51,9 +51,9 @@ Partial Class devices
         ' 
         Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.Controls.Add(devicesdgv)
-        Panel1.Location = New Point(15, 124)
+        Panel1.Location = New Point(15, 93)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1318, 743)
+        Panel1.Size = New Size(1318, 774)
         Panel1.TabIndex = 7
         ' 
         ' devicesdgv
@@ -89,7 +89,7 @@ Partial Class devices
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         devicesdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicesdgv.Size = New Size(1318, 743)
+        devicesdgv.Size = New Size(1318, 774)
         devicesdgv.TabIndex = 0
         ' 
         ' addbtn
@@ -135,7 +135,7 @@ Partial Class devices
         Panel2.Controls.Add(brandscb)
         Panel2.Controls.Add(Label3)
         Panel2.Controls.Add(statuscb)
-        Panel2.Location = New Point(15, 24)
+        Panel2.Location = New Point(15, 10)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(1314, 77)
         Panel2.TabIndex = 13

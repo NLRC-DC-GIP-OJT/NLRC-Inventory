@@ -327,6 +327,24 @@ Public Class AddUnits
     End Sub
 
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
+        ' ===== TOP-LEVEL VALIDATION =====
+        If String.IsNullOrWhiteSpace(unitnametxt.Text) Then
+            MessageBox.Show("Unit Name is required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            unitnametxt.Focus()
+            Return
+        End If
+
+        If assigncb.SelectedIndex = -1 OrElse String.IsNullOrWhiteSpace(assigncb.Text) Then
+            MessageBox.Show("Assigned To is required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            assigncb.Focus()
+            Return
+        End If
+
+        If unitsdgv.Rows.Count = 0 Then
+            MessageBox.Show("No devices to save.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
         If unitsdgv.Rows.Count = 0 Then
             MessageBox.Show("No devices to save.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return

@@ -22,11 +22,10 @@ Partial Class Units
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
-        Button1 = New Button()
         multibtn = New Button()
         unitaddbtn = New Button()
         filtertxt = New TextBox()
@@ -52,7 +51,7 @@ Partial Class Units
         Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
-        Panel1.Controls.Add(Button1)
+        Panel1.BorderStyle = BorderStyle.FixedSingle
         Panel1.Controls.Add(multibtn)
         Panel1.Controls.Add(unitaddbtn)
         Panel1.Controls.Add(filtertxt)
@@ -63,26 +62,13 @@ Partial Class Units
         Panel1.Size = New Size(1319, 67)
         Panel1.TabIndex = 0
         ' 
-        ' Button1
-        ' 
-        Button1.Anchor = AnchorStyles.None
-        Button1.BackColor = Color.CornflowerBlue
-        Button1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
-        Button1.ForeColor = Color.White
-        Button1.Location = New Point(582, 7)
-        Button1.Name = "Button1"
-        Button1.Size = New Size(192, 53)
-        Button1.TabIndex = 23
-        Button1.Text = "Add NSOC Name"
-        Button1.UseVisualStyleBackColor = False
-        ' 
         ' multibtn
         ' 
         multibtn.Anchor = AnchorStyles.None
         multibtn.BackColor = Color.CornflowerBlue
-        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         multibtn.ForeColor = Color.White
-        multibtn.Location = New Point(780, 7)
+        multibtn.Location = New Point(779, 6)
         multibtn.Name = "multibtn"
         multibtn.Size = New Size(210, 53)
         multibtn.TabIndex = 22
@@ -93,9 +79,9 @@ Partial Class Units
         ' 
         unitaddbtn.Anchor = AnchorStyles.Top
         unitaddbtn.BackColor = Color.CornflowerBlue
-        unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
-        unitaddbtn.Location = New Point(996, 7)
+        unitaddbtn.Location = New Point(995, 7)
         unitaddbtn.Name = "unitaddbtn"
         unitaddbtn.Size = New Size(161, 53)
         unitaddbtn.TabIndex = 21
@@ -105,7 +91,7 @@ Partial Class Units
         ' filtertxt
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
-        filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         filtertxt.Location = New Point(83, 15)
         filtertxt.Name = "filtertxt"
         filtertxt.Size = New Size(301, 38)
@@ -115,9 +101,9 @@ Partial Class Units
         ' 
         addbtn.Anchor = AnchorStyles.Top
         addbtn.BackColor = Color.CornflowerBlue
-        addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1163, 7)
+        addbtn.Location = New Point(1162, 7)
         addbtn.Name = "addbtn"
         addbtn.Size = New Size(139, 53)
         addbtn.TabIndex = 16
@@ -151,33 +137,33 @@ Partial Class Units
         allunitsdgv.AllowUserToDeleteRows = False
         allunitsdgv.AllowUserToResizeColumns = False
         allunitsdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
-        DataGridViewCellStyle1.ForeColor = Color.White
-        DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
-        allunitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle4.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle4.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle4.ForeColor = Color.White
+        DataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
+        allunitsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
         allunitsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
-        allunitsdgv.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle5.BackColor = SystemColors.Window
+        DataGridViewCellStyle5.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
+        allunitsdgv.DefaultCellStyle = DataGridViewCellStyle5
         allunitsdgv.Dock = DockStyle.Fill
         allunitsdgv.Location = New Point(0, 0)
         allunitsdgv.Name = "allunitsdgv"
         allunitsdgv.ReadOnly = True
         allunitsdgv.RowHeadersVisible = False
         allunitsdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle3.BackColor = Color.AliceBlue
-        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0)
-        DataGridViewCellStyle3.ForeColor = Color.Black
-        allunitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle6.BackColor = Color.AliceBlue
+        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle6.ForeColor = Color.Black
+        allunitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
         allunitsdgv.Size = New Size(1317, 693)
         allunitsdgv.TabIndex = 1
         ' 
@@ -208,7 +194,7 @@ Partial Class Units
         btnNext.Anchor = AnchorStyles.Bottom
         btnNext.AutoSize = True
         btnNext.BackColor = Color.CornflowerBlue
-        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
         btnNext.Location = New Point(783, 801)
         btnNext.Name = "btnNext"
@@ -222,7 +208,7 @@ Partial Class Units
         btnPrev.Anchor = AnchorStyles.Bottom
         btnPrev.AutoSize = True
         btnPrev.BackColor = Color.CornflowerBlue
-        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
         btnPrev.Location = New Point(562, 801)
         btnPrev.Name = "btnPrev"
@@ -235,7 +221,7 @@ Partial Class Units
         ' 
         lblPageInfo.Anchor = AnchorStyles.Bottom
         lblPageInfo.AutoSize = True
-        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         lblPageInfo.Location = New Point(662, 812)
         lblPageInfo.Name = "lblPageInfo"
         lblPageInfo.Size = New Size(109, 28)
@@ -264,7 +250,7 @@ Partial Class Units
         savedgvbtn.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         savedgvbtn.AutoSize = True
         savedgvbtn.BackColor = Color.CornflowerBlue
-        savedgvbtn.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0)
+        savedgvbtn.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savedgvbtn.ForeColor = Color.White
         savedgvbtn.Location = New Point(1083, 796)
         savedgvbtn.Name = "savedgvbtn"
@@ -311,6 +297,5 @@ Partial Class Units
     Friend WithEvents Panel3 As Panel
     Friend WithEvents viewpnl As Panel
     Friend WithEvents multibtn As Button
-    Friend WithEvents Button1 As Button
 
 End Class

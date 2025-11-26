@@ -148,6 +148,7 @@ Partial Class AddUnits
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label2.ForeColor = Color.Red
         Label2.Location = New Point(27, 88)
         Label2.Name = "Label2"
         Label2.Size = New Size(210, 23)
@@ -158,6 +159,7 @@ Partial Class AddUnits
         ' 
         Label1.AutoSize = True
         Label1.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label1.ForeColor = Color.Red
         Label1.Location = New Point(27, 23)
         Label1.Name = "Label1"
         Label1.Size = New Size(122, 23)

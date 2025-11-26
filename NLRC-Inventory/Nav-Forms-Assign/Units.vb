@@ -233,21 +233,115 @@ Public Class Units
     End Sub
 
     ' ----------------- Save Bulk -----------------
+    ' ----------------- Save Bulk -----------------
+    ' ----------------- Save Bulk -----------------
     Private Sub savedgvbtn_Click(sender As Object, e As EventArgs) Handles savedgvbtn.Click
         Try
+            ' 🔹 Make sure any in-progress cell edit is committed
+            allunitsdgv.EndEdit()
+
             Dim dt As DataTable = CType(allunitsdgv.DataSource, DataTable)
 
-            ' Check for duplicate Unit Names
-            Dim unitNames = dt.AsEnumerable().Select(Function(r) If(r("Unit Name") IsNot DBNull.Value, r("Unit Name").ToString().Trim(), "")).ToList()
-            Dim duplicates = unitNames.GroupBy(Function(n) n).Where(Function(g) g.Count() > 1 AndAlso g.Key <> "").Select(Function(g) g.Key).ToList()
+            ' ================================
+            ' 1) CHECK DUPLICATES INSIDE GRID
+            ' ================================
+            Dim unitNames = dt.AsEnumerable().
+            Select(Function(r) If(r("Unit Name") IsNot DBNull.Value, r("Unit Name").ToString().Trim(), "")).
+            ToList()
+
+            Dim duplicates = unitNames.
+            GroupBy(Function(n) n).
+            Where(Function(g) g.Count() > 1 AndAlso g.Key <> "").
+            Select(Function(g) g.Key).
+            ToList()
 
             If duplicates.Any() Then
-                MessageBox.Show("Duplicate Unit Names detected: " & String.Join(", ", duplicates) & vbCrLf &
-                            "Please ensure each Unit Name is unique before saving.", "Duplicate Unit Names", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                MessageBox.Show(
+        "Duplicate Unit Names detected in the grid: " & String.Join(", ", duplicates) & vbCrLf &
+        "Please ensure each Unit Name is unique before saving.",
+        "Duplicate Unit Names",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Warning
+    )
+
+                ' 🔁 RESET ALL CHANGES IN THE DATATABLE + GRID
+                dt.RejectChanges()
+                allunitsdgv.DataSource = dt   ' optional; often not needed but safe
+
                 Return
             End If
 
-            ' Build summary of changes (show Unit Name, no Unit ID)
+
+            ' ============================================
+            ' 2) CHECK AGAINST DATABASE (GLOBAL UNIQUENESS)
+            '    - allow original name for the same row
+            '    - RESET edited name back to original if duplicate
+            ' ============================================
+            Dim existingDupes As New List(Of String)()
+
+            For Each row As DataRow In dt.Rows
+                If row.IsNull("unit_id") Then Continue For
+
+                Dim newName As String = If(row("Unit Name") IsNot DBNull.Value, row("Unit Name").ToString().Trim(), "")
+                If newName = "" Then Continue For
+
+                Dim unitId As Integer = CInt(row("unit_id"))
+
+                ' find original row for comparison
+                Dim origRow = allFilteredRows.FirstOrDefault(Function(r) CInt(r("unit_id")) = unitId)
+                Dim origName As String = If(origRow IsNot Nothing AndAlso origRow("Unit Name") IsNot DBNull.Value,
+                                        origRow("Unit Name").ToString().Trim(),
+                                        "")
+
+                ' only check DB if the name actually changed (case-insensitive)
+                If Not String.Equals(newName, origName, StringComparison.OrdinalIgnoreCase) Then
+                    If mdl.IsUnitNameExists(newName) Then
+
+                        ' ✅ RESET DataRow value back to original (or "" if you want it cleared)
+                        row("Unit Name") = origName   ' or "" if you prefer to clear
+
+                        ' ✅ ALSO RESET THE GRID CELL so you see it immediately
+                        For Each gridRow As DataGridViewRow In allunitsdgv.Rows
+                            If gridRow.IsNewRow Then Continue For
+                            If CInt(gridRow.Cells("unit_id").Value) = unitId Then
+                                gridRow.Cells("Unit Name").Value = origName  ' or "" to clear
+                                ' Optional: focus that cell
+                                allunitsdgv.CurrentCell = gridRow.Cells("Unit Name")
+                                Exit For
+                            End If
+                        Next
+
+                        ' track duplicate name (avoid duplicates in message list)
+                        If Not existingDupes.Any(Function(x) String.Equals(x, newName, StringComparison.OrdinalIgnoreCase)) Then
+                            existingDupes.Add(newName)
+                        End If
+                    End If
+                End If
+            Next
+
+            If existingDupes.Any() Then
+                allunitsdgv.Refresh()
+
+                MessageBox.Show(
+        "The following Unit Name(s) already exist in the database: " &
+        String.Join(", ", existingDupes) & vbCrLf &
+        "The grid will be reset to the last saved data.",
+        "Existing Unit Names",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Warning
+    )
+
+                ' 🔁 RESET ALL CHANGES IN THE DATATABLE + GRID
+                dt.RejectChanges()
+                allunitsdgv.DataSource = dt   ' optional but explicit
+
+                Return
+            End If
+
+
+            ' ================================
+            ' 3) BUILD SUMMARY OF CHANGES
+            ' ================================
             Dim summary As New Text.StringBuilder()
             For Each row As DataRow In dt.Rows
                 Dim origRow = allFilteredRows.FirstOrDefault(Function(r) CInt(r("unit_id")) = CInt(row("unit_id")))
@@ -278,8 +372,17 @@ Public Class Units
                 Return
             End If
 
-            ' Ask for confirmation with summary
-            Dim result = MessageBox.Show("The following changes will be made:" & vbCrLf & summary.ToString() & vbCrLf & vbCrLf & "Proceed?", "Confirm Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+            ' ================================
+            ' 4) CONFIRM + SAVE
+            ' ================================
+            Dim result = MessageBox.Show(
+            "The following changes will be made:" & vbCrLf &
+            summary.ToString() & vbCrLf & vbCrLf &
+            "Proceed?",
+            "Confirm Save",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question
+        )
             If result <> DialogResult.Yes Then
                 Return
             End If
@@ -299,6 +402,9 @@ Public Class Units
             MessageBox.Show("Error saving changes: " & ex.Message)
         End Try
     End Sub
+
+
+
 
 
 

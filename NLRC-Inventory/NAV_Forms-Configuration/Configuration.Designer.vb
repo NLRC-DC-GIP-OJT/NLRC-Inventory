@@ -31,6 +31,7 @@ Partial Class Configuration
         Dim DataGridViewCellStyle7 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle8 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle9 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Configuration))
         Label3 = New Label()
         Panel1 = New Panel()
         propertyflowpnl = New FlowLayoutPanel()
@@ -60,6 +61,7 @@ Partial Class Configuration
         Panel6 = New Panel()
         Panel4 = New Panel()
         Panel5 = New Panel()
+        Panel7 = New Panel()
         Panel1.SuspendLayout()
         Panel3.SuspendLayout()
         CType(devicedgv, ComponentModel.ISupportInitialize).BeginInit()
@@ -69,6 +71,7 @@ Partial Class Configuration
         Panel6.SuspendLayout()
         Panel4.SuspendLayout()
         Panel5.SuspendLayout()
+        Panel7.SuspendLayout()
         SuspendLayout()
         ' 
         ' Label3
@@ -76,7 +79,7 @@ Partial Class Configuration
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(13, 12)
+        Label3.Location = New Point(3, 3)
         Label3.Name = "Label3"
         Label3.Size = New Size(305, 38)
         Label3.TabIndex = 7
@@ -484,17 +487,29 @@ Partial Class Configuration
         Panel5.Size = New Size(439, 348)
         Panel5.TabIndex = 16
         ' 
+        ' Panel7
+        ' 
+        Panel7.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        Panel7.BackColor = Color.Transparent
+        Panel7.BackgroundImage = CType(resources.GetObject("Panel7.BackgroundImage"), Image)
+        Panel7.BorderStyle = BorderStyle.FixedSingle
+        Panel7.Controls.Add(Label3)
+        Panel7.Location = New Point(21, 4)
+        Panel7.Name = "Panel7"
+        Panel7.Size = New Size(1306, 48)
+        Panel7.TabIndex = 17
+        ' 
         ' Configuration
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
+        Controls.Add(Panel7)
         Controls.Add(Panel4)
         Controls.Add(Panel5)
         Controls.Add(Panel6)
         Controls.Add(Panel2)
         Controls.Add(Panel3)
         Controls.Add(Panel1)
-        Controls.Add(Label3)
         Name = "Configuration"
         Size = New Size(1353, 869)
         Panel1.ResumeLayout(False)
@@ -509,8 +524,9 @@ Partial Class Configuration
         Panel6.ResumeLayout(False)
         Panel4.ResumeLayout(False)
         Panel5.ResumeLayout(False)
+        Panel7.ResumeLayout(False)
+        Panel7.PerformLayout()
         ResumeLayout(False)
-        PerformLayout()
     End Sub
 
     Friend WithEvents Label3 As Label
@@ -544,5 +560,6 @@ Partial Class Configuration
     Friend WithEvents FlowLayoutPanel2 As FlowLayoutPanel
     Friend WithEvents FlowLayoutPanel3 As FlowLayoutPanel
     Friend WithEvents propertyflowpnl As FlowLayoutPanel
+    Friend WithEvents Panel7 As Panel
 
 End Class

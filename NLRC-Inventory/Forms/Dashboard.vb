@@ -146,7 +146,7 @@ Public Class Dashboard
     End Sub
 
     Private Sub confibtn_Click(sender As Object, e As EventArgs) Handles confibtn.Click
-        LoadUserControl(New Configuration())
+        LoadUserControl(New Configuration)
     End Sub
 
 End Class

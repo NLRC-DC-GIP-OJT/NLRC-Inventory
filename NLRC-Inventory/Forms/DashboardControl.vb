@@ -131,6 +131,8 @@ Public Class DashboardControl
         LoadRecentUnitActivities()
         DrawUnitAssignmentGraph()
         LoadRecentAddedActivity()
+
+        LoadDeviceHistoryGrid()
     End Sub
 
     ' ========================
@@ -543,6 +545,89 @@ Public Class DashboardControl
         activitydgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         activitydgv.MultiSelect = False
         activitydgv.CurrentCell = Nothing
+    End Sub
+
+
+    ' ========================
+    ' LOAD DEVICE HISTORY INTO historydgv
+    ' ========================
+    Private Sub LoadDeviceHistoryGrid()
+        ' You’ll create this function in model (see below)
+        Dim dt As DataTable = model.GetRecentDeviceHistory(50)   ' last 50 changes, adjust as you like
+        If dt Is Nothing Then
+            historydgv.DataSource = Nothing
+            Return
+        End If
+
+        historydgv.DataSource = dt
+
+        ' ---- Basic grid behavior ----
+        With historydgv
+            .RowHeadersVisible = False
+            .AllowUserToAddRows = False
+            .AllowUserToDeleteRows = False
+            .AllowUserToResizeRows = False
+            .AllowUserToResizeColumns = True
+            .ReadOnly = True
+            .SelectionMode = DataGridViewSelectionMode.FullRowSelect
+            .MultiSelect = False
+            .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+            .DefaultCellStyle.WrapMode = DataGridViewTriState.True
+            .AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells
+
+            .GridColor = Color.LightGray
+            .CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+
+            ' Optional: hide selection color (like in Edit/View)
+            .DefaultCellStyle.SelectionBackColor = .DefaultCellStyle.BackColor
+            .DefaultCellStyle.SelectionForeColor = .DefaultCellStyle.ForeColor
+
+            ' Top-align text to avoid big top spacing
+            .RowsDefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
+            .DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
+            .RowTemplate.Height = 18
+        End With
+
+        ' ---- Hide technical columns ----
+        If historydgv.Columns.Contains("pointer") Then
+            historydgv.Columns("pointer").Visible = False
+        End If
+
+        If historydgv.Columns.Contains("device_pointer") Then
+            historydgv.Columns("device_pointer").Visible = False
+        End If
+
+
+        If historydgv.Columns.Contains("DeviceCategory") Then
+            Dim col = historydgv.Columns("DeviceCategory")
+            col.HeaderText = "Device"
+            col.DisplayIndex = 0
+        End If
+
+        If historydgv.Columns.Contains("updated_by_name") Then
+            Dim col = historydgv.Columns("updated_by_name")
+            col.HeaderText = "Updated By"
+            col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+            col.Width = 110
+        End If
+
+        If historydgv.Columns.Contains("updated_from") Then
+            historydgv.Columns("updated_from").HeaderText = "From"
+        End If
+
+        If historydgv.Columns.Contains("updated_to") Then
+            historydgv.Columns("updated_to").HeaderText = "To"
+        End If
+
+        If historydgv.Columns.Contains("remarks") Then
+            historydgv.Columns("remarks").HeaderText = "Remarks"
+        End If
+
+        If historydgv.Columns.Contains("date") Then
+            historydgv.Columns("date").HeaderText = "Date"
+            historydgv.Columns("date").DefaultCellStyle.Format = "MMM dd, yyyy HH:mm"
+        End If
     End Sub
 
 End Class
