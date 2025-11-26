@@ -511,9 +511,6 @@ Public Class EditUnit
     ' ==========================
     ' SAVE UNIT CHANGES
     ' ==========================
-    ' ==========================
-    ' SAVE UNIT CHANGES
-    ' ==========================
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
         ' ---- 1. BASIC VALIDATION FOR UNIT NAME ----
         Dim newUnitName As String = unitnametxt.Text.Trim()
@@ -525,7 +522,6 @@ Public Class EditUnit
         End If
 
         ' ---- 2. CHECK UNIQUENESS (BUT ALLOW ORIGINAL NAME) ----
-        ' Only check the database if the name was actually changed
         If Not newUnitName.Equals(originalUnitName, StringComparison.OrdinalIgnoreCase) Then
             If mdl.IsUnitNameExists(newUnitName) Then
                 MessageBox.Show($"The unit name '{newUnitName}' already exists in the database.",
@@ -563,7 +559,6 @@ Public Class EditUnit
 
         ' Only include edited devices that were really changed
         Dim editedDevicesWithChanges = editedSpecs.Where(Function(kvp)
-                                                             ' Compare with original specs stored at load
                                                              Dim originalDict = ParseSpecs(deviceFullSpecs(kvp.Key))
                                                              Return Not DictionariesAreEqual(originalDict, kvp.Value)
                                                          End Function).ToList()
@@ -581,7 +576,86 @@ Public Class EditUnit
         sb.AppendLine(vbCrLf & "Proceed?")
         If MessageBox.Show(sb.ToString(), "Confirm Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then Return
 
-        ' Only pass the devices with actual changes to the save function
+        ' ============================================
+        ' 🔹 4. HISTORY: WRITE TO inv_device_history
+        ' ============================================
+        Dim userId As Integer = Session.LoggedInUserPointer
+
+        ' 4.a) Log edited specs per device (ONLY changed keys)
+        For Each kvp In editedDevicesWithChanges
+            Dim deviceId As Integer = kvp.Key
+            Dim newDict As Dictionary(Of String, String) = kvp.Value
+
+            ' original specs as dictionary (what we loaded when form opened)
+            Dim originalDict As Dictionary(Of String, String) =
+        ParseSpecs(If(deviceFullSpecs.ContainsKey(deviceId), deviceFullSpecs(deviceId), ""))
+
+            ' collect all keys from old + new
+            Dim allKeys As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+            For Each k In originalDict.Keys
+                allKeys.Add(k)
+            Next
+            For Each k In newDict.Keys
+                allKeys.Add(k)
+            Next
+
+            Dim oldLines As New List(Of String)()
+            Dim newLines As New List(Of String)()
+
+            ' build display strings ONLY for changed keys
+            For Each key In allKeys
+                Dim oldVal As String = If(originalDict.ContainsKey(key), originalDict(key), "").Trim()
+                Dim newVal As String = If(newDict.ContainsKey(key), newDict(key), "").Trim()
+
+                If oldVal <> newVal Then
+                    If oldVal <> "" Then oldLines.Add($"{key}: {oldVal}")
+                    If newVal <> "" Then newLines.Add($"{key}: {newVal}")
+                End If
+            Next
+
+            Dim oldDisplay As String = String.Join("; ", oldLines)
+            Dim newDisplay As String = String.Join("; ", newLines)
+
+            ' 👉 This is what will go to inv_device_history
+            mdl.InsertDeviceHistory(
+        deviceId,
+        "Specs updated via EditUnit",   ' remarks
+        oldDisplay,                     ' updated_from (ONLY changed fields)
+        newDisplay,                     ' updated_to   (ONLY changed fields)
+        userId                          ' updated_by
+    )
+
+            ' keep "original" in sync for next edits in same session
+            deviceFullSpecs(deviceId) = SpecsDictToString(newDict)
+        Next
+
+
+
+        ' 4.b) (OPTIONAL) Log added devices as "Assigned to unit"
+        For Each devId In addedDevices
+            mdl.InsertDeviceHistory(
+            devId,
+            $"Assigned to unit '{newUnitName}' via EditUnit",
+            "",                 ' updated_from (no previous unit here)
+            newUnitName,        ' updated_to  (unit name)
+            userId
+        )
+        Next
+
+        ' 4.c) (OPTIONAL) Log removed devices as "Removed from unit"
+        For Each devId In removedDevices
+            mdl.InsertDeviceHistory(
+            devId,
+            $"Removed from unit '{originalUnitName}' via EditUnit",
+            originalUnitName,   ' updated_from
+            "",                 ' updated_to
+            userId
+        )
+        Next
+
+        ' ============================================
+        ' 5. ACTUAL SAVE TO YOUR INVENTORY / UNITS
+        ' ============================================
         mdl.SaveUnitChanges(
         unitId,
         newAssignedId,
@@ -594,6 +668,8 @@ Public Class EditUnit
 
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
+
+
 
 
     ' ==========================
@@ -744,6 +820,19 @@ Public Class EditUnit
             isFiltering = False
         End Try
     End Sub
+
+    ' Turn specs dictionary into "Key: value; Key2: value2" string
+    Private Function SpecsDictToString(specs As Dictionary(Of String, String)) As String
+        If specs Is Nothing OrElse specs.Count = 0 Then Return ""
+
+        Dim parts As New List(Of String)
+        For Each kvp In specs
+            parts.Add(kvp.Key & ": " & kvp.Value)
+        Next
+        Return String.Join("; ", parts)
+    End Function
+
+
 
 
 End Class

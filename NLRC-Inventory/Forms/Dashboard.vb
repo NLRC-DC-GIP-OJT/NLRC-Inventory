@@ -149,4 +149,22 @@ Public Class Dashboard
         LoadUserControl(New Configuration)
     End Sub
 
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim result = MessageBox.Show("Are you sure?", "You want to Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+
+        If result = DialogResult.Yes Then
+
+            ' 🔴 CLEAR SESSION
+            Session.LoggedInUserPointer = 0
+            Session.LoggedInRole = Nothing
+
+            ' 🔄 SHOW LOGIN FORM AGAIN
+            Dim login As New Login()
+            login.Show()
+
+            ' ❌ CLOSE THIS DASHBOARD
+            Me.Close()
+        End If
+    End Sub
+
 End Class

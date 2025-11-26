@@ -5,13 +5,12 @@ Public Class Login
     Private mdl As New model()
 
     Private Sub Login_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Set placeholder text
         usertxt.Text = "Enter Username"
-        usertxt.ForeColor = Color.Gray
-
         passtxt.Text = "Enter Password"
-        passtxt.ForeColor = Color.Gray
         passtxt.UseSystemPasswordChar = False
+        usertxt.ForeColor = Color.Gray
+        passtxt.ForeColor = Color.Gray
+
     End Sub
 
     ' ===== Username Placeholder Events =====
@@ -53,7 +52,7 @@ Public Class Login
 
         ' Prevent placeholder login
         If username = "" Or username = "Enter Username" Or
-       password = "" Or password = "Enter Password" Then
+           password = "" Or password = "Enter Password" Then
 
             CustomMsg("Please enter username and password.", "⚠️ Warning")
             Return
@@ -108,26 +107,26 @@ Public Class Login
     ' ===== Custom Big Message Box =====
     Private Sub CustomMsg(msg As String, title As String)
         Dim f As New Form With {
-            .Width = 420,
-            .Height = 220,
-            .FormBorderStyle = FormBorderStyle.FixedDialog,
-            .StartPosition = FormStartPosition.CenterScreen,
-            .Text = title,
-            .ControlBox = False
-        }
+                .Width = 420,
+                .Height = 220,
+                .FormBorderStyle = FormBorderStyle.FixedDialog,
+                .StartPosition = FormStartPosition.CenterScreen,
+                .Text = title,
+                .ControlBox = False
+            }
 
         Dim lbl As New Label With {
-            .Text = msg,
-            .Dock = DockStyle.Fill,
-            .Font = New Font("Segoe UI", 11, FontStyle.Bold),
-            .TextAlign = ContentAlignment.MiddleCenter
-        }
+                .Text = msg,
+                .Dock = DockStyle.Fill,
+                .Font = New Font("Segoe UI", 11, FontStyle.Bold),
+                .TextAlign = ContentAlignment.MiddleCenter
+            }
 
         Dim btn As New Button With {
-            .Text = "OK",
-            .Dock = DockStyle.Bottom,
-            .Height = 45
-        }
+                .Text = "OK",
+                .Dock = DockStyle.Bottom,
+                .Height = 45
+            }
         AddHandler btn.Click, Sub() f.Close()
 
         f.Controls.Add(lbl)
