@@ -55,9 +55,10 @@ Partial Class View
         Panel4.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel4.Controls.Add(historydgv)
         Panel4.Controls.Add(cancelbtn)
-        Panel4.Location = New Point(398, 516)
+        Panel4.Location = New Point(401, 460)
+        Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(454, 294)
+        Panel4.Size = New Size(427, 294)
         Panel4.TabIndex = 24
         ' 
         ' historydgv
@@ -79,20 +80,22 @@ Partial Class View
         DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
         DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
         historydgv.DefaultCellStyle = DataGridViewCellStyle2
-        historydgv.Location = New Point(2, 3)
+        historydgv.Location = New Point(2, 2)
+        historydgv.Margin = New Padding(3, 2, 3, 2)
         historydgv.Name = "historydgv"
         historydgv.ReadOnly = True
         historydgv.RowHeadersVisible = False
         historydgv.RowHeadersWidth = 51
-        historydgv.Size = New Size(448, 221)
+        historydgv.Size = New Size(425, 224)
         historydgv.TabIndex = 22
         ' 
         ' cancelbtn
         ' 
         cancelbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        cancelbtn.Location = New Point(307, 234)
+        cancelbtn.Location = New Point(302, 241)
+        cancelbtn.Margin = New Padding(3, 2, 3, 2)
         cancelbtn.Name = "cancelbtn"
-        cancelbtn.Size = New Size(125, 48)
+        cancelbtn.Size = New Size(109, 36)
         cancelbtn.TabIndex = 14
         cancelbtn.Text = "Close"
         cancelbtn.UseVisualStyleBackColor = True
@@ -101,9 +104,9 @@ Partial Class View
         ' 
         Label5.Anchor = AnchorStyles.Top
         Label5.Font = New Font("Segoe UI Black", 19.8000011F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(189, 12)
+        Label5.Location = New Point(209, 9)
         Label5.Name = "Label5"
-        Label5.Size = New Size(529, 57)
+        Label5.Size = New Size(463, 43)
         Label5.TabIndex = 25
         Label5.Text = "View Device Information"
         ' 
@@ -114,9 +117,10 @@ Partial Class View
         Panel2.Controls.Add(notetxt)
         Panel2.Controls.Add(Label7)
         Panel2.Controls.Add(Label6)
-        Panel2.Location = New Point(398, 69)
+        Panel2.Location = New Point(407, 52)
+        Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(454, 404)
+        Panel2.Size = New Size(427, 372)
         Panel2.TabIndex = 26
         ' 
         ' specsflowpnl
@@ -126,9 +130,10 @@ Partial Class View
         specsflowpnl.BorderStyle = BorderStyle.FixedSingle
         specsflowpnl.FlowDirection = FlowDirection.TopDown
         specsflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        specsflowpnl.Location = New Point(13, 146)
+        specsflowpnl.Location = New Point(11, 110)
+        specsflowpnl.Margin = New Padding(3, 2, 3, 2)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(430, 255)
+        specsflowpnl.Size = New Size(406, 251)
         specsflowpnl.TabIndex = 18
         specsflowpnl.WrapContents = False
         ' 
@@ -136,19 +141,20 @@ Partial Class View
         ' 
         notetxt.BorderStyle = BorderStyle.FixedSingle
         notetxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        notetxt.Location = New Point(13, 41)
+        notetxt.Location = New Point(11, 31)
+        notetxt.Margin = New Padding(3, 2, 3, 2)
         notetxt.Multiline = True
         notetxt.Name = "notetxt"
-        notetxt.Size = New Size(430, 65)
+        notetxt.Size = New Size(406, 49)
         notetxt.TabIndex = 12
         ' 
         ' Label7
         ' 
         Label7.AutoSize = True
         Label7.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(13, 4)
+        Label7.Location = New Point(11, 3)
         Label7.Name = "Label7"
-        Label7.Size = New Size(77, 28)
+        Label7.Size = New Size(62, 21)
         Label7.TabIndex = 11
         Label7.Text = "Notes :"
         ' 
@@ -156,9 +162,9 @@ Partial Class View
         ' 
         Label6.AutoSize = True
         Label6.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(10, 114)
+        Label6.Location = New Point(9, 86)
         Label6.Name = "Label6"
-        Label6.Size = New Size(147, 28)
+        Label6.Size = New Size(120, 21)
         Label6.TabIndex = 10
         Label6.Text = "Specifications :"
         ' 
@@ -168,25 +174,27 @@ Partial Class View
         Panel1.Controls.Add(deviceflowpnl)
         Panel1.Controls.Add(Label2)
         Panel1.Controls.Add(catcb)
-        Panel1.Location = New Point(13, 69)
+        Panel1.Location = New Point(11, 52)
+        Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(379, 475)
+        Panel1.Size = New Size(378, 503)
         Panel1.TabIndex = 23
         ' 
         ' deviceflowpnl
         ' 
-        deviceflowpnl.Location = New Point(3, 106)
+        deviceflowpnl.Location = New Point(3, 80)
+        deviceflowpnl.Margin = New Padding(3, 2, 3, 2)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(373, 366)
+        deviceflowpnl.Size = New Size(372, 274)
         deviceflowpnl.TabIndex = 11
         ' 
         ' Label2
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label2.Location = New Point(27, 7)
+        Label2.Location = New Point(24, 5)
         Label2.Name = "Label2"
-        Label2.Size = New Size(105, 28)
+        Label2.Size = New Size(86, 21)
         Label2.TabIndex = 4
         Label2.Text = "Category :"
         ' 
@@ -194,9 +202,10 @@ Partial Class View
         ' 
         catcb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         catcb.FormattingEnabled = True
-        catcb.Location = New Point(50, 50)
+        catcb.Location = New Point(44, 38)
+        catcb.Margin = New Padding(3, 2, 3, 2)
         catcb.Name = "catcb"
-        catcb.Size = New Size(284, 39)
+        catcb.Size = New Size(298, 33)
         catcb.TabIndex = 5
         ' 
         ' Panel3
@@ -206,34 +215,37 @@ Partial Class View
         Panel3.Controls.Add(purchaseDatePicker)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label1)
-        Panel3.Location = New Point(16, 573)
+        Panel3.Location = New Point(14, 577)
+        Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(373, 179)
+        Panel3.Size = New Size(365, 134)
         Panel3.TabIndex = 22
         ' 
         ' warrantyDatePicker
         ' 
         warrantyDatePicker.Font = New Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        warrantyDatePicker.Location = New Point(23, 123)
+        warrantyDatePicker.Location = New Point(20, 92)
+        warrantyDatePicker.Margin = New Padding(3, 2, 3, 2)
         warrantyDatePicker.Name = "warrantyDatePicker"
-        warrantyDatePicker.Size = New Size(331, 30)
+        warrantyDatePicker.Size = New Size(290, 26)
         warrantyDatePicker.TabIndex = 19
         ' 
         ' purchaseDatePicker
         ' 
         purchaseDatePicker.Font = New Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        purchaseDatePicker.Location = New Point(23, 48)
+        purchaseDatePicker.Location = New Point(20, 36)
+        purchaseDatePicker.Margin = New Padding(3, 2, 3, 2)
         purchaseDatePicker.Name = "purchaseDatePicker"
-        purchaseDatePicker.Size = New Size(331, 30)
+        purchaseDatePicker.Size = New Size(290, 26)
         purchaseDatePicker.TabIndex = 17
         ' 
         ' Label9
         ' 
         Label9.AutoSize = True
         Label9.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(23, 88)
+        Label9.Location = New Point(20, 66)
         Label9.Name = "Label9"
-        Label9.Size = New Size(168, 28)
+        Label9.Size = New Size(135, 21)
         Label9.TabIndex = 18
         Label9.Text = "Warranty Expires:"
         ' 
@@ -241,9 +253,9 @@ Partial Class View
         ' 
         Label1.AutoSize = True
         Label1.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label1.Location = New Point(26, 13)
+        Label1.Location = New Point(23, 10)
         Label1.Name = "Label1"
-        Label1.Size = New Size(165, 28)
+        Label1.Size = New Size(131, 21)
         Label1.TabIndex = 17
         Label1.Text = "Purchased Date: "
         ' 
@@ -251,15 +263,15 @@ Partial Class View
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label3.Location = New Point(408, 480)
+        Label3.Location = New Point(407, 428)
         Label3.Name = "Label3"
-        Label3.Size = New Size(155, 28)
+        Label3.Size = New Size(125, 21)
         Label3.TabIndex = 27
         Label3.Text = "Device History :"
         ' 
         ' View
         ' 
-        AutoScaleDimensions = New SizeF(8F, 20F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Label3)
         Controls.Add(Panel4)
@@ -267,8 +279,9 @@ Partial Class View
         Controls.Add(Panel2)
         Controls.Add(Panel1)
         Controls.Add(Panel3)
+        Margin = New Padding(3, 2, 3, 2)
         Name = "View"
-        Size = New Size(864, 820)
+        Size = New Size(845, 762)
         Panel4.ResumeLayout(False)
         CType(historydgv, ComponentModel.ISupportInitialize).EndInit()
         Panel2.ResumeLayout(False)

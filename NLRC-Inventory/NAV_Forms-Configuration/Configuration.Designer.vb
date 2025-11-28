@@ -79,9 +79,9 @@ Partial Class Configuration
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(3, 3)
+        Label3.Location = New Point(7, 5)
         Label3.Name = "Label3"
-        Label3.Size = New Size(305, 38)
+        Label3.Size = New Size(238, 30)
         Label3.TabIndex = 7
         Label3.Text = "Configuration Section"
         ' 
@@ -96,9 +96,10 @@ Partial Class Configuration
         Panel1.Controls.Add(cattxt)
         Panel1.Controls.Add(Label5)
         Panel1.Controls.Add(Label1)
-        Panel1.Location = New Point(21, 57)
+        Panel1.Location = New Point(37, 76)
+        Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(439, 425)
+        Panel1.Size = New Size(462, 365)
         Panel1.TabIndex = 8
         ' 
         ' propertyflowpnl
@@ -108,9 +109,10 @@ Partial Class Configuration
         propertyflowpnl.BorderStyle = BorderStyle.FixedSingle
         propertyflowpnl.FlowDirection = FlowDirection.TopDown
         propertyflowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        propertyflowpnl.Location = New Point(21, 153)
+        propertyflowpnl.Location = New Point(18, 128)
+        propertyflowpnl.Margin = New Padding(3, 2, 3, 2)
         propertyflowpnl.Name = "propertyflowpnl"
-        propertyflowpnl.Size = New Size(393, 207)
+        propertyflowpnl.Size = New Size(422, 179)
         propertyflowpnl.TabIndex = 10
         propertyflowpnl.WrapContents = False
         ' 
@@ -120,9 +122,10 @@ Partial Class Configuration
         catbtn.BackColor = Color.DarkBlue
         catbtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catbtn.ForeColor = Color.White
-        catbtn.Location = New Point(113, 366)
+        catbtn.Location = New Point(99, 311)
+        catbtn.Margin = New Padding(3, 2, 3, 2)
         catbtn.Name = "catbtn"
-        catbtn.Size = New Size(208, 43)
+        catbtn.Size = New Size(260, 48)
         catbtn.TabIndex = 5
         catbtn.Text = "Insert Category"
         catbtn.UseVisualStyleBackColor = False
@@ -132,9 +135,9 @@ Partial Class Configuration
         Label6.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label6.AutoSize = True
         Label6.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(21, 116)
+        Label6.Location = New Point(18, 100)
         Label6.Name = "Label6"
-        Label6.Size = New Size(119, 23)
+        Label6.Size = New Size(97, 18)
         Label6.TabIndex = 3
         Label6.Text = "Properties:"
         ' 
@@ -143,9 +146,10 @@ Partial Class Configuration
         cattxt.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         cattxt.BorderStyle = BorderStyle.FixedSingle
         cattxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        cattxt.Location = New Point(53, 76)
+        cattxt.Location = New Point(46, 67)
+        cattxt.Margin = New Padding(3, 2, 3, 2)
         cattxt.Name = "cattxt"
-        cattxt.Size = New Size(334, 31)
+        cattxt.Size = New Size(370, 26)
         cattxt.TabIndex = 2
         ' 
         ' Label5
@@ -153,9 +157,9 @@ Partial Class Configuration
         Label5.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label5.AutoSize = True
         Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(21, 36)
+        Label5.Location = New Point(18, 39)
         Label5.Name = "Label5"
-        Label5.Size = New Size(169, 23)
+        Label5.Size = New Size(137, 18)
         Label5.TabIndex = 1
         Label5.Text = "Category Name:"
         ' 
@@ -163,11 +167,11 @@ Partial Class Configuration
         ' 
         Label1.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label1.AutoSize = True
-        Label1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
+        Label1.Font = New Font("Segoe UI", 14.25F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         Label1.ForeColor = Color.RoyalBlue
-        Label1.Location = New Point(93, 4)
+        Label1.Location = New Point(129, 8)
         Label1.Name = "Label1"
-        Label1.Size = New Size(239, 31)
+        Label1.Size = New Size(196, 25)
         Label1.TabIndex = 0
         Label1.Text = "Add Device Category"
         ' 
@@ -177,9 +181,10 @@ Partial Class Configuration
         brandbtn.BackColor = Color.Green
         brandbtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         brandbtn.ForeColor = Color.White
-        brandbtn.Location = New Point(129, 281)
+        brandbtn.Location = New Point(177, 195)
+        brandbtn.Margin = New Padding(3, 2, 3, 2)
         brandbtn.Name = "brandbtn"
-        brandbtn.Size = New Size(165, 45)
+        brandbtn.Size = New Size(144, 39)
         brandbtn.TabIndex = 6
         brandbtn.Text = "Insert Brand"
         brandbtn.UseVisualStyleBackColor = False
@@ -189,9 +194,10 @@ Partial Class Configuration
         brandtxt.Anchor = AnchorStyles.None
         brandtxt.BorderStyle = BorderStyle.FixedSingle
         brandtxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        brandtxt.Location = New Point(58, 204)
+        brandtxt.Location = New Point(91, 128)
+        brandtxt.Margin = New Padding(3, 2, 3, 2)
         brandtxt.Name = "brandtxt"
-        brandtxt.Size = New Size(315, 31)
+        brandtxt.Size = New Size(313, 26)
         brandtxt.TabIndex = 5
         ' 
         ' Label8
@@ -199,9 +205,9 @@ Partial Class Configuration
         Label8.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label8.AutoSize = True
         Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(17, 162)
+        Label8.Location = New Point(15, 102)
         Label8.Name = "Label8"
-        Label8.Size = New Size(138, 23)
+        Label8.Size = New Size(112, 18)
         Label8.TabIndex = 5
         Label8.Text = "Brand Name:"
         ' 
@@ -210,9 +216,10 @@ Partial Class Configuration
         catcb.Anchor = AnchorStyles.None
         catcb.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catcb.FormattingEnabled = True
-        catcb.Location = New Point(58, 81)
+        catcb.Location = New Point(91, 68)
+        catcb.Margin = New Padding(3, 2, 3, 2)
         catcb.Name = "catcb"
-        catcb.Size = New Size(315, 31)
+        catcb.Size = New Size(313, 26)
         catcb.TabIndex = 6
         ' 
         ' Label7
@@ -220,9 +227,9 @@ Partial Class Configuration
         Label7.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label7.AutoSize = True
         Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(17, 49)
+        Label7.Location = New Point(15, 41)
         Label7.Name = "Label7"
-        Label7.Size = New Size(235, 23)
+        Label7.Size = New Size(192, 18)
         Label7.TabIndex = 5
         Label7.Text = "Select Category Name:"
         ' 
@@ -232,9 +239,9 @@ Partial Class Configuration
         Label2.AutoSize = True
         Label2.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         Label2.ForeColor = Color.ForestGreen
-        Label2.Location = New Point(94, 4)
+        Label2.Location = New Point(203, 8)
         Label2.Name = "Label2"
-        Label2.Size = New Size(130, 31)
+        Label2.Size = New Size(105, 25)
         Label2.TabIndex = 1
         Label2.Text = "Add Brand"
         ' 
@@ -250,9 +257,10 @@ Partial Class Configuration
         Panel3.Controls.Add(addspecsbtn)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label4)
-        Panel3.Location = New Point(905, 57)
+        Panel3.Location = New Point(1032, 76)
+        Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(422, 425)
+        Panel3.Size = New Size(488, 365)
         Panel3.TabIndex = 9
         ' 
         ' flowpnl
@@ -262,9 +270,10 @@ Partial Class Configuration
         flowpnl.BorderStyle = BorderStyle.FixedSingle
         flowpnl.FlowDirection = FlowDirection.TopDown
         flowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        flowpnl.Location = New Point(27, 153)
+        flowpnl.Location = New Point(24, 128)
+        flowpnl.Margin = New Padding(3, 2, 3, 2)
         flowpnl.Name = "flowpnl"
-        flowpnl.Size = New Size(365, 173)
+        flowpnl.Size = New Size(438, 131)
         flowpnl.TabIndex = 9
         flowpnl.WrapContents = False
         ' 
@@ -274,9 +283,10 @@ Partial Class Configuration
         btnInsertSpecs.BackColor = Color.DarkOrchid
         btnInsertSpecs.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         btnInsertSpecs.ForeColor = Color.White
-        btnInsertSpecs.Location = New Point(64, 375)
+        btnInsertSpecs.Location = New Point(95, 306)
+        btnInsertSpecs.Margin = New Padding(3, 2, 3, 2)
         btnInsertSpecs.Name = "btnInsertSpecs"
-        btnInsertSpecs.Size = New Size(296, 44)
+        btnInsertSpecs.Size = New Size(290, 49)
         btnInsertSpecs.TabIndex = 7
         btnInsertSpecs.Text = "Insert Specs Template"
         btnInsertSpecs.UseVisualStyleBackColor = False
@@ -286,9 +296,9 @@ Partial Class Configuration
         Label10.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label10.AutoSize = True
         Label10.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label10.Location = New Point(27, 116)
+        Label10.Location = New Point(22, 100)
         Label10.Name = "Label10"
-        Label10.Size = New Size(174, 23)
+        Label10.Size = New Size(141, 18)
         Label10.TabIndex = 7
         Label10.Text = "Specs Template:"
         ' 
@@ -297,9 +307,10 @@ Partial Class Configuration
         catcb1.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         catcb1.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catcb1.FormattingEnabled = True
-        catcb1.Location = New Point(30, 76)
+        catcb1.Location = New Point(24, 66)
+        catcb1.Margin = New Padding(3, 2, 3, 2)
         catcb1.Name = "catcb1"
-        catcb1.Size = New Size(365, 31)
+        catcb1.Size = New Size(438, 26)
         catcb1.TabIndex = 7
         ' 
         ' addspecsbtn
@@ -308,9 +319,10 @@ Partial Class Configuration
         addspecsbtn.FlatAppearance.BorderSize = 2
         addspecsbtn.FlatStyle = FlatStyle.Flat
         addspecsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        addspecsbtn.Location = New Point(83, 332)
+        addspecsbtn.Location = New Point(76, 269)
+        addspecsbtn.Margin = New Padding(3, 2, 3, 2)
         addspecsbtn.Name = "addspecsbtn"
-        addspecsbtn.Size = New Size(248, 39)
+        addspecsbtn.Size = New Size(335, 33)
         addspecsbtn.TabIndex = 8
         addspecsbtn.Text = "+ Add Specification Field"
         addspecsbtn.UseVisualStyleBackColor = True
@@ -319,9 +331,9 @@ Partial Class Configuration
         ' 
         Label9.AutoSize = True
         Label9.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(25, 44)
+        Label9.Location = New Point(22, 39)
         Label9.Name = "Label9"
-        Label9.Size = New Size(235, 23)
+        Label9.Size = New Size(192, 18)
         Label9.TabIndex = 7
         Label9.Text = "Select Category Name:"
         ' 
@@ -330,9 +342,9 @@ Partial Class Configuration
         Label4.AutoSize = True
         Label4.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
         Label4.ForeColor = Color.DarkViolet
-        Label4.Location = New Point(134, 4)
+        Label4.Location = New Point(161, 8)
         Label4.Name = "Label4"
-        Label4.Size = New Size(204, 31)
+        Label4.Size = New Size(166, 25)
         Label4.TabIndex = 2
         Label4.Text = "Add Specification"
         ' 
@@ -361,6 +373,7 @@ Partial Class Configuration
         devicedgv.DefaultCellStyle = DataGridViewCellStyle2
         devicedgv.Dock = DockStyle.Fill
         devicedgv.Location = New Point(0, 0)
+        devicedgv.Margin = New Padding(3, 2, 3, 2)
         devicedgv.Name = "devicedgv"
         devicedgv.ReadOnly = True
         devicedgv.RowHeadersVisible = False
@@ -369,7 +382,7 @@ Partial Class Configuration
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         devicedgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicedgv.Size = New Size(439, 348)
+        devicedgv.Size = New Size(462, 391)
         devicedgv.TabIndex = 1
         ' 
         ' specsdgv
@@ -397,6 +410,7 @@ Partial Class Configuration
         specsdgv.DefaultCellStyle = DataGridViewCellStyle5
         specsdgv.Dock = DockStyle.Fill
         specsdgv.Location = New Point(0, 0)
+        specsdgv.Margin = New Padding(3, 2, 3, 2)
         specsdgv.Name = "specsdgv"
         specsdgv.ReadOnly = True
         specsdgv.RowHeadersVisible = False
@@ -405,7 +419,7 @@ Partial Class Configuration
         DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle6.ForeColor = Color.Black
         specsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
-        specsdgv.Size = New Size(422, 349)
+        specsdgv.Size = New Size(488, 391)
         specsdgv.TabIndex = 1
         ' 
         ' branddgv
@@ -433,6 +447,7 @@ Partial Class Configuration
         branddgv.DefaultCellStyle = DataGridViewCellStyle8
         branddgv.Dock = DockStyle.Fill
         branddgv.Location = New Point(0, 0)
+        branddgv.Margin = New Padding(3, 2, 3, 2)
         branddgv.Name = "branddgv"
         branddgv.ReadOnly = True
         branddgv.RowHeadersVisible = False
@@ -441,7 +456,7 @@ Partial Class Configuration
         DataGridViewCellStyle9.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle9.ForeColor = Color.Black
         branddgv.RowsDefaultCellStyle = DataGridViewCellStyle9
-        branddgv.Size = New Size(433, 355)
+        branddgv.Size = New Size(477, 391)
         branddgv.TabIndex = 1
         ' 
         ' Panel2
@@ -455,36 +470,40 @@ Partial Class Configuration
         Panel2.Controls.Add(catcb)
         Panel2.Controls.Add(brandtxt)
         Panel2.Controls.Add(Label8)
-        Panel2.Location = New Point(466, 57)
+        Panel2.Location = New Point(526, 76)
+        Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(433, 425)
+        Panel2.Size = New Size(477, 365)
         Panel2.TabIndex = 14
         ' 
         ' Panel6
         ' 
         Panel6.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel6.Controls.Add(branddgv)
-        Panel6.Location = New Point(466, 499)
+        Panel6.Location = New Point(526, 458)
+        Panel6.Margin = New Padding(3, 2, 3, 2)
         Panel6.Name = "Panel6"
-        Panel6.Size = New Size(433, 355)
+        Panel6.Size = New Size(477, 391)
         Panel6.TabIndex = 15
         ' 
         ' Panel4
         ' 
         Panel4.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel4.Controls.Add(specsdgv)
-        Panel4.Location = New Point(905, 499)
+        Panel4.Location = New Point(1032, 458)
+        Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(422, 349)
+        Panel4.Size = New Size(488, 391)
         Panel4.TabIndex = 16
         ' 
         ' Panel5
         ' 
         Panel5.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel5.Controls.Add(devicedgv)
-        Panel5.Location = New Point(21, 499)
+        Panel5.Location = New Point(37, 458)
+        Panel5.Margin = New Padding(3, 2, 3, 2)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(439, 348)
+        Panel5.Size = New Size(462, 391)
         Panel5.TabIndex = 16
         ' 
         ' Panel7
@@ -494,14 +513,15 @@ Partial Class Configuration
         Panel7.BackgroundImage = CType(resources.GetObject("Panel7.BackgroundImage"), Image)
         Panel7.BorderStyle = BorderStyle.FixedSingle
         Panel7.Controls.Add(Label3)
-        Panel7.Location = New Point(21, 4)
+        Panel7.Location = New Point(18, 10)
+        Panel7.Margin = New Padding(3, 2, 3, 2)
         Panel7.Name = "Panel7"
-        Panel7.Size = New Size(1306, 48)
+        Panel7.Size = New Size(1526, 44)
         Panel7.TabIndex = 17
         ' 
         ' Configuration
         ' 
-        AutoScaleDimensions = New SizeF(8F, 20F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Panel7)
         Controls.Add(Panel4)
@@ -510,8 +530,9 @@ Partial Class Configuration
         Controls.Add(Panel2)
         Controls.Add(Panel3)
         Controls.Add(Panel1)
+        Margin = New Padding(3, 2, 3, 2)
         Name = "Configuration"
-        Size = New Size(1353, 869)
+        Size = New Size(1567, 882)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel3.ResumeLayout(False)

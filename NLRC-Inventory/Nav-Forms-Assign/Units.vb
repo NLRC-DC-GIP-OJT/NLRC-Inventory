@@ -10,6 +10,10 @@ Public Class Units
     Private allFilteredRows As List(Of DataRow)
     Private isLoading As Boolean = True
     Private assignedToCboCol As DataGridViewComboBoxColumn
+    Private WithEvents refreshTimer As New Timer() With {
+    .Interval = 5000 ' 5000 ms = 5 seconds (change if you want)
+}
+
 
     ' ----------------- Load Units -----------------
     Private Sub LoadAllUnits(Optional search As String = "")
@@ -118,27 +122,31 @@ Public Class Units
         Dim unitId = CInt(allunitsdgv.Rows(e.RowIndex).Cells("unit_id").Value)
         Dim dtUnit = mdl.GetUnitsSummary()
         Dim unitRow = dtUnit.AsEnumerable().FirstOrDefault(Function(r) CInt(r("unit_id")) = unitId)
-        If unitRow Is Nothing Then MessageBox.Show("Unit data not found.") : Return
+        If unitRow Is Nothing Then
+            MessageBox.Show("Unit data not found.")
+            Return
+        End If
 
         Dim unitName = If(unitRow("Unit Name") IsNot DBNull.Value, unitRow("Unit Name").ToString(), "")
         Dim assignedToId = If(unitRow("personnel_id") IsNot DBNull.Value, CInt(unitRow("personnel_id")), 0)
         Dim dtDevices = mdl.GetDeviceSpecsByUnitPointer(unitId)
 
-        unitpnl.Visible = False
-        viewpnl.Controls.Clear()
-        viewpnl.Visible = True
-        viewpnl.BringToFront()
+        ' ============== PANEL SWITCHING (viewpnl removed) ==============
+        unitpnl.Visible = True
+        unitpnl.BringToFront()
+        unitpnl.Controls.Clear()
 
         If colName = "Edit" Then
             Dim editUC As New EditUnit()
             editUC.Dock = DockStyle.Fill
-            viewpnl.Controls.Add(editUC)
+            unitpnl.Controls.Add(editUC)
             editUC.LoadUnit(unitId, unitName, assignedToId, dtDevices)
+
         ElseIf colName = "View" Then
             Dim viewUC As New ViewUnit()
             viewUC.Dock = DockStyle.Fill
-            viewpnl.Controls.Add(viewUC)
-            viewUC.LoadUnit(unitName, assignedToId, dtDevices)
+            unitpnl.Controls.Add(viewUC)
+            viewUC.LoadUnit(unitId, unitName, assignedToId, dtDevices)
         End If
 
         ' Reset bulk edit mode when switching panels
@@ -148,6 +156,7 @@ Public Class Units
             col.ReadOnly = True
         Next
     End Sub
+
 
     ' ----------------- Pagination -----------------
     Private Sub UpdatePaginationControls(totalRecords As Integer)
@@ -167,7 +176,11 @@ Public Class Units
     Private Sub Units_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         LoadAllUnits()
         isLoading = False
+
+        ' 🔁 start auto-refresh
+        refreshTimer.Start()
     End Sub
+
 
     Private Sub unitaddbtn_Click(sender As Object, e As EventArgs) Handles unitaddbtn.Click
         unitpnl.Visible = True
@@ -184,6 +197,24 @@ Public Class Units
         For Each col As DataGridViewColumn In allunitsdgv.Columns
             col.ReadOnly = True
         Next
+    End Sub
+
+    Private Sub refreshTimer_Tick(sender As Object, e As EventArgs) Handles refreshTimer.Tick
+        ' ❌ don't refresh while user is editing or in edit/add/view panels
+        If savedgvbtn.Visible Then Exit Sub
+        If unitpnl.Visible OrElse unitpnl.Visible Then Exit Sub
+
+        ' keep current search text
+        Dim searchText As String = ""
+        If Not (filtertxt.ForeColor = Color.Gray AndAlso filtertxt.Text = "Search") Then
+            searchText = filtertxt.Text.Trim()
+        End If
+
+        ' 🔁 this will:
+        ' - re-query mdl.GetUnitsSummary()
+        ' - re-apply search
+        ' - re-bind allunitsdgv
+        LoadAllUnits(searchText)
     End Sub
 
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click

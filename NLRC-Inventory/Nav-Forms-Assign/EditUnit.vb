@@ -22,9 +22,10 @@ Public Class EditUnit
     Private originalDeviceList As DataTable          ' for devicecb filtering
     Private isFiltering As Boolean = False           ' shared flag for both combos
 
+    Private deviceCategory As New Dictionary(Of Integer, Integer) ' device_id -> category_pointer
+
     ' TEMP SPECS STORAGE
     Private editedSpecs As New Dictionary(Of Integer, Dictionary(Of String, String))()
-
     Private currentSpecDeviceId As Integer = -1
 
     ' Display name for confirmation
@@ -50,12 +51,9 @@ Public Class EditUnit
     Private originalBounds As New Dictionary(Of Control, Rectangle)
     Private layoutInitialized As Boolean = False
 
-    ' ========================
-    ' 🔁 AUTO-RESIZE SUPPORT
-    ' ========================
     Private Sub InitializeLayoutScaling()
         If layoutInitialized Then Return
-        If Me.DesignMode Then Return   ' avoid running in designer
+        If Me.DesignMode Then Return
 
         originalSize = Me.Size
         originalBounds.Clear()
@@ -84,13 +82,12 @@ Public Class EditUnit
 
             Dim r As Rectangle = kvp.Value
             ctrl.Bounds = New Rectangle(
-                    CInt(r.X * scaleX),
-                    CInt(r.Y * scaleY),
-                    CInt(r.Width * scaleX),
-                    CInt(r.Height * scaleY)
-                )
+                        CInt(r.X * scaleX),
+                        CInt(r.Y * scaleY),
+                        CInt(r.Width * scaleX),
+                        CInt(r.Height * scaleY)
+                    )
 
-            ' Optional: scale fonts a bit
             If ctrl.Font IsNot Nothing Then
                 Dim f As Font = ctrl.Font
                 Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
@@ -102,6 +99,7 @@ Public Class EditUnit
 
         Me.ResumeLayout()
     End Sub
+
 
     Protected Overrides Sub OnResize(e As EventArgs)
         MyBase.OnResize(e)
@@ -123,10 +121,41 @@ Public Class EditUnit
         deviceflowpnl.WrapContents = False
         deviceflowpnl.AutoScroll = True
 
-        ' 🔍 enable type-to-search behavior (like Select2)
         AddHandler devicecb.TextChanged, AddressOf FilterDeviceCombo
         AddHandler assigncb.TextChanged, AddressOf FilterAssignCombo
+
+        ' 🔽 ADD THESE
+        AddHandler deviceflowpnl.Resize, AddressOf DeviceFlowPanel_Resize
+        AddHandler specsflowpnl.Resize, AddressOf SpecsFlowPanel_Resize
+
+        ' run once so initial layout is stretched
+        DeviceFlowPanel_Resize(Nothing, EventArgs.Empty)
+        SpecsFlowPanel_Resize(Nothing, EventArgs.Empty)
     End Sub
+
+    ' 🔁 Stretch all spec textboxes when the specs panel resizes
+    Private Sub SpecsFlowPanel_Resize(sender As Object, e As EventArgs)
+        Dim available As Integer = specsflowpnl.ClientSize.Width - 200  ' space for labels + padding
+        If available < 100 Then available = 100
+
+        For Each ctl As Control In specsTable.Controls
+            Dim tb As TextBox = TryCast(ctl, TextBox)
+            If tb IsNot Nothing Then
+                tb.Width = available
+            End If
+        Next
+    End Sub
+
+    ' 🔁 Stretch all device panels when the device list panel resizes
+    Private Sub DeviceFlowPanel_Resize(sender As Object, e As EventArgs)
+        Dim w As Integer = GetDeviceRowWidth()
+
+        For Each row As Control In deviceflowpnl.Controls
+            row.Width = w
+        Next
+    End Sub
+
+
 
 
     ' ========================
@@ -142,16 +171,17 @@ Public Class EditUnit
 
         unitnametxt.Text = unitName
 
-        Dim row = originalAssignList.AsEnumerable().FirstOrDefault(Function(r) r.Field(Of Integer)("user_id") = assignedToId)
+        Dim row = originalAssignList.AsEnumerable().
+            FirstOrDefault(Function(r) r.Field(Of Integer)("user_id") = assignedToId)
         If row IsNot Nothing Then assigntxt.Text = row("Full name").ToString()
 
-        ' Clear panels
+        ' reset UI
         deviceflowpnl.Controls.Clear()
         specsflowpnl.Controls.Clear()
         specsTable.Controls.Clear()
         specsflowpnl.Controls.Add(specsTable)
 
-        ' Reset lists
+        ' reset tracking
         currentDevices.Clear()
         removedDevices.Clear()
         addedDevices.Clear()
@@ -159,14 +189,23 @@ Public Class EditUnit
         deviceDisplayNames.Clear()
         deviceFullSpecs.Clear()
 
-        ' Add existing devices
+        ' 👇 Existing unit devices
         For Each dr As DataRow In devices.Rows
             Dim devId As Integer = CInt(dr("DeviceID"))
 
-            ' Button display text: Category-Brand-Model
+            ' ✅ store category_pointer from GetDeviceSpecsByUnitPointer
+            If devices.Columns.Contains("category_pointer") AndAlso
+               Not IsDBNull(dr("category_pointer")) Then
+
+                If Not deviceCategory.ContainsKey(devId) Then
+                    deviceCategory(devId) = CInt(dr("category_pointer"))
+                End If
+            End If
+
+            ' Button text: Category - Brand - Model
             Dim baseText As String = ExtractBaseText(dr("DeviceAndSpecs").ToString())
 
-            ' Build full specs: NSOC Name + Property# + actual specs
+            ' Build full specs: NSOC Name + Property No + ONLY actual specs
             Dim specsParts As New List(Of String)
 
             If dr.Table.Columns.Contains("nsoc_name") AndAlso
@@ -179,47 +218,32 @@ Public Class EditUnit
                 specsParts.Add("Property No:" & dr("property_number").ToString().Trim())
             End If
 
-            ' ❗ FIX: DO NOT ADD FULL DeviceAndSpecs — extract ONLY specs
+            ' DeviceAndSpecs now ends with either s.specs OR 'No specs available'
             Dim rawSpecs = dr("DeviceAndSpecs").ToString().Trim()
             Dim onlySpecs = ExtractOnlySpecs(rawSpecs)
 
-            If onlySpecs <> "" Then specsParts.Add(onlySpecs)
+            ' if onlySpecs = "No specs available" it will NOT create any key in ParseSpecs
+            If onlySpecs <> "" AndAlso Not onlySpecs.Equals("No specs available", StringComparison.OrdinalIgnoreCase) Then
+                specsParts.Add(onlySpecs)
+            End If
 
             Dim fullSpecs As String = String.Join(";", specsParts)
 
-
-            ' Save to dictionaries
             deviceDisplayNames(devId) = baseText
             deviceFullSpecs(devId) = fullSpecs
             currentDevices.Add(devId)
 
-            ' Initialize specs dictionary
-            If Not editedSpecs.ContainsKey(devId) Then editedSpecs(devId) = ParseSpecs(fullSpecs)
+            If Not editedSpecs.ContainsKey(devId) Then
+                editedSpecs(devId) = ParseSpecs(fullSpecs)
+            End If
 
-            ' Add device button to panel
             AddDeviceToPanel(devId, baseText, fullSpecs)
+
+            ' 🔁 ensure ALL rows are stretched (including the ones already in the panel)
+            DeviceFlowPanel_Resize(Nothing, EventArgs.Empty)
         Next
     End Sub
 
-
-
-    ' Build specs string: NSOC Name → Property# → other specs
-    Private Function BuildSpecsForDisplay(dr As DataRow) As String
-        Dim specsList As New List(Of String)
-
-        If dr.Table.Columns.Contains("nsoc_name") AndAlso Not IsDBNull(dr("nsoc_name")) AndAlso dr("nsoc_name").ToString().Trim() <> "" Then
-            specsList.Add("NSOC Name: " & dr("nsoc_name").ToString().Trim())
-        End If
-
-        If dr.Table.Columns.Contains("property_number") AndAlso Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
-            specsList.Add("Property No: " & dr("property_number").ToString().Trim())
-        End If
-
-        Dim specsOnly As String = ExtractOnlySpecs(dr("DeviceAndSpecs").ToString())
-        If specsOnly <> "" Then specsList.Add(specsOnly)
-
-        Return String.Join(";", specsList)
-    End Function
 
     Private Function ExtractBaseText(fullText As String) As String
         Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
@@ -242,9 +266,11 @@ Public Class EditUnit
         deviceQuantities.Clear()
         deviceFullSpecs.Clear()
         deviceBaseDisplay.Clear()
+        deviceCategory.Clear()
 
         If dt Is Nothing OrElse dt.Rows.Count = 0 Then
-            MessageBox.Show("No devices found in the database.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("No devices found in the database.", "Notice",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
 
@@ -272,21 +298,25 @@ Public Class EditUnit
             row("HiddenSpecs") = String.Join(";", hiddenSpecs)
             deviceFullSpecs(id) = row("HiddenSpecs").ToString()
             deviceBaseDisplay(id) = base
+
+            ' ✅ category_pointer from GetDevicesForUnits1
+            If dt.Columns.Contains("category_pointer") AndAlso
+               Not IsDBNull(row("category_pointer")) Then
+
+                deviceCategory(id) = CInt(row("category_pointer"))
+            End If
         Next
 
-        ' dt must already have DeviceDisplay (from your SP/query)
         devicecb.DataSource = dt
         devicecb.DisplayMember = "DeviceDisplay"
         devicecb.ValueMember = "device_id"
         devicecb.SelectedIndex = -1
         devicecb.Text = "Select Device"
 
-        ' 🔍 like Select2
         devicecb.DropDownStyle = ComboBoxStyle.DropDown
         devicecb.IntegralHeight = False
         devicecb.DropDownHeight = 350
 
-        ' keep a copy for filtering
         originalDeviceList = dt.Copy()
     End Sub
 
@@ -310,14 +340,15 @@ Public Class EditUnit
         devicecb.DisplayMember = "DeviceDisplay"
         devicecb.ValueMember = "device_id"
 
-        ' 🔍 keep updated source for filtering
         originalDeviceList = dt.Copy()
 
         devicecb.DropDownStyle = ComboBoxStyle.DropDown
         devicecb.IntegralHeight = False
         devicecb.DropDownHeight = 350
-    End Sub
 
+        DeviceFlowPanel_Resize(Nothing, EventArgs.Empty)
+
+    End Sub
 
     Private Sub adddevicebtn_Click(sender As Object, e As EventArgs) Handles adddevicebtn.Click
         If devicecb.SelectedIndex = -1 Then
@@ -342,18 +373,21 @@ Public Class EditUnit
         Dim specsString As String = If(drv IsNot Nothing AndAlso drv.Row.Table.Columns.Contains("HiddenSpecs"),
                                     CleanSpecs(drv("HiddenSpecs").ToString()), "")
 
-
-        ' Add device
         addedDevices.Add(devId)
         currentDevices.Add(devId)
         deviceQuantities(devId) -= 1
         deviceDisplayNames(devId) = baseText
-        deviceFullSpecs(devId) = specsString   ' <-- only NSOC Name + Property# + specs
+        deviceFullSpecs(devId) = specsString
 
-        If Not editedSpecs.ContainsKey(devId) Then editedSpecs(devId) = ParseSpecs(specsString)
+        If Not editedSpecs.ContainsKey(devId) Then
+            editedSpecs(devId) = ParseSpecs(specsString)
+        End If
 
         UpdateComboList()
         AddDeviceToPanel(devId, baseText, specsString)
+
+        ' ✅ make the new row match deviceflowpnl width
+        DeviceFlowPanel_Resize(Nothing, EventArgs.Empty)
     End Sub
 
 
@@ -384,22 +418,22 @@ Public Class EditUnit
                 .ForeColor = Color.White
             }
 
-        AddHandler removeBtn.Click, Sub()
-                                        Dim result = MessageBox.Show(
-                                                $"Are you sure you want to remove {displayText}?",
-                                                "Confirm Removal",
-                                                MessageBoxButtons.YesNo,
-                                                MessageBoxIcon.Warning
-                                            )
-                                        If result = DialogResult.No Then Exit Sub
+        AddHandler removeBtn.Click,
+                Sub()
+                    Dim result = MessageBox.Show(
+                            $"Are you sure you want to remove {displayText}?",
+                            "Confirm Removal",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Warning)
+                    If result = DialogResult.No Then Exit Sub
 
-                                        deviceflowpnl.Controls.Remove(container)
-                                        currentDevices.Remove(deviceId)
-                                        editedSpecs.Remove(deviceId)
-                                        removedDevices.Add(deviceId)
-                                        If deviceQuantities.ContainsKey(deviceId) Then deviceQuantities(deviceId) += 1
-                                        UpdateComboList()
-                                    End Sub
+                    deviceflowpnl.Controls.Remove(container)
+                    currentDevices.Remove(deviceId)
+                    editedSpecs.Remove(deviceId)
+                    removedDevices.Add(deviceId)
+                    If deviceQuantities.ContainsKey(deviceId) Then deviceQuantities(deviceId) += 1
+                    UpdateComboList()
+                End Sub
 
         container.Controls.Add(removeBtn)
         container.Controls.Add(btn)
@@ -411,34 +445,112 @@ Public Class EditUnit
         specsTable.RowCount = 0
         currentSpecDeviceId = deviceId
 
-        ' Get existing specs or parse from fullSpecs
-        Dim dict As Dictionary(Of String, String) = If(editedSpecs.ContainsKey(deviceId), editedSpecs(deviceId), ParseSpecs(fullSpecs))
+        ' 1) Get current specs dictionary
+        Dim dict As Dictionary(Of String, String) = Nothing
 
+        If editedSpecs.ContainsKey(deviceId) Then
+            dict = editedSpecs(deviceId)
+        Else
+            dict = ParseSpecs(fullSpecs)
+        End If
+
+        ' 2) Separate NSOC/Property from "real" specs
+        Dim nsocProp As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+        Dim hasRealSpecs As Boolean = False
+
+        If dict IsNot Nothing Then
+            For Each kv In dict.ToList()
+                Dim key As String = kv.Key.Trim()
+
+                If key.Equals("NSOC Name", StringComparison.OrdinalIgnoreCase) _
+                   OrElse key.Equals("Property No", StringComparison.OrdinalIgnoreCase) Then
+
+                    ' keep NSOC / Property values
+                    nsocProp(key) = kv.Value
+                Else
+                    ' any other key means we already have real specs
+                    hasRealSpecs = True
+                End If
+            Next
+        End If
+
+        ' 3) If there are NO REAL SPECS at all (either empty, or only NSOC/Property),
+        '    then load template fields from inv_category_specs
+        If Not hasRealSpecs Then
+            Try
+                Dim specsDt As DataTable = Nothing
+
+                If deviceCategory.ContainsKey(deviceId) Then
+                    Dim catId As Integer = deviceCategory(deviceId)
+                    specsDt = mdl.GetCategorySpecs(catId)
+                End If
+
+                Dim newDict As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+
+                ' 3a) keep NSOC / Property fields (if any)
+                For Each kv In nsocProp
+                    newDict(kv.Key) = kv.Value
+                Next
+
+                ' 3b) add template fields from inv_category_specs (empty values)
+                If specsDt IsNot Nothing AndAlso specsDt.Rows.Count > 0 Then
+                    For Each r As DataRow In specsDt.Rows
+                        Dim specName As String = If(r("specs_name") IsNot DBNull.Value,
+                                                    r("specs_name").ToString().Trim(),
+                                                    "")
+                        If specName <> "" AndAlso Not newDict.ContainsKey(specName) Then
+                            newDict(specName) = ""   ' empty, ready for user input
+                        End If
+                    Next
+                End If
+
+                dict = newDict
+                editedSpecs(deviceId) = dict
+
+            Catch ex As Exception
+                MessageBox.Show("Error loading category specs: " & ex.Message,
+                                "Specs", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End Try
+        End If
+
+        ' 4) Still nothing? show info label
+        If dict Is Nothing OrElse dict.Count = 0 Then
+            Dim lblInfo As New Label With {
+                .Text = "No specs defined for this device/category.",
+                .AutoSize = True,
+                .Font = New Font("Segoe UI", 9, FontStyle.Italic)
+            }
+            specsTable.Controls.Add(lblInfo, 0, 0)
+            specsTable.SetColumnSpan(lblInfo, 2)
+            Return
+        End If
+
+        ' 5) Build the UI controls from dict
         For Each kvp In dict
             specsTable.RowCount += 1
 
-            ' Label for spec name
             Dim lbl As New Label With {
-            .Text = kvp.Key & ":",
-            .Width = 150,                    ' Adjust label width
-            .AutoSize = False,
-            .TextAlign = ContentAlignment.MiddleLeft,
-            .Font = New Font("Segoe UI", 9, FontStyle.Bold)
-        }
+                .Text = kvp.Key & ":",
+                .Width = 150,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+            }
             specsTable.Controls.Add(lbl, 0, specsTable.RowCount - 1)
 
-            ' TextBox for spec value
             Dim tb As New TextBox With {
-            .Text = kvp.Value,
-            .Width = 350,                    ' Adjust TextBox width
-            .Height = 25,                    ' Adjust TextBox height
-            .Font = New Font("Segoe UI", 9),
-            .Multiline = False,              ' Change to True if multiline needed
-            .Dock = DockStyle.None            ' Use None when setting fixed size
-        }
+                .Text = kvp.Value,
+                .Width = 350,
+                .Height = 25,
+                .Font = New Font("Segoe UI", 9),
+                .Multiline = False,
+                .Dock = DockStyle.None
+            }
             specsTable.Controls.Add(tb, 1, specsTable.RowCount - 1)
         Next
     End Sub
+
+
 
 
     Private Function NormalizeSpecs(raw As String) As String
@@ -457,6 +569,7 @@ Public Class EditUnit
 
         Dim fallback = NormalizeSpecs(fullSpecs)
         If String.IsNullOrWhiteSpace(fallback) Then Return dict
+
         Dim fallbackItems = fallback.Split(";"c)
         For Each it As String In fallbackItems
             Dim p = it.Split(":"c)
@@ -469,16 +582,12 @@ Public Class EditUnit
         Return dict
     End Function
 
-    ' ==========================
-    ' SAVE SPECS TEMPORARILY
-    ' ==========================
     Private Sub savespecsbtn_Click(sender As Object, e As EventArgs) Handles savespecsbtn.Click
         If currentSpecDeviceId = -1 Then
             MessageBox.Show("Select a device first.")
             Return
         End If
 
-        ' Read current values from TextBoxes
         Dim currentDict As New Dictionary(Of String, String)
         For i = 0 To specsTable.RowCount - 1
             Dim lbl = TryCast(specsTable.GetControlFromPosition(0, i), Label)
@@ -488,10 +597,12 @@ Public Class EditUnit
             End If
         Next
 
-        ' Compare with original specs
-        Dim originalDict As Dictionary(Of String, String) = If(editedSpecs.ContainsKey(currentSpecDeviceId), editedSpecs(currentSpecDeviceId), New Dictionary(Of String, String))
-        Dim hasChanges As Boolean = False
+        Dim originalDict As Dictionary(Of String, String) =
+                If(editedSpecs.ContainsKey(currentSpecDeviceId),
+                   editedSpecs(currentSpecDeviceId),
+                   New Dictionary(Of String, String))
 
+        Dim hasChanges As Boolean = False
         For Each kvp In currentDict
             If Not originalDict.ContainsKey(kvp.Key) OrElse originalDict(kvp.Key).Trim() <> kvp.Value.Trim() Then
                 hasChanges = True
@@ -499,7 +610,6 @@ Public Class EditUnit
             End If
         Next
 
-        ' Only save if something changed
         If hasChanges Then
             editedSpecs(currentSpecDeviceId) = currentDict
             MessageBox.Show("Specs saved temporarily!", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -508,11 +618,7 @@ Public Class EditUnit
         End If
     End Sub
 
-    ' ==========================
-    ' SAVE UNIT CHANGES
-    ' ==========================
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
-        ' ---- 1. BASIC VALIDATION FOR UNIT NAME ----
         Dim newUnitName As String = unitnametxt.Text.Trim()
 
         If String.IsNullOrWhiteSpace(newUnitName) Then
@@ -521,20 +627,18 @@ Public Class EditUnit
             Return
         End If
 
-        ' ---- 2. CHECK UNIQUENESS (BUT ALLOW ORIGINAL NAME) ----
         If Not newUnitName.Equals(originalUnitName, StringComparison.OrdinalIgnoreCase) Then
             If mdl.IsUnitNameExists(newUnitName) Then
                 MessageBox.Show($"The unit name '{newUnitName}' already exists in the database.",
-                            "Duplicate Unit",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning)
+                                    "Duplicate Unit",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning)
                 unitnametxt.Focus()
                 unitnametxt.SelectAll()
                 Return
             End If
         End If
 
-        ' ---- 3. PROCEED WITH YOUR EXISTING SAVE LOGIC ----
         Dim newAssignedId As Integer = If(selectedAssignedId.HasValue, selectedAssignedId.Value, originalAssignedId)
         Dim remarksText = remarkstxt.Text.Trim()
         Dim sb As New StringBuilder()
@@ -557,11 +661,11 @@ Public Class EditUnit
             Next
         End If
 
-        ' Only include edited devices that were really changed
-        Dim editedDevicesWithChanges = editedSpecs.Where(Function(kvp)
-                                                             Dim originalDict = ParseSpecs(deviceFullSpecs(kvp.Key))
-                                                             Return Not DictionariesAreEqual(originalDict, kvp.Value)
-                                                         End Function).ToList()
+        Dim editedDevicesWithChanges = editedSpecs.
+                Where(Function(kvp)
+                          Dim originalDict = ParseSpecs(deviceFullSpecs(kvp.Key))
+                          Return Not DictionariesAreEqual(originalDict, kvp.Value)
+                      End Function).ToList()
 
         If editedDevicesWithChanges.Any() Then
             sb.AppendLine("- Edited Specs:")
@@ -574,23 +678,18 @@ Public Class EditUnit
         End If
 
         sb.AppendLine(vbCrLf & "Proceed?")
-        If MessageBox.Show(sb.ToString(), "Confirm Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then Return
+        If MessageBox.Show(sb.ToString(), "Confirm Save",
+                               MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then Return
 
-        ' ============================================
-        ' 🔹 4. HISTORY: WRITE TO inv_device_history
-        ' ============================================
         Dim userId As Integer = Session.LoggedInUserPointer
 
-        ' 4.a) Log edited specs per device (ONLY changed keys)
         For Each kvp In editedDevicesWithChanges
             Dim deviceId As Integer = kvp.Key
             Dim newDict As Dictionary(Of String, String) = kvp.Value
 
-            ' original specs as dictionary (what we loaded when form opened)
             Dim originalDict As Dictionary(Of String, String) =
-        ParseSpecs(If(deviceFullSpecs.ContainsKey(deviceId), deviceFullSpecs(deviceId), ""))
+                    ParseSpecs(If(deviceFullSpecs.ContainsKey(deviceId), deviceFullSpecs(deviceId), ""))
 
-            ' collect all keys from old + new
             Dim allKeys As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
             For Each k In originalDict.Keys
                 allKeys.Add(k)
@@ -602,7 +701,6 @@ Public Class EditUnit
             Dim oldLines As New List(Of String)()
             Dim newLines As New List(Of String)()
 
-            ' build display strings ONLY for changed keys
             For Each key In allKeys
                 Dim oldVal As String = If(originalDict.ContainsKey(key), originalDict(key), "").Trim()
                 Dim newVal As String = If(newDict.ContainsKey(key), newDict(key), "").Trim()
@@ -616,46 +714,37 @@ Public Class EditUnit
             Dim oldDisplay As String = String.Join("; ", oldLines)
             Dim newDisplay As String = String.Join("; ", newLines)
 
-            ' 👉 This is what will go to inv_device_history
             mdl.InsertDeviceHistory(
-        deviceId,
-        "Specs updated via EditUnit",   ' remarks
-        oldDisplay,                     ' updated_from (ONLY changed fields)
-        newDisplay,                     ' updated_to   (ONLY changed fields)
-        userId                          ' updated_by
-    )
+                    deviceId,
+                    "Specs updated via EditUnit",
+                    oldDisplay,
+                    newDisplay,
+                    userId
+                )
 
-            ' keep "original" in sync for next edits in same session
             deviceFullSpecs(deviceId) = SpecsDictToString(newDict)
         Next
 
-
-
-        ' 4.b) (OPTIONAL) Log added devices as "Assigned to unit"
         For Each devId In addedDevices
             mdl.InsertDeviceHistory(
-            devId,
-            $"Assigned to unit '{newUnitName}' via EditUnit",
-            "",                 ' updated_from (no previous unit here)
-            newUnitName,        ' updated_to  (unit name)
-            userId
-        )
+                    devId,
+                    $"Assigned to unit '{newUnitName}' via EditUnit",
+                    "",
+                    newUnitName,
+                    userId
+                )
         Next
 
-        ' 4.c) (OPTIONAL) Log removed devices as "Removed from unit"
         For Each devId In removedDevices
             mdl.InsertDeviceHistory(
-            devId,
-            $"Removed from unit '{originalUnitName}' via EditUnit",
-            originalUnitName,   ' updated_from
-            "",                 ' updated_to
-            userId
-        )
+                    devId,
+                    $"Removed from unit '{originalUnitName}' via EditUnit",
+                    originalUnitName,
+                    "",
+                    userId
+                )
         Next
 
-        ' ============================================
-        ' 5. ACTUAL SAVE TO YOUR INVENTORY / UNITS
-        ' ============================================
         mdl.SaveUnitChanges(
         unitId,
         newAssignedId,
@@ -663,35 +752,60 @@ Public Class EditUnit
         addedDevices,
         editedDevicesWithChanges.ToDictionary(Function(k) k.Key, Function(k) k.Value),
         newUnitName,
-        remarksText
+        remarksText,
+        userId
     )
+
 
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
+    Private Function DictionariesAreEqual(dict1 As Dictionary(Of String, String),
+                                      dict2 As Dictionary(Of String, String)) As Boolean
+        ' Treat:
+        '   - missing key == empty string
+        '   - auto-created empty fields as "no change"
+        Dim allKeys As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
 
+        For Each k In dict1.Keys
+            allKeys.Add(k)
+        Next
+        For Each k In dict2.Keys
+            allKeys.Add(k)
+        Next
 
+        For Each key In allKeys
+            Dim v1 As String = ""
+            Dim v2 As String = ""
 
-    ' ==========================
-    ' HELPER: Compare two dictionaries
-    ' ==========================
-    Private Function DictionariesAreEqual(dict1 As Dictionary(Of String, String), dict2 As Dictionary(Of String, String)) As Boolean
-        If dict1.Count <> dict2.Count Then Return False
-        For Each kvp In dict1
-            If Not dict2.ContainsKey(kvp.Key) OrElse kvp.Value.Trim() <> dict2(kvp.Key).Trim() Then
+            If dict1 IsNot Nothing AndAlso dict1.ContainsKey(key) Then
+                v1 = If(dict1(key), "").Trim()
+            End If
+            If dict2 IsNot Nothing AndAlso dict2.ContainsKey(key) Then
+                v2 = If(dict2(key), "").Trim()
+            End If
+
+            ' If both old and new are empty/missing → no real difference
+            If v1 = "" AndAlso v2 = "" Then
+                Continue For
+            End If
+
+            ' Real change
+            If Not String.Equals(v1, v2, StringComparison.Ordinal) Then
                 Return False
             End If
         Next
+
         Return True
     End Function
-
 
 
     Private Sub LoadAssignments()
         originalAssignList = mdl.GetAssignments()
 
         If originalAssignList Is Nothing OrElse originalAssignList.Rows.Count = 0 Then
-            MessageBox.Show("No users found in the database.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("No users found in the database.", "Notice",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
 
@@ -700,25 +814,18 @@ Public Class EditUnit
         assigncb.ValueMember = "user_id"
         assigncb.SelectedIndex = -1
 
-        ' 🔍 allow typing + dropdown like Select2
         assigncb.DropDownStyle = ComboBoxStyle.DropDown
         assigncb.IntegralHeight = False
         assigncb.DropDownHeight = 350
     End Sub
 
-
-
-
     Private Function GetNameById(userId As Integer) As String
-        Dim row = originalAssignList.AsEnumerable().FirstOrDefault(Function(r) r.Field(Of Integer)("user_id") = userId)
+        Dim row = originalAssignList.AsEnumerable().
+                FirstOrDefault(Function(r) r.Field(Of Integer)("user_id") = userId)
         If row IsNot Nothing Then Return row("Full name").ToString()
         Return ""
     End Function
 
-    Private Sub Panel2_Click(sender As Object, e As EventArgs) Handles Panel2.Click
-        Dim parentPanel = TryCast(Me.Parent, Panel)
-        If parentPanel IsNot Nothing Then parentPanel.Visible = False
-    End Sub
 
     Private Sub assignbtn_Click(sender As Object, e As EventArgs) Handles assignbtn.Click
         If assigncb.SelectedIndex = -1 Then
@@ -730,41 +837,34 @@ Public Class EditUnit
         selectedAssignedId = CInt(assigncb.SelectedValue)
     End Sub
 
-
-    ' ==========================
-    ' CLEAN SPECS: REMOVE NSOC/Property duplicates
-    ' ==========================
     Private Function CleanSpecs(rawSpecs As String) As String
         If String.IsNullOrWhiteSpace(rawSpecs) Then Return ""
 
-        ' Remove NSOC and Property entries if they exist
         Dim cleaned As String = System.Text.RegularExpressions.Regex.Replace(rawSpecs,
-            "(?i)\s*NSOC\s*[:=][^;]+", "")  ' remove NSOC:...
+                "(?i)\s*NSOC\s*[:=][^;]+", "")
         cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned,
-            "(?i)\s*Property\s*[:=][^;]+", "")  ' remove Property:...
+                "(?i)\s*Property\s*[:=][^;]+", "")
 
-        ' Remove double semicolons and trim
         cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, ";;+", ";")
         cleaned = cleaned.Trim(" "c, ";"c)
 
         Return cleaned
     End Function
 
-    ' =========================
-    ' Filter handlers (like AddUnits)
-    ' =========================
     Private Sub FilterDeviceCombo(sender As Object, e As EventArgs)
-        SafeComboFilter(DirectCast(sender, ComboBox), originalDeviceList, "DeviceDisplay", "device_id", AddressOf FilterDeviceCombo)
+        SafeComboFilter(DirectCast(sender, ComboBox), originalDeviceList,
+                            "DeviceDisplay", "device_id", AddressOf FilterDeviceCombo)
     End Sub
 
     Private Sub FilterAssignCombo(sender As Object, e As EventArgs)
-        SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList, "Full name", "user_id", AddressOf FilterAssignCombo)
+        SafeComboFilter(DirectCast(sender, ComboBox), originalAssignList,
+                            "Full name", "user_id", AddressOf FilterAssignCombo)
     End Sub
 
-    ' =========================
-    ' Universal ComboBox Filter
-    ' =========================
-    Private Sub SafeComboFilter(cb As ComboBox, source As DataTable, displayCol As String, valueCol As String, handler As EventHandler)
+    Private Sub SafeComboFilter(cb As ComboBox, source As DataTable,
+                                    displayCol As String, valueCol As String,
+                                    handler As EventHandler)
+
         If isFiltering Then Exit Sub
         isFiltering = True
 
@@ -778,7 +878,7 @@ Public Class EditUnit
                 filtered = source.Copy()
             Else
                 Dim rows = source.AsEnumerable().
-                Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
+                        Where(Function(r) r.Field(Of String)(displayCol).ToLower().Contains(searchText))
                 filtered = If(rows.Any(), rows.CopyToDataTable(), Nothing)
             End If
 
@@ -792,7 +892,6 @@ Public Class EditUnit
                 If Not filtered.Columns.Contains(valueCol) Then
                     filtered.Columns.Add(valueCol, GetType(Integer))
                 End If
-
                 cb.DataSource = filtered
             Else
                 Dim noResult As New DataTable()
@@ -821,10 +920,8 @@ Public Class EditUnit
         End Try
     End Sub
 
-    ' Turn specs dictionary into "Key: value; Key2: value2" string
     Private Function SpecsDictToString(specs As Dictionary(Of String, String)) As String
         If specs Is Nothing OrElse specs.Count = 0 Then Return ""
-
         Dim parts As New List(Of String)
         For Each kvp In specs
             parts.Add(kvp.Key & ": " & kvp.Value)
@@ -832,8 +929,20 @@ Public Class EditUnit
         Return String.Join("; ", parts)
     End Function
 
+    ' --- width of one device row inside deviceflowpnl ---
+    Private Function GetDeviceRowWidth() As Integer
+        ' inner width of the flow panel minus its own padding
+        Dim inner As Integer = deviceflowpnl.ClientSize.Width - deviceflowpnl.Padding.Horizontal
 
+        ' each row has Margin(5) left + right = 10 total
+        Dim w As Integer = inner - 10
+        If w < 100 Then w = 100
+        Return w
+    End Function
 
+    Private Sub Panel2_Paint(sender As Object, e As EventArgs) Handles Panel2.Click
+        Dim parentPanel = TryCast(Parent, Panel)
+        If parentPanel IsNot Nothing Then parentPanel.Visible = False
+    End Sub
 
 End Class
-

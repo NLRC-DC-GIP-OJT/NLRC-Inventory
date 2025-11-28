@@ -800,18 +800,19 @@ Public Class model
                 Using transaction = conn.BeginTransaction()
 
                     ' ============================
-                    ' 1. INSERT UNIT
+                    ' 1. INSERT UNIT (with created_by ✅)
                     ' ============================
                     Dim unitId As Integer = 0
                     Dim insertUnitQuery As String =
-                    "INSERT INTO inv_units (unit_name, assigned_personnel, remarks, status, created_at) " &
-                    "VALUES (@unitName, @assigned, @remarks, 'Active', NOW()); " &
+                    "INSERT INTO inv_units (unit_name, assigned_personnel, remarks, status, created_by, created_at) " &
+                    "VALUES (@unitName, @assigned, @remarks, 'Active', @createdBy, NOW()); " &
                     "SELECT LAST_INSERT_ID();"
 
                     Using cmd As New MySqlCommand(insertUnitQuery, conn, transaction)
                         cmd.Parameters.AddWithValue("@unitName", unitName)
                         cmd.Parameters.AddWithValue("@assigned", If(assignedPersonnel.HasValue, CType(assignedPersonnel.Value, Object), DBNull.Value))
                         cmd.Parameters.AddWithValue("@remarks", If(String.IsNullOrWhiteSpace(remarks), CType(DBNull.Value, Object), remarks))
+                        cmd.Parameters.AddWithValue("@createdBy", createdBy)
                         unitId = Convert.ToInt32(cmd.ExecuteScalar())
                     End Using
 
@@ -826,7 +827,6 @@ Public Class model
 
                         Using cmdHist As New MySqlCommand(insertHistoryQuery, conn, transaction)
                             cmdHist.Parameters.AddWithValue("@unitId", unitId)
-                            ' first assignment, so we don't have an old person → NULL
                             cmdHist.Parameters.AddWithValue("@from", DBNull.Value)
                             cmdHist.Parameters.AddWithValue("@to", assignedPersonnel.Value)
                             cmdHist.Parameters.AddWithValue("@remarks", If(String.IsNullOrWhiteSpace(remarks), CType(DBNull.Value, Object), remarks))
@@ -883,6 +883,7 @@ Public Class model
 
 
 
+
     Public Function GetBrandPointerByName(brandName As String, categoryPointer As Integer) As Integer
         Using conn As New MySqlConnection(connectionString)
             conn.Open()
@@ -911,7 +912,11 @@ Public Class model
 
 
 
-    Public Function SaveInvUnitDevices(selectedDevices As DataTable, quantity As Integer, remark As String) As Boolean
+    Public Function SaveInvUnitDevices(selectedDevices As DataTable,
+                                   quantity As Integer,
+                                   remark As String,
+                                   createdBy As Integer) As Boolean
+
         If selectedDevices Is Nothing OrElse selectedDevices.Rows.Count = 0 Then
             MessageBox.Show("No devices to save.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return False
@@ -929,67 +934,83 @@ Public Class model
                     Try
                         ' Loop for the number of units to create
                         For u As Integer = 1 To quantity
-                            ' Insert a unit
-                            Dim insertUnitCmd As New MySqlCommand("
-                            INSERT INTO inv_units (unit_name, remarks, status, created_by, created_at)
-                            VALUES (NULL, @remark, 'Active', @created_by, NOW());
-                            SELECT LAST_INSERT_ID();
-                        ", conn, trans)
-                            insertUnitCmd.Parameters.AddWithValue("@remark", If(String.IsNullOrWhiteSpace(remark), DBNull.Value, remark))
-                            insertUnitCmd.Parameters.AddWithValue("@created_by", 1)
-                            Dim unitId As Integer = Convert.ToInt32(insertUnitCmd.ExecuteScalar())
 
-                            ' Loop through selected devices
-                            For Each row As DataRow In selectedDevices.Rows
-                                Dim brandPointer As Integer = Convert.ToInt32(row("brands"))
-                                Dim model As String = row("model").ToString().Trim()
+                            ' 1) INSERT UNIT with created_by from parameter
+                            Dim insertUnitSql As String =
+                            "INSERT INTO inv_units (unit_name, remarks, status, created_by, created_at) " &
+                            "VALUES (NULL, @remark, 'Active', @created_by, NOW()); " &
+                            "SELECT LAST_INSERT_ID();"
 
-                                ' Get one available device (matching brand, model, and category)
-                                Dim getDeviceCmd As New MySqlCommand("
-                                SELECT d.pointer
-                                FROM inv_devices d
-                                INNER JOIN inv_brands b ON d.brands = b.pointer
-                                WHERE d.brands = @brand 
-                                  AND d.model = @model 
-                                  AND d.status = 'Working'
-                                  AND d.dev_category_pointer = b.category_pointer
-                                LIMIT 1
-                            ", conn, trans)
-                                getDeviceCmd.Parameters.AddWithValue("@brand", brandPointer)
-                                getDeviceCmd.Parameters.AddWithValue("@model", model)
-                                Dim deviceObj = getDeviceCmd.ExecuteScalar()
+                            Using insertUnitCmd As New MySqlCommand(insertUnitSql, conn, trans)
+                                insertUnitCmd.Parameters.AddWithValue("@remark",
+                                If(String.IsNullOrWhiteSpace(remark), CType(DBNull.Value, Object), remark))
+                                insertUnitCmd.Parameters.AddWithValue("@created_by", createdBy)
+                                Dim unitId As Integer = Convert.ToInt32(insertUnitCmd.ExecuteScalar())
 
-                                If deviceObj Is Nothing Then
-                                    Dim brandName As String = GetBrandName(brandPointer)
-                                    Throw New Exception($"Not enough stock for Brand {brandName}, Model {model}.")
-                                End If
+                                ' 2) LOOP THROUGH SELECTED DEVICES
+                                For Each row As DataRow In selectedDevices.Rows
+                                    Dim brandPointer As Integer = Convert.ToInt32(row("brands"))
+                                    Dim model As String = row("model").ToString().Trim()
 
-                                Dim devicePointer As Integer = Convert.ToInt32(deviceObj)
+                                    ' Get one available device
+                                    Dim getDeviceSql As String =
+                                    "SELECT d.pointer " &
+                                    "FROM inv_devices d " &
+                                    "INNER JOIN inv_brands b ON d.brands = b.pointer " &
+                                    "WHERE d.brands = @brand " &
+                                    "  AND d.model = @model " &
+                                    "  AND d.status = 'Working' " &
+                                    "  AND d.dev_category_pointer = b.category_pointer " &
+                                    "LIMIT 1;"
 
-                                ' Insert into inv_unit_devices
-                                Dim insertLinkCmd As New MySqlCommand("
-                                INSERT INTO inv_unit_devices (inv_units_pointer, inv_devices_pointer, created_at, created_by)
-                                VALUES (@unitId, @devicePointer, NOW(), @created_by)
-                            ", conn, trans)
-                                insertLinkCmd.Parameters.AddWithValue("@unitId", unitId)
-                                insertLinkCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
-                                insertLinkCmd.Parameters.AddWithValue("@created_by", 1)
-                                insertLinkCmd.ExecuteNonQuery()
+                                    Dim devicePointer As Integer
 
-                                ' Mark device as Assigned
-                                Dim updateDeviceCmd As New MySqlCommand("
-                                UPDATE inv_devices 
-                                SET status = 'Assigned', updated_by = @updated_by, updated_at = NOW() 
-                                WHERE pointer = @devicePointer
-                            ", conn, trans)
-                                updateDeviceCmd.Parameters.AddWithValue("@updated_by", 1)
-                                updateDeviceCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
-                                updateDeviceCmd.ExecuteNonQuery()
-                            Next
-                        Next
+                                    Using getDeviceCmd As New MySqlCommand(getDeviceSql, conn, trans)
+                                        getDeviceCmd.Parameters.AddWithValue("@brand", brandPointer)
+                                        getDeviceCmd.Parameters.AddWithValue("@model", model)
+                                        Dim deviceObj = getDeviceCmd.ExecuteScalar()
+
+                                        If deviceObj Is Nothing Then
+                                            Dim brandName As String = GetBrandName(brandPointer)
+                                            Throw New Exception($"Not enough stock for Brand {brandName}, Model {model}.")
+                                        End If
+
+                                        devicePointer = Convert.ToInt32(deviceObj)
+                                    End Using
+
+                                    ' 3) INSERT INTO inv_unit_devices with created_by
+                                    Dim insertLinkSql As String =
+                                    "INSERT INTO inv_unit_devices (inv_units_pointer, inv_devices_pointer, created_at, created_by) " &
+                                    "VALUES (@unitId, @devicePointer, NOW(), @created_by);"
+
+                                    Using insertLinkCmd As New MySqlCommand(insertLinkSql, conn, trans)
+                                        insertLinkCmd.Parameters.AddWithValue("@unitId", unitId)
+                                        insertLinkCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
+                                        insertLinkCmd.Parameters.AddWithValue("@created_by", createdBy)
+                                        insertLinkCmd.ExecuteNonQuery()
+                                    End Using
+
+                                    ' 4) UPDATE DEVICE STATUS, updated_by = createdBy
+                                    Dim updateDeviceSql As String =
+                                    "UPDATE inv_devices " &
+                                    "SET status = 'Assigned', updated_by = @updated_by, updated_at = NOW() " &
+                                    "WHERE pointer = @devicePointer;"
+
+                                    Using updateDeviceCmd As New MySqlCommand(updateDeviceSql, conn, trans)
+                                        updateDeviceCmd.Parameters.AddWithValue("@updated_by", createdBy)
+                                        updateDeviceCmd.Parameters.AddWithValue("@devicePointer", devicePointer)
+                                        updateDeviceCmd.ExecuteNonQuery()
+                                    End Using
+
+                                Next ' each row in selectedDevices
+
+                            End Using ' insertUnitCmd
+
+                        Next ' For u = 1 To quantity
 
                         trans.Commit()
                         Return True
+
                     Catch ex As Exception
                         trans.Rollback()
                         MessageBox.Show("Database error: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -997,11 +1018,13 @@ Public Class model
                     End Try
                 End Using
             End Using
+
         Catch ex As Exception
             MessageBox.Show("Connection error: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return False
         End Try
     End Function
+
 
 
 
@@ -1234,7 +1257,6 @@ Public Class model
         Return dt
     End Function
 
-
     Public Function GetDeviceSpecsByUnitPointer(unitPointer As Integer) As DataTable
         Dim dt As New DataTable()
 
@@ -1246,16 +1268,16 @@ Public Class model
                 SELECT 
                     u.pointer AS UnitID,
                     ud.inv_devices_pointer AS DeviceID,
+                    d.dev_category_pointer AS category_pointer,   -- 👈 IMPORTANT
                     d.nsoc_name,
                     d.property_number,
-
                     CONCAT(
                         c.category_name, ' - ',
                         b.brand_name, ' - ',
-                        d.model, ' - ',
-                        IFNULL(s.specs, 'No specs available')
+                        d.model,
+                        -- only append specs text when it actually exists
+                        IF(s.specs IS NOT NULL AND s.specs <> '', CONCAT(' - ', s.specs), '')
                     ) AS DeviceAndSpecs
-
                 FROM inv_units AS u
                 JOIN inv_unit_devices AS ud 
                     ON u.pointer = ud.inv_units_pointer
@@ -1267,7 +1289,6 @@ Public Class model
                     ON d.specs = s.pointer
                 LEFT JOIN inv_device_category AS c
                     ON d.dev_category_pointer = c.pointer
-
                 WHERE u.pointer = @unitPointer
                 ORDER BY d.pointer;
             "
@@ -1282,11 +1303,15 @@ Public Class model
             End Using
 
         Catch ex As Exception
-            MessageBox.Show("Error retrieving device specs: " & ex.Message)
+            MessageBox.Show("Error retrieving device specs: " & ex.Message,
+                        "Database Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
 
         Return dt
     End Function
+
+
 
 
     '
@@ -1974,17 +1999,25 @@ ORDER BY c.category_name, b.brand_name, d.model;
     ' ===============================================================
     ' SAVE UNIT CHANGES (FINAL VERSION)
     ' ===============================================================
+    ' ===============================================================
+    ' SAVE UNIT CHANGES (FINAL VERSION + STATUS RESET ON REMOVE)
+    ' ===============================================================
     Public Sub SaveUnitChanges(unitId As Integer,
                            assignedPersonnelId As Object,
                            removedDevices As List(Of Integer),
                            addedDevices As List(Of Integer),
                            editedSpecs As Dictionary(Of Integer, Dictionary(Of String, String)),
                            unitName As String,
-                           remarks As String)
+                           remarks As String,
+                           updatedByUserId As Integer)
 
         Try
             Using conn As New MySqlConnection(connectionString)
                 conn.Open()
+
+                ' You can still fall back to Session if needed
+                Dim currentUserId As Integer =
+                If(updatedByUserId > 0, updatedByUserId, Session.LoggedInUserPointer)
 
                 ' =======================================================
                 ' 0. GET ORIGINAL UNIT DATA
@@ -2012,25 +2045,36 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 End If
 
                 ' =======================================================
-                ' 1. UPDATE UNIT NAME + ASSIGNED PERSONNEL
+                ' 1. UPDATE UNIT NAME + ASSIGNED PERSONNEL + REMARKS + UPDATED_BY
                 ' =======================================================
-                Dim updateQuery As String = "UPDATE inv_units SET unit_name=@nm"
+                Dim sb As New StringBuilder("UPDATE inv_units SET " &
+                                        "unit_name=@nm, " &
+                                        "remarks=@rm, " &
+                                        "updated_by=@user, " &
+                                        "updated_at=NOW()")
 
                 Dim assignedChanged As Boolean = False
 
                 If originalAssignedId <> finalAssignedId.GetValueOrDefault(0) Then
-                    updateQuery &= ", assigned_personnel=@assigned"
+                    sb.Append(", assigned_personnel=@assigned")
                     assignedChanged = True
                 End If
 
-                updateQuery &= " WHERE pointer=@uid"
+                sb.Append(" WHERE pointer=@uid")
 
-                Using cmd As New MySqlCommand(updateQuery, conn)
+                Using cmd As New MySqlCommand(sb.ToString(), conn)
                     cmd.Parameters.AddWithValue("@nm", unitName)
+                    cmd.Parameters.AddWithValue("@rm",
+                                            If(String.IsNullOrWhiteSpace(remarks),
+                                               CType(DBNull.Value, Object),
+                                               remarks))
+                    cmd.Parameters.AddWithValue("@user", currentUserId)
                     cmd.Parameters.AddWithValue("@uid", unitId)
+
                     If finalAssignedId.HasValue Then
                         cmd.Parameters.AddWithValue("@assigned", finalAssignedId.Value)
                     End If
+
                     cmd.ExecuteNonQuery()
                 End Using
 
@@ -2044,31 +2088,36 @@ ORDER BY c.category_name, b.brand_name, d.model;
                     VALUES (@unit, @from, @to, NOW(), @user)", conn)
 
                         cmd.Parameters.AddWithValue("@unit", unitId)
-                        cmd.Parameters.AddWithValue("@from", If(originalAssignedId = 0, DBNull.Value, originalAssignedId))
-                        cmd.Parameters.AddWithValue("@to", finalAssignedId)
-                        cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
+                        cmd.Parameters.AddWithValue("@from",
+                                                If(originalAssignedId = 0,
+                                                   CType(DBNull.Value, Object),
+                                                   originalAssignedId))
+                        cmd.Parameters.AddWithValue("@to",
+                                                If(finalAssignedId.HasValue,
+                                                   CType(finalAssignedId.Value, Object),
+                                                   CType(DBNull.Value, Object)))
+                        cmd.Parameters.AddWithValue("@user", currentUserId)
 
                         cmd.ExecuteNonQuery()
                     End Using
                 End If
 
-
                 ' =======================================================
                 ' 2. REMOVE DEVICES (with updated_by / updated_at)
                 ' =======================================================
                 For Each devId In removedDevices
-                    ' First, update updated_by and updated_at for audit
+                    ' Update audit fields on link
                     Using cmd As New MySqlCommand("
                     UPDATE inv_unit_devices
                     SET updated_by=@user, updated_at=NOW()
                     WHERE inv_units_pointer=@unit AND inv_devices_pointer=@dev", conn)
                         cmd.Parameters.AddWithValue("@unit", unitId)
                         cmd.Parameters.AddWithValue("@dev", devId)
-                        cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
+                        cmd.Parameters.AddWithValue("@user", currentUserId)
                         cmd.ExecuteNonQuery()
                     End Using
 
-                    ' Then delete the record
+                    ' Delete link
                     Using cmd As New MySqlCommand("
                     DELETE FROM inv_unit_devices
                     WHERE inv_units_pointer=@unit AND inv_devices_pointer=@dev", conn)
@@ -2077,7 +2126,18 @@ ORDER BY c.category_name, b.brand_name, d.model;
                         cmd.ExecuteNonQuery()
                     End Using
 
-                    ' history
+                    ' Return device to 'Working'
+                    Using cmd As New MySqlCommand("
+                    UPDATE inv_devices
+                    SET status='Working',
+                        updated_by=@user,
+                        updated_at=NOW()
+                    WHERE pointer=@dev", conn)
+                        cmd.Parameters.AddWithValue("@dev", devId)
+                        cmd.Parameters.AddWithValue("@user", currentUserId)
+                        cmd.ExecuteNonQuery()
+                    End Using
+
                     InsertUnitHistory(conn, unitId, devId, "Device removed from unit")
                 Next
 
@@ -2091,74 +2151,137 @@ ORDER BY c.category_name, b.brand_name, d.model;
                     VALUES (@unit, @dev, @user, NOW(), @user, NOW())", conn)
                         cmd.Parameters.AddWithValue("@unit", unitId)
                         cmd.Parameters.AddWithValue("@dev", devId)
-                        cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
+                        cmd.Parameters.AddWithValue("@user", currentUserId)
                         cmd.ExecuteNonQuery()
                     End Using
+
+                    ' (optional) change device status when added, if you want
+                    'Using cmd As New MySqlCommand("
+                    '    UPDATE inv_devices
+                    '    SET status='Assigned', updated_by=@user, updated_at=NOW()
+                    '    WHERE pointer=@dev", conn)
+                    '    cmd.Parameters.AddWithValue("@dev", devId)
+                    '    cmd.Parameters.AddWithValue("@user", currentUserId)
+                    '    cmd.ExecuteNonQuery()
+                    'End Using
 
                     InsertUnitHistory(conn, unitId, devId, "Device added to unit")
                 Next
 
                 ' =======================================================
                 ' 4. EDITED SPECS AND INV_DEVICES FIELDS
+                '    -> ONLY SAVE IF THERE IS REAL DATA / CHANGE
                 ' =======================================================
                 For Each kvp In editedSpecs
                     Dim devId As Integer = kvp.Key
                     Dim specsDict = kvp.Value
 
-                    ' Extract NSOC Name and Property Number
-                    Dim nsocName As String = If(specsDict.ContainsKey("NSOC Name"), specsDict("NSOC Name"), Nothing)
-                    Dim propertyNumber As String = If(specsDict.ContainsKey("Property No"), specsDict("Property No"), Nothing)
+                    ' --- Extract NSOC Name and Property Number (trimmed) ---
+                    Dim nsocName As String = Nothing
+                    If specsDict.ContainsKey("NSOC Name") Then
+                        nsocName = specsDict("NSOC Name")
+                        If nsocName IsNot Nothing Then nsocName = nsocName.Trim()
+                    End If
 
-                    ' Remove these from specsDict before building actual specs string
-                    Dim specsOnlyDict = specsDict.Where(Function(x) x.Key <> "NSOC Name" AndAlso x.Key <> "Property No").ToDictionary(Function(x) x.Key, Function(x) x.Value)
+                    Dim propertyNumber As String = Nothing
+                    If specsDict.ContainsKey("Property No") Then
+                        propertyNumber = specsDict("Property No")
+                        If propertyNumber IsNot Nothing Then propertyNumber = propertyNumber.Trim()
+                    End If
 
-                    ' Build specs string for inv_specs table
-                    Dim newSpecsString As String = String.Join(";", specsOnlyDict.Select(Function(x) $"{x.Key}: {x.Value}"))
+                    ' --- Keep only "real" specs (not NSOC/Property and not empty) ---
+                    Dim specsOnlyDict As Dictionary(Of String, String) =
+        specsDict.
+        Where(Function(x) _
+                  Not x.Key.Equals("NSOC Name", StringComparison.OrdinalIgnoreCase) AndAlso
+                  Not x.Key.Equals("Property No", StringComparison.OrdinalIgnoreCase) AndAlso
+                  Not String.IsNullOrWhiteSpace(x.Value)
+              ).
+        ToDictionary(Function(x) x.Key, Function(x) x.Value.Trim())
+
+                    Dim hasNsoc As Boolean = Not String.IsNullOrWhiteSpace(nsocName)
+                    Dim hasProp As Boolean = Not String.IsNullOrWhiteSpace(propertyNumber)
+                    Dim hasRealSpecs As Boolean = specsOnlyDict.Count > 0
+
+                    ' 🔴 If user didn't enter anything at all (no NSOC, no Property, no real specs)
+                    '    → skip this device, don't touch inv_specs / inv_devices
+                    If Not hasNsoc AndAlso Not hasProp AndAlso Not hasRealSpecs Then
+                        Continue For
+                    End If
+
+                    ' --- Build specs string for inv_specs (only real specs) ---
+                    Dim newSpecsString As String = ""
+                    If hasRealSpecs Then
+                        newSpecsString = String.Join(";", specsOnlyDict.Select(Function(x) $"{x.Key}: {x.Value}"))
+                    End If
 
                     ' (A) GET CATEGORY ID FOR THIS DEVICE
                     Dim categoryId As Integer
                     Using cmd As New MySqlCommand("
-                    SELECT dev_category_pointer 
-                    FROM inv_devices WHERE pointer=@dev", conn)
+        SELECT dev_category_pointer 
+        FROM inv_devices WHERE pointer=@dev", conn)
                         cmd.Parameters.AddWithValue("@dev", devId)
                         categoryId = CInt(cmd.ExecuteScalar())
                     End Using
 
-                    ' (B) CHECK IF EXACT SAME SPECS ALREADY EXIST
-                    Dim existingPointer As Object
-                    Using cmd As New MySqlCommand("
-                    SELECT pointer FROM inv_specs
-                    WHERE category_id=@cat AND specs=@sp LIMIT 1", conn)
-                        cmd.Parameters.AddWithValue("@cat", categoryId)
-                        cmd.Parameters.AddWithValue("@sp", newSpecsString)
-                        existingPointer = cmd.ExecuteScalar()
-                    End Using
+                    ' (B) FIND OR CREATE inv_specs POINTER (ONLY IF WE HAVE REAL SPECS)
+                    Dim specPointer As Integer = 0
 
-                    Dim specPointer As Integer
-                    If existingPointer IsNot Nothing Then
-                        specPointer = CInt(existingPointer)
-                    Else
-                        ' INSERT NEW SPECS ROW
+                    If Not String.IsNullOrWhiteSpace(newSpecsString) Then
+                        Dim existingPointer As Object
                         Using cmd As New MySqlCommand("
-                    INSERT INTO inv_specs (category_id, specs, created_by, created_at)
-                    VALUES (@cat, @sp, @user, NOW()); 
-                    SELECT LAST_INSERT_ID();", conn)
+            SELECT pointer FROM inv_specs
+            WHERE category_id=@cat AND specs=@sp LIMIT 1", conn)
                             cmd.Parameters.AddWithValue("@cat", categoryId)
                             cmd.Parameters.AddWithValue("@sp", newSpecsString)
-                            cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
-                            specPointer = CInt(cmd.ExecuteScalar())
+                            existingPointer = cmd.ExecuteScalar()
                         End Using
+
+                        If existingPointer IsNot Nothing AndAlso existingPointer IsNot DBNull.Value Then
+                            specPointer = CInt(existingPointer)
+                        Else
+                            Using cmd As New MySqlCommand("
+                INSERT INTO inv_specs (category_id, specs, created_by, created_at)
+                VALUES (@cat, @sp, @user, NOW()); 
+                SELECT LAST_INSERT_ID();", conn)
+                                cmd.Parameters.AddWithValue("@cat", categoryId)
+                                cmd.Parameters.AddWithValue("@sp", newSpecsString)
+                                cmd.Parameters.AddWithValue("@user", currentUserId)
+                                specPointer = CInt(cmd.ExecuteScalar())
+                            End Using
+                        End If
                     End If
 
-                    ' UPDATE DEVICE SPECS POINTER + NSOC Name + Property Number
+                    ' (C) UPDATE DEVICE SPECS POINTER + NSOC Name + Property Number
                     Using cmd As New MySqlCommand("
-                    UPDATE inv_devices 
-                    SET specs=@p, nsoc_name=@nsoc, property_number=@prop, updated_by=@user, updated_at=NOW()
-                    WHERE pointer=@dev", conn)
-                        cmd.Parameters.AddWithValue("@p", specPointer)
-                        cmd.Parameters.AddWithValue("@nsoc", If(nsocName, DBNull.Value))
-                        cmd.Parameters.AddWithValue("@prop", If(propertyNumber, DBNull.Value))
-                        cmd.Parameters.AddWithValue("@user", Session.LoggedInUserPointer)
+                        UPDATE inv_devices 
+                        SET specs=@p,
+                            nsoc_name=@nsoc,
+                            property_number=@prop,
+                            updated_by=@user,
+                            updated_at=NOW()
+                        WHERE pointer=@dev", conn)
+
+                        ' if no real specs, keep specs field NULL
+                        If specPointer = 0 Then
+                            cmd.Parameters.AddWithValue("@p", CType(DBNull.Value, Object))
+                        Else
+                            cmd.Parameters.AddWithValue("@p", specPointer)
+                        End If
+
+                        If hasNsoc Then
+                            cmd.Parameters.AddWithValue("@nsoc", nsocName)
+                        Else
+                            cmd.Parameters.AddWithValue("@nsoc", CType(DBNull.Value, Object))
+                        End If
+
+                        If hasProp Then
+                            cmd.Parameters.AddWithValue("@prop", propertyNumber)
+                        Else
+                            cmd.Parameters.AddWithValue("@prop", CType(DBNull.Value, Object))
+                        End If
+
+                        cmd.Parameters.AddWithValue("@user", currentUserId)
                         cmd.Parameters.AddWithValue("@dev", devId)
                         cmd.ExecuteNonQuery()
                     End Using
@@ -2171,7 +2294,8 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 ' 5. UNIT NAME CHANGE HISTORY
                 ' =======================================================
                 If unitName <> originalUnitName Then
-                    InsertUnitHistory(conn, unitId, Nothing, $"Unit Name changed from '{originalUnitName}' to '{unitName}'")
+                    InsertUnitHistory(conn, unitId, Nothing,
+                                  $"Unit Name changed from '{originalUnitName}' to '{unitName}'")
                 End If
 
             End Using
@@ -2179,7 +2303,10 @@ ORDER BY c.category_name, b.brand_name, d.model;
         Catch ex As Exception
             Throw New Exception("Error saving unit changes: " & ex.Message)
         End Try
+
     End Sub
+
+
 
 
     Private Sub InsertUnitHistory(conn As MySqlConnection,
@@ -2615,6 +2742,9 @@ ORDER BY c.category_name, b.brand_name, d.model;
         End Try
     End Function
 
+    ' =========================================
+    ' CATEGORY DEFAULT SPECS (inv_category_specs)
+    ' =========================================
     Public Function GetCategorySpecs(categoryId As Integer) As DataTable
         Dim dt As New DataTable()
 
@@ -2623,11 +2753,11 @@ ORDER BY c.category_name, b.brand_name, d.model;
                 conn.Open()
 
                 Dim query As String = "
-                SELECT specs_name
-                FROM inv_category_specs
-                WHERE category_pointer = @cat
-                ORDER BY pointer ASC;
-            "
+                    SELECT specs_name
+                    FROM inv_category_specs
+                    WHERE category_pointer = @cat
+                    ORDER BY pointer ASC;
+                "
 
                 Using cmd As New MySqlCommand(query, conn)
                     cmd.Parameters.AddWithValue("@cat", categoryId)
@@ -2985,74 +3115,85 @@ ORDER BY c.category_name, b.brand_name, d.model;
     End Function
 
 
-    ' ================================
-    ' AVAILABLE DEVICES FOR UNIT (COMBO)
-    ' ================================
+
+    ' ===============================================================
+    ' AVAILABLE DEVICES FOR UNIT (COMBOBOX SOURCE)
+    ' ===============================================================
     Public Function GetDevicesForUnits1(unitId As Integer) As DataTable
-Dim dt As New DataTable()
+        Dim dt As New DataTable()
 
         Try
-    Using conn As New MySqlConnection(connectionString)
-        conn.Open()
+            Using conn As New MySqlConnection(connectionString)
+                conn.Open()
 
-        Dim query As String = "
-           SELECT 
-            d.pointer AS device_id,
-            c.category_name,
-            b.brand_name,
-            d.model,
-            s.specs AS actual_specs,
-            d.nsoc_name,
-            d.property_number,
-            CONCAT(
-                c.category_name, ' - ',
-                b.brand_name, ' - ',
-                d.model,
-                IF(s.specs IS NOT NULL AND s.specs != '', CONCAT(' - ', s.specs), ''),
-                IF(d.nsoc_name IS NOT NULL AND d.nsoc_name != '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
-                IF(d.property_number IS NOT NULL AND d.property_number != '', CONCAT(' | Property#: ', d.property_number), '')
-            ) AS DeviceAndSpecs,
-            COUNT(*) AS qty,
-            CONCAT(
-                c.category_name, ' - ',
-                b.brand_name, ' - ',
-                d.model, 
-                IF(d.nsoc_name IS NOT NULL AND d.nsoc_name != '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
-                IF(d.property_number IS NOT NULL AND d.property_number != '', CONCAT(' | Property#: ', d.property_number), ''),
-                ' (', COUNT(*), ')'
-            ) AS DeviceDisplay
-        FROM inv_devices d
-        INNER JOIN inv_brands b ON b.pointer = d.brands
-        INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
-        LEFT JOIN inv_specs s ON d.specs = s.pointer
-        WHERE d.status = 'Working'
-          AND d.pointer NOT IN (
-                SELECT inv_devices_pointer
-                FROM inv_unit_devices
-                WHERE inv_units_pointer = @unitId
-          )
-        GROUP BY 
-            d.pointer, c.category_name, b.brand_name, d.model, s.specs, d.nsoc_name, d.property_number
-        ORDER BY 
-            c.category_name, b.brand_name, d.model;
+                Dim query As String = "
+                    SELECT 
+                        d.pointer AS device_id,
+                        d.dev_category_pointer AS category_pointer,   -- 👈 for default specs
+                        c.category_name,
+                        b.brand_name,
+                        d.model,
+                        s.specs AS actual_specs,
+                        d.nsoc_name,
+                        d.property_number,
+                        CONCAT(
+                            c.category_name, ' - ',
+                            b.brand_name, ' - ',
+                            d.model,
+                            IF(s.specs IS NOT NULL AND s.specs <> '', CONCAT(' - ', s.specs), ''),
+                            IF(d.nsoc_name IS NOT NULL AND d.nsoc_name <> '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
+                            IF(d.property_number IS NOT NULL AND d.property_number <> '', CONCAT(' | Property#: ', d.property_number), '')
+                        ) AS DeviceAndSpecs,
+                        COUNT(*) AS qty,
+                        CONCAT(
+                            c.category_name, ' - ',
+                            b.brand_name, ' - ',
+                            d.model, 
+                            IF(d.nsoc_name IS NOT NULL AND d.nsoc_name <> '', CONCAT(' | NSOC: ', d.nsoc_name), ''),
+                            IF(d.property_number IS NOT NULL AND d.property_number <> '', CONCAT(' | Property#: ', d.property_number), ''),
+                            ' (', COUNT(*), ')'
+                        ) AS DeviceDisplay
+                    FROM inv_devices d
+                    INNER JOIN inv_brands b ON b.pointer = d.brands
+                    INNER JOIN inv_device_category c ON c.pointer = d.dev_category_pointer
+                    LEFT JOIN inv_specs s ON d.specs = s.pointer
+                    WHERE d.status = 'Working'
+                      AND d.pointer NOT IN (
+                            SELECT inv_devices_pointer
+                            FROM inv_unit_devices
+                            WHERE inv_units_pointer = @unitId
+                      )
+                    GROUP BY 
+                        d.pointer,
+                        d.dev_category_pointer,
+                        c.category_name,
+                        b.brand_name,
+                        d.model,
+                        s.specs,
+                        d.nsoc_name,
+                        d.property_number
+                    ORDER BY 
+                        c.category_name,
+                        b.brand_name,
+                        d.model;
+                "
 
-        "
+                Using da As New MySqlDataAdapter(query, conn)
+                    da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
+                    da.Fill(dt)
+                End Using
+            End Using
 
-        Using da As New MySqlDataAdapter(query, conn)
-            da.SelectCommand.Parameters.AddWithValue("@unitId", unitId)
-            da.Fill(dt)
-        End Using
-    End Using
+        Catch ex As Exception
+            MessageBox.Show("Error loading devices: " & ex.Message,
+                            "Database Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
 
-Catch ex As Exception
-    MessageBox.Show("Error loading devices: " & ex.Message, "Database Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error)
-End Try
-
-Return dt
+        Return dt
+    End Function
 
 
-End Function
 
 
 

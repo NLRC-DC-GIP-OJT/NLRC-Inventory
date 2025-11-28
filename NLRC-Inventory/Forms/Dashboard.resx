@@ -121,7 +121,7 @@
   <data name="Button5.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAB
-        YAAAAWABINkT2gAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAh+SURBVHhe7ZsL
+        XQAAAV0B8tVPFwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAh+SURBVHhe7ZsL
         VBTXAYb/2QdPEVEB8QEVUSgiPtBqI4gQlVBFXotRImpFY0LQiDXxkVqIQmMkqRpfMWgwJ8YYNB5MJG1t
         fKU1x1o9NUc9nkRjbTWP1kfUqCQI/j0zwyy7wwrLsithkXO+YXfmzp17v5n7mHvvgiQAXAAgfvipMU1M
         nyORNw0I6BvUnrH9fB8oQX4eLSNgf+ZI5gwKYZd2bkYBWo3ARwf4cUPuIH67LYn8KMPh5D8R3jICuGiC
@@ -324,6 +324,6 @@
     <value>244, 17</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>40</value>
+    <value>25</value>
   </metadata>
 </root>

@@ -4,6 +4,10 @@ Imports System.Collections.Generic
 Imports System.Drawing
 Imports MySql.Data.MySqlClient
 Imports System.Windows.Forms
+Imports QRCoder
+Imports System.Security.Cryptography
+
+
 
 Public Class ViewUnit
 
@@ -11,6 +15,8 @@ Public Class ViewUnit
     Private currentDevices As New List(Of Integer)
     Private deviceDisplayNames As New Dictionary(Of Integer, String)
     Private deviceFullSpecs As New Dictionary(Of Integer, String)
+    Private currentUnitId As Integer = 0
+
 
     ' Specs table
     Private specsTable As New TableLayoutPanel With {
@@ -99,17 +105,24 @@ Public Class ViewUnit
     ' ========================
     ' PUBLIC API: Load Unit
     ' ========================
-    Public Sub LoadUnit(unitName As String, assignedToId As Integer, devices As DataTable)
+    Public Sub LoadUnit(unitId As Integer, unitName As String, assignedToId As Integer, devices As DataTable)
+        ' Set the current unit ID for QR generation
+        currentUnitId = unitId
+
+        ' Set unit name and assigned person
         unitnametxt.Text = unitName
         assigntxt.Text = GetAssignedName(assignedToId)
 
+        ' Clear existing device and specs panels
         deviceflowpnl.Controls.Clear()
         specsTable.Controls.Clear()
 
+        ' Clear previous device lists
         currentDevices.Clear()
         deviceDisplayNames.Clear()
         deviceFullSpecs.Clear()
 
+        ' Loop through devices and populate panels
         For Each dr As DataRow In devices.Rows
             Dim devId As Integer = CInt(dr("DeviceID"))
             Dim baseText As String = ExtractBaseText(dr("DeviceAndSpecs").ToString())
@@ -122,19 +135,23 @@ Public Class ViewUnit
             If dr.Table.Columns.Contains("property_number") AndAlso Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
                 specsParts.Add("Property No:" & dr("property_number").ToString().Trim())
             End If
+
             Dim rawSpecs = dr("DeviceAndSpecs").ToString()
             Dim specsOnly = CleanSpecs(rawSpecs)
             If specsOnly <> "" Then specsParts.Add(specsOnly)
 
             Dim fullSpecs As String = String.Join(";", specsParts)
 
+            ' Store in dictionaries
             deviceDisplayNames(devId) = baseText
             deviceFullSpecs(devId) = fullSpecs
             currentDevices.Add(devId)
 
+            ' Add device to panel (read-only)
             AddDeviceToPanelReadOnly(devId, baseText, fullSpecs)
         Next
     End Sub
+
 
     ' ========================
     ' READ-ONLY DEVICE PANEL
@@ -245,5 +262,41 @@ Public Class ViewUnit
         Dim parentPanel As Panel = TryCast(Me.Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
+
+    Private Sub btnGenerateQR_Click(sender As Object, e As EventArgs) Handles btnGenerateQR.Click
+        If currentUnitId = 0 Then
+            MessageBox.Show("Unit ID not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Dim encryptedText As String = EncryptPointer(currentUnitId)
+
+        mainpanelqr.Controls.Clear()
+        Dim qrControl As New QRView With {.Dock = DockStyle.Fill}
+        mainpanelqr.Controls.Add(qrControl)
+        qrControl.ShowQR(encryptedText)
+
+        mainpanelqr.Visible = True
+        mainpanelqr.BringToFront()
+    End Sub
+
+
+    Private Function EncryptPointer(value As Integer) As String
+        ' Convert the integer to bytes
+        Dim bytes = System.Text.Encoding.UTF8.GetBytes(value.ToString())
+
+        ' Compute SHA256 hash
+        Using sha As SHA256 = SHA256.Create()
+            Dim hashBytes = sha.ComputeHash(bytes)
+
+            ' Convert hash to hexadecimal string
+            Return BitConverter.ToString(hashBytes).Replace("-", "") ' HEX string
+            ' Or use base64 if preferred:
+            ' Return Convert.ToBase64String(hashBytes)
+        End Using
+    End Function
+
+
+
 
 End Class

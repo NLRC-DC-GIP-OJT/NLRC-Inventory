@@ -3,15 +3,36 @@
 Public Class Login
 
     Private mdl As New model()
+    Private originalUserSize As Size
+    Private originalPassSize As Size
+
 
     Private Sub Login_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        ' 🔥 VERY IMPORTANT: Disable autosize so textbox won't shrink
+        usertxt.AutoSize = False
+        passtxt.AutoSize = False
+
+        ' (Optional) Set your desired fixed height
+        usertxt.Height = 35
+        passtxt.Height = 35
+
+        ' Set placeholder text
         usertxt.Text = "Enter Username"
         passtxt.Text = "Enter Password"
         passtxt.UseSystemPasswordChar = False
+
         usertxt.ForeColor = Color.Gray
         passtxt.ForeColor = Color.Gray
 
+        ' 🔥 After disabling autosize, now we can safely set the font
+        usertxt.Font = New Font("Segoe UI", 12)
+        passtxt.Font = New Font("Segoe UI", 12)
+
     End Sub
+
+
+
 
     ' ===== Username Placeholder Events =====
     Private Sub usertxt_Enter(sender As Object, e As EventArgs) Handles usertxt.Enter
@@ -137,4 +158,6 @@ Public Class Login
     Private Sub Panel5_Click(sender As Object, e As EventArgs) Handles Panel5.Click
         Close()
     End Sub
+
+
 End Class

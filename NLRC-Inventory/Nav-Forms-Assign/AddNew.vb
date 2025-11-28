@@ -346,16 +346,20 @@ Public Class AddNew
         Next
 
         ' Save units
-        If mdl.SaveInvUnitDevices(selectedDevices, quantity, remark) Then
+        Dim createdBy As Integer = If(Session.LoggedInUserPointer > 0,
+                              Session.LoggedInUserPointer,
+                              1)   ' or 360, whatever fallback you use
+
+        If mdl.SaveInvUnitDevices(selectedDevices, quantity, remark, createdBy) Then
             MessageBox.Show("Units successfully saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             previewTable.Clear()
             quantitxt.Text = "1"
             remarktxt1.Text = ""
-            ' Refresh ComboBox and stock after save
             catecb_SelectedIndexChanged(Nothing, Nothing)
         Else
             MessageBox.Show("Error saving units. Check stock.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
+
     End Sub
 
     ' Increment quantity with stock limit check

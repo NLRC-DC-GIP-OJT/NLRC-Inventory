@@ -299,6 +299,8 @@ Public Class Add
     ' 🔹 SAVE DEVICE  
     ' ========================  
     Private Sub addsbtn_Click(sender As Object, e As EventArgs) Handles addsbtn.Click
+
+
         ' ===== CATEGORY CHECK =====
         If catcb.SelectedIndex < 0 Then
             MessageBox.Show("Select a category first.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)

@@ -57,7 +57,7 @@ Partial Class AddUnits
         Panel1.Dock = DockStyle.Top
         Panel1.Location = New Point(0, 0)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1176, 55)
+        Panel1.Size = New Size(1170, 55)
         Panel1.TabIndex = 0
         ' 
         ' Panel2
@@ -69,7 +69,7 @@ Partial Class AddUnits
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
         Panel2.Location = New Point(1105, 10)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(51, 42)
+        Panel2.Size = New Size(45, 42)
         Panel2.TabIndex = 30
         ' 
         ' Label3
@@ -96,9 +96,9 @@ Partial Class AddUnits
         unit1pnl.Controls.Add(devicecb)
         unit1pnl.Controls.Add(assigncb)
         unit1pnl.Controls.Add(unitnametxt)
-        unit1pnl.Location = New Point(14, 73)
+        unit1pnl.Location = New Point(14, 75)
         unit1pnl.Name = "unit1pnl"
-        unit1pnl.Size = New Size(1142, 232)
+        unit1pnl.Size = New Size(1136, 232)
         unit1pnl.TabIndex = 1
         unit1pnl.Visible = False
         ' 
@@ -197,9 +197,9 @@ Partial Class AddUnits
         ' 
         Panel3.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel3.Controls.Add(unitsdgv)
-        Panel3.Location = New Point(14, 337)
+        Panel3.Location = New Point(14, 340)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1142, 381)
+        Panel3.Size = New Size(1136, 381)
         Panel3.TabIndex = 2
         ' 
         ' unitsdgv
@@ -235,7 +235,7 @@ Partial Class AddUnits
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         unitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        unitsdgv.Size = New Size(1142, 381)
+        unitsdgv.Size = New Size(1136, 381)
         unitsdgv.TabIndex = 1
         ' 
         ' savebtn
@@ -244,7 +244,7 @@ Partial Class AddUnits
         savebtn.BackColor = Color.CornflowerBlue
         savebtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
-        savebtn.Location = New Point(1022, 731)
+        savebtn.Location = New Point(1016, 734)
         savebtn.Name = "savebtn"
         savebtn.Size = New Size(113, 55)
         savebtn.TabIndex = 16
@@ -260,7 +260,7 @@ Partial Class AddUnits
         Controls.Add(unit1pnl)
         Controls.Add(Panel1)
         Name = "AddUnits"
-        Size = New Size(1176, 799)
+        Size = New Size(1170, 802)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         unit1pnl.ResumeLayout(False)
