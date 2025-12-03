@@ -8,6 +8,8 @@ Public Class AddNew
     Private mdl As New model()
     Private previewTable As New DataTable()
     Private currentDevices As DataTable
+    Public Event UnitSaved()
+
 
     ' ========================
     ' 🔁 AUTO-RESIZE FIELDS
@@ -352,10 +354,13 @@ Public Class AddNew
 
         If mdl.SaveInvUnitDevices(selectedDevices, quantity, remark, createdBy) Then
             MessageBox.Show("Units successfully saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            ' give feedback to parent form
+            RaiseEvent UnitSaved()
             previewTable.Clear()
             quantitxt.Text = "1"
             remarktxt1.Text = ""
             catecb_SelectedIndexChanged(Nothing, Nothing)
+
         Else
             MessageBox.Show("Error saving units. Check stock.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If

@@ -269,32 +269,21 @@ Public Class ViewUnit
             Return
         End If
 
-        Dim encryptedText As String = EncryptPointer(currentUnitId)
-
         mainpanelqr.Controls.Clear()
-        Dim qrControl As New QRView With {.Dock = DockStyle.Fill}
+
+        Dim qrControl As New QRView() With {
+            .Dock = DockStyle.Fill
+        }
+
         mainpanelqr.Controls.Add(qrControl)
-        qrControl.ShowQR(encryptedText)
+
+        ' Pass ONLY the raw Unit ID
+        qrControl.ShowQR(currentUnitId)
 
         mainpanelqr.Visible = True
         mainpanelqr.BringToFront()
     End Sub
 
-
-    Private Function EncryptPointer(value As Integer) As String
-        ' Convert the integer to bytes
-        Dim bytes = System.Text.Encoding.UTF8.GetBytes(value.ToString())
-
-        ' Compute SHA256 hash
-        Using sha As SHA256 = SHA256.Create()
-            Dim hashBytes = sha.ComputeHash(bytes)
-
-            ' Convert hash to hexadecimal string
-            Return BitConverter.ToString(hashBytes).Replace("-", "") ' HEX string
-            ' Or use base64 if preferred:
-            ' Return Convert.ToBase64String(hashBytes)
-        End Using
-    End Function
 
 
 

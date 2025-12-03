@@ -35,15 +35,15 @@ Partial Class DashboardControl
         Dim DataGridViewCellStyle10 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle11 As DataGridViewCellStyle = New DataGridViewCellStyle()
         mainpnl = New Panel()
+        Panel17 = New Panel()
         Panel11 = New Panel()
         catdgv = New DataGridView()
         Label12 = New Label()
-        Panel10 = New Panel()
-        Label16 = New Label()
-        Panel17 = New Panel()
         Panel5 = New Panel()
         totdevices = New Label()
         Label7 = New Label()
+        Panel10 = New Panel()
+        Label16 = New Label()
         Panel13 = New Panel()
         Panel14 = New Panel()
         historydgv = New DataGridView()
@@ -69,11 +69,11 @@ Partial Class DashboardControl
         Label14 = New Label()
         Timer2 = New Timer(components)
         mainpnl.SuspendLayout()
+        Panel17.SuspendLayout()
         Panel11.SuspendLayout()
         CType(catdgv, ComponentModel.ISupportInitialize).BeginInit()
-        Panel10.SuspendLayout()
-        Panel17.SuspendLayout()
         Panel5.SuspendLayout()
+        Panel10.SuspendLayout()
         Panel13.SuspendLayout()
         Panel14.SuspendLayout()
         CType(historydgv, ComponentModel.ISupportInitialize).BeginInit()
@@ -102,15 +102,31 @@ Partial Class DashboardControl
         mainpnl.Size = New Size(1567, 882)
         mainpnl.TabIndex = 5
         ' 
+        ' Panel17
+        ' 
+        Panel17.Controls.Add(Panel11)
+        Panel17.Controls.Add(Panel5)
+        Panel17.Controls.Add(Panel10)
+        Panel17.Controls.Add(Panel13)
+        Panel17.Controls.Add(Panel6)
+        Panel17.Controls.Add(Panel7)
+        Panel17.Controls.Add(Label3)
+        Panel17.Controls.Add(Panel15)
+        Panel17.Dock = DockStyle.Fill
+        Panel17.Location = New Point(0, 0)
+        Panel17.Name = "Panel17"
+        Panel17.Size = New Size(1567, 544)
+        Panel17.TabIndex = 17
+        ' 
         ' Panel11
         ' 
         Panel11.AutoSize = True
         Panel11.BorderStyle = BorderStyle.FixedSingle
         Panel11.Controls.Add(catdgv)
         Panel11.Controls.Add(Label12)
-        Panel11.Location = New Point(1125, 255)
+        Panel11.Location = New Point(1125, 62)
         Panel11.Name = "Panel11"
-        Panel11.Size = New Size(410, 283)
+        Panel11.Size = New Size(410, 476)
         Panel11.TabIndex = 13
         ' 
         ' catdgv
@@ -146,7 +162,7 @@ Partial Class DashboardControl
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         catdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        catdgv.Size = New Size(399, 240)
+        catdgv.Size = New Size(399, 433)
         catdgv.TabIndex = 8
         ' 
         ' Label12
@@ -159,42 +175,6 @@ Partial Class DashboardControl
         Label12.TabIndex = 7
         Label12.Text = "DEVICES BY CATEGORY"
         ' 
-        ' Panel10
-        ' 
-        Panel10.Anchor = AnchorStyles.Top
-        Panel10.BorderStyle = BorderStyle.FixedSingle
-        Panel10.Controls.Add(Label16)
-        Panel10.Location = New Point(1176, 62)
-        Panel10.Name = "Panel10"
-        Panel10.Size = New Size(355, 172)
-        Panel10.TabIndex = 11
-        ' 
-        ' Label16
-        ' 
-        Label16.AutoSize = True
-        Label16.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label16.Location = New Point(57, 6)
-        Label16.Name = "Label16"
-        Label16.Size = New Size(184, 18)
-        Label16.TabIndex = 7
-        Label16.Text = "SERIAL COMPLIANCE"
-        ' 
-        ' Panel17
-        ' 
-        Panel17.Controls.Add(Panel11)
-        Panel17.Controls.Add(Panel5)
-        Panel17.Controls.Add(Panel10)
-        Panel17.Controls.Add(Panel13)
-        Panel17.Controls.Add(Panel6)
-        Panel17.Controls.Add(Panel7)
-        Panel17.Controls.Add(Label3)
-        Panel17.Controls.Add(Panel15)
-        Panel17.Dock = DockStyle.Fill
-        Panel17.Location = New Point(0, 0)
-        Panel17.Name = "Panel17"
-        Panel17.Size = New Size(1567, 544)
-        Panel17.TabIndex = 17
-        ' 
         ' Panel5
         ' 
         Panel5.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
@@ -203,7 +183,7 @@ Partial Class DashboardControl
         Panel5.Controls.Add(Label7)
         Panel5.Location = New Point(30, 62)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(352, 172)
+        Panel5.Size = New Size(257, 172)
         Panel5.TabIndex = 6
         ' 
         ' totdevices
@@ -212,7 +192,7 @@ Partial Class DashboardControl
         totdevices.AutoSize = True
         totdevices.Font = New Font("Arial Rounded MT Bold", 21.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         totdevices.ForeColor = SystemColors.MenuHighlight
-        totdevices.Location = New Point(92, 37)
+        totdevices.Location = New Point(86, 51)
         totdevices.Name = "totdevices"
         totdevices.Size = New Size(83, 33)
         totdevices.TabIndex = 8
@@ -224,11 +204,31 @@ Partial Class DashboardControl
         Label7.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Label7.AutoSize = True
         Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(57, 5)
+        Label7.Location = New Point(54, 8)
         Label7.Name = "Label7"
         Label7.Size = New Size(140, 18)
         Label7.TabIndex = 7
         Label7.Text = "TOTAL DEVICES"
+        ' 
+        ' Panel10
+        ' 
+        Panel10.Anchor = AnchorStyles.Top
+        Panel10.BorderStyle = BorderStyle.FixedSingle
+        Panel10.Controls.Add(Label16)
+        Panel10.Location = New Point(852, 62)
+        Panel10.Name = "Panel10"
+        Panel10.Size = New Size(256, 172)
+        Panel10.TabIndex = 11
+        ' 
+        ' Label16
+        ' 
+        Label16.AutoSize = True
+        Label16.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label16.Location = New Point(36, 6)
+        Label16.Name = "Label16"
+        Label16.Size = New Size(184, 18)
+        Label16.TabIndex = 7
+        Label16.Text = "SERIAL COMPLIANCE"
         ' 
         ' Panel13
         ' 
@@ -236,9 +236,9 @@ Partial Class DashboardControl
         Panel13.BorderStyle = BorderStyle.FixedSingle
         Panel13.Controls.Add(Panel14)
         Panel13.Controls.Add(Label15)
-        Panel13.Location = New Point(588, 255)
+        Panel13.Location = New Point(578, 255)
         Panel13.Name = "Panel13"
-        Panel13.Size = New Size(512, 283)
+        Panel13.Size = New Size(530, 283)
         Panel13.TabIndex = 11
         ' 
         ' Panel14
@@ -247,7 +247,7 @@ Partial Class DashboardControl
         Panel14.Controls.Add(historydgv)
         Panel14.Location = New Point(3, 35)
         Panel14.Name = "Panel14"
-        Panel14.Size = New Size(505, 240)
+        Panel14.Size = New Size(522, 240)
         Panel14.TabIndex = 11
         ' 
         ' historydgv
@@ -276,7 +276,7 @@ Partial Class DashboardControl
         historydgv.ReadOnly = True
         historydgv.RowHeadersVisible = False
         historydgv.RowHeadersWidth = 51
-        historydgv.Size = New Size(505, 240)
+        historydgv.Size = New Size(522, 240)
         historydgv.TabIndex = 23
         ' 
         ' Label15
@@ -295,9 +295,9 @@ Partial Class DashboardControl
         Panel6.BorderStyle = BorderStyle.FixedSingle
         Panel6.Controls.Add(totunits)
         Panel6.Controls.Add(Label8)
-        Panel6.Location = New Point(403, 62)
+        Panel6.Location = New Point(306, 62)
         Panel6.Name = "Panel6"
-        Panel6.Size = New Size(349, 172)
+        Panel6.Size = New Size(256, 172)
         Panel6.TabIndex = 9
         ' 
         ' totunits
@@ -306,7 +306,7 @@ Partial Class DashboardControl
         totunits.AutoSize = True
         totunits.Font = New Font("Arial Rounded MT Bold", 21.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         totunits.ForeColor = SystemColors.MenuHighlight
-        totunits.Location = New Point(95, 37)
+        totunits.Location = New Point(103, 51)
         totunits.Name = "totunits"
         totunits.Size = New Size(83, 33)
         totunits.TabIndex = 10
@@ -318,7 +318,7 @@ Partial Class DashboardControl
         Label8.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Label8.AutoSize = True
         Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(74, 5)
+        Label8.Location = New Point(69, 6)
         Label8.Name = "Label8"
         Label8.Size = New Size(117, 18)
         Label8.TabIndex = 7
@@ -330,9 +330,9 @@ Partial Class DashboardControl
         Panel7.BorderStyle = BorderStyle.FixedSingle
         Panel7.Controls.Add(totpersonnel)
         Panel7.Controls.Add(Label10)
-        Panel7.Location = New Point(775, 62)
+        Panel7.Location = New Point(578, 62)
         Panel7.Name = "Panel7"
-        Panel7.Size = New Size(379, 172)
+        Panel7.Size = New Size(258, 172)
         Panel7.TabIndex = 10
         ' 
         ' totpersonnel
@@ -341,7 +341,7 @@ Partial Class DashboardControl
         totpersonnel.AutoSize = True
         totpersonnel.Font = New Font("Arial Rounded MT Bold", 21.75F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         totpersonnel.ForeColor = SystemColors.MenuHighlight
-        totpersonnel.Location = New Point(100, 37)
+        totpersonnel.Location = New Point(101, 51)
         totpersonnel.Name = "totpersonnel"
         totpersonnel.Size = New Size(83, 33)
         totpersonnel.TabIndex = 9
@@ -352,7 +352,7 @@ Partial Class DashboardControl
         Label10.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Label10.AutoSize = True
         Label10.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label10.Location = New Point(58, 5)
+        Label10.Location = New Point(42, 8)
         Label10.Name = "Label10"
         Label10.Size = New Size(170, 18)
         Label10.TabIndex = 7
@@ -555,15 +555,15 @@ Partial Class DashboardControl
         Name = "DashboardControl"
         Size = New Size(1567, 882)
         mainpnl.ResumeLayout(False)
+        Panel17.ResumeLayout(False)
+        Panel17.PerformLayout()
         Panel11.ResumeLayout(False)
         Panel11.PerformLayout()
         CType(catdgv, ComponentModel.ISupportInitialize).EndInit()
-        Panel10.ResumeLayout(False)
-        Panel10.PerformLayout()
-        Panel17.ResumeLayout(False)
-        Panel17.PerformLayout()
         Panel5.ResumeLayout(False)
         Panel5.PerformLayout()
+        Panel10.ResumeLayout(False)
+        Panel10.PerformLayout()
         Panel13.ResumeLayout(False)
         Panel13.PerformLayout()
         Panel14.ResumeLayout(False)

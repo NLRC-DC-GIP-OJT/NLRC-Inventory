@@ -124,10 +124,10 @@ Public Class Edit
                 Dim row As New Panel With {.Width = specsflowpnl.ClientSize.Width - 2, .Height = 32, .Margin = New Padding(0, 0, 0, 4)}
                 Dim lbl As New Label With {.Text = labelName & ":", .AutoSize = False, .Width = 140, .Location = New Point(5, 8)}
                 Dim txt As New TextBox With {
-                .Text = fieldValue,
-                .Tag = labelName,
-                .BorderStyle = BorderStyle.FixedSingle
-            }
+                    .Text = fieldValue,
+                    .Tag = labelName,
+                    .BorderStyle = BorderStyle.FixedSingle
+                }
 
                 row.Controls.Add(lbl)
                 row.Controls.Add(txt)
@@ -176,21 +176,21 @@ Public Class Edit
             End If
 
             Dim rowPanel As New Panel With {
-            .Width = deviceflowpnl.ClientSize.Width - 2,
-            .Margin = New Padding(0, 0, 0, 15)
-        }
+                .Width = deviceflowpnl.ClientSize.Width - 2,
+                .Margin = New Padding(0, 0, 0, 15)
+            }
 
             ' LABEL
             Dim lbl As New Label With {
-            .Text = rawName & If(isRequired, " *", "") & ":",
-            .AutoSize = False,
-            .Width = 160,
-            .Height = 24,
-            .Location = New Point(5, 5),
-            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-            .TextAlign = ContentAlignment.MiddleLeft,
-            .ForeColor = If(isRequired, Color.Red, Color.Black)
-        }
+                .Text = rawName & If(isRequired, " *", "") & ":",
+                .AutoSize = False,
+                .Width = 160,
+                .Height = 24,
+                .Location = New Point(5, 5),
+                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .ForeColor = If(isRequired, Color.Red, Color.Black)
+            }
 
             rowPanel.Controls.Add(lbl)
 
@@ -202,14 +202,14 @@ Public Class Edit
                 rowPanel.Height = 75
 
                 Dim cb As New ComboBox With {
-                .Name = "cb_" & propPointer,
-                .DropDownStyle = ComboBoxStyle.DropDownList,
-                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                .Left = lbl.Right + 10,
-                .Top = 5,
-                .Width = rowPanel.Width - lbl.Width - 20,
-                .Height = 28
-            }
+                    .Name = "cb_" & propPointer,
+                    .DropDownStyle = ComboBoxStyle.DropDownList,
+                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                    .Left = lbl.Right + 10,
+                    .Top = 5,
+                    .Width = rowPanel.Width - lbl.Width - 20,
+                    .Height = 28
+                }
 
                 Dim brands = mdl.GetBrandsByCategory(categoryPointer)
                 cb.DataSource = brands
@@ -220,14 +220,14 @@ Public Class Edit
                 cb.Tag = New FieldInfo With {.Required = isRequired, .PropName = rawName}
 
                 Dim txtBrand As New TextBox With {
-                .Name = "txtBrand_" & propPointer,
-                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                .Top = cb.Bottom + 5,
-                .Left = cb.Left,
-                .Width = cb.Width,
-                .Height = 28,
-                .ReadOnly = True
-            }
+                    .Name = "txtBrand_" & propPointer,
+                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                    .Top = cb.Bottom + 5,
+                    .Left = cb.Left,
+                    .Width = cb.Width,
+                    .Height = 28,
+                    .ReadOnly = True
+                }
 
                 ' Load existing brand
                 If currentDevice.BrandPointer.HasValue Then
@@ -237,10 +237,10 @@ Public Class Edit
                 End If
 
                 AddHandler cb.SelectedIndexChanged,
-                Sub()
-                    Dim sel As Brand = TryCast(cb.SelectedItem, Brand)
-                    If sel IsNot Nothing Then txtBrand.Text = sel.BrandName
-                End Sub
+                    Sub()
+                        Dim sel As Brand = TryCast(cb.SelectedItem, Brand)
+                        If sel IsNot Nothing Then txtBrand.Text = sel.BrandName
+                    End Sub
 
                 rowPanel.Controls.Add(cb)
                 rowPanel.Controls.Add(txtBrand)
@@ -252,15 +252,15 @@ Public Class Edit
                 rowPanel.Height = 40
 
                 Dim txt As New TextBox With {
-                .Name = "txt_" & propPointer,
-                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                .Left = lbl.Right + 10,
-                .Top = 5,
-                .Width = rowPanel.Width - lbl.Width - 20,
-                .AutoSize = False,
-                .Height = 28,
-                .BorderStyle = BorderStyle.FixedSingle
-            }
+                    .Name = "txt_" & propPointer,
+                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+                    .Left = lbl.Right + 10,
+                    .Top = 5,
+                    .Width = rowPanel.Width - lbl.Width - 20,
+                    .AutoSize = False,
+                    .Height = 28,
+                    .BorderStyle = BorderStyle.FixedSingle
+                }
 
                 ' store required info (no color change)
                 txt.Tag = New FieldInfo With {.Required = isRequired, .PropName = rawName}
@@ -330,20 +330,20 @@ Public Class Edit
         '    (DO NOT TOUCH currentDevice YET)
         ' ============================
         Dim newDevice As New InvDevice With {
-        .Pointer = currentDevice.Pointer,
-        .DevCategoryPointer = CInt(catcb.SelectedValue),
-        .BrandPointer = currentDevice.BrandPointer,
-        .Model = currentDevice.Model,
-        .SerialNumber = currentDevice.SerialNumber,
-        .PropertyNumber = currentDevice.PropertyNumber,
-        .NsocName = currentDevice.NsocName,
-        .Status = currentDevice.Status,
-        .Cost = currentDevice.Cost,
-        .Notes = currentDevice.Notes,
-        .PurchaseDate = purchaseDatePicker.Value,      ' take from picker
-        .WarrantyExpires = warrantyDatePicker.Value,   ' take from picker
-        .Specs = currentDevice.Specs
-    }
+            .Pointer = currentDevice.Pointer,
+            .DevCategoryPointer = CInt(catcb.SelectedValue),
+            .BrandPointer = currentDevice.BrandPointer,
+            .Model = currentDevice.Model,
+            .SerialNumber = currentDevice.SerialNumber,
+            .PropertyNumber = currentDevice.PropertyNumber,
+            .NsocName = currentDevice.NsocName,
+            .Status = currentDevice.Status,
+            .Cost = currentDevice.Cost,
+            .Notes = currentDevice.Notes,
+            .PurchaseDate = purchaseDatePicker.Value,      ' take from picker
+            .WarrantyExpires = warrantyDatePicker.Value,   ' take from picker
+            .Specs = currentDevice.Specs
+        }
 
         ' ============================
         ' 2. READ DYNAMIC FIELDS → newDevice
@@ -424,76 +424,76 @@ Public Class Edit
 
         ' helper for dates
         Dim fmtDate As Func(Of Date?, String) =
-        Function(d As Date?) If(d.HasValue, d.Value.ToString("yyyy-MM-dd"), "N/A")
+            Function(d As Date?) If(d.HasValue, d.Value.ToString("yyyy-MM-dd"), "N/A")
 
         ' MODEL
         If currentDevice.Model <> newDevice.Model Then
             sb.AppendLine($"Model: {currentDevice.Model}  →  {newDevice.Model}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Model",
-            .OldValue = currentDevice.Model,
-            .NewValue = newDevice.Model
-        })
+                .FieldName = "Model",
+                .OldValue = currentDevice.Model,
+                .NewValue = newDevice.Model
+            })
         End If
 
         ' SERIAL
         If currentDevice.SerialNumber <> newDevice.SerialNumber Then
             sb.AppendLine($"Serial No.: {currentDevice.SerialNumber}  →  {newDevice.SerialNumber}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Serial No.",
-            .OldValue = currentDevice.SerialNumber,
-            .NewValue = newDevice.SerialNumber
-        })
+                .FieldName = "Serial No.",
+                .OldValue = currentDevice.SerialNumber,
+                .NewValue = newDevice.SerialNumber
+            })
         End If
 
         ' PROPERTY NUMBER
         If currentDevice.PropertyNumber <> newDevice.PropertyNumber Then
             sb.AppendLine($"Property No.: {currentDevice.PropertyNumber}  →  {newDevice.PropertyNumber}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Property No.",
-            .OldValue = currentDevice.PropertyNumber,
-            .NewValue = newDevice.PropertyNumber
-        })
+                .FieldName = "Property No.",
+                .OldValue = currentDevice.PropertyNumber,
+                .NewValue = newDevice.PropertyNumber
+            })
         End If
 
         ' NSOC NAME
         If currentDevice.NsocName <> newDevice.NsocName Then
             sb.AppendLine($"NSOC Name: {currentDevice.NsocName}  →  {newDevice.NsocName}")
             changes.Add(New DeviceChange With {
-            .FieldName = "NSOC Name",
-            .OldValue = currentDevice.NsocName,
-            .NewValue = newDevice.NsocName
-        })
+                .FieldName = "NSOC Name",
+                .OldValue = currentDevice.NsocName,
+                .NewValue = newDevice.NsocName
+            })
         End If
 
         ' PURCHASE DATE
         If Not Nullable.Equals(currentDevice.PurchaseDate, newDevice.PurchaseDate) Then
             sb.AppendLine($"Purchase Date: {fmtDate(currentDevice.PurchaseDate)}  →  {fmtDate(newDevice.PurchaseDate)}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Purchase Date",
-            .OldValue = fmtDate(currentDevice.PurchaseDate),
-            .NewValue = fmtDate(newDevice.PurchaseDate)
-        })
+                .FieldName = "Purchase Date",
+                .OldValue = fmtDate(currentDevice.PurchaseDate),
+                .NewValue = fmtDate(newDevice.PurchaseDate)
+            })
         End If
 
         ' WARRANTY DATE
         If Not Nullable.Equals(currentDevice.WarrantyExpires, newDevice.WarrantyExpires) Then
             sb.AppendLine($"Warranty Expires: {fmtDate(currentDevice.WarrantyExpires)}  →  {fmtDate(newDevice.WarrantyExpires)}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Warranty Expires",
-            .OldValue = fmtDate(currentDevice.WarrantyExpires),
-            .NewValue = fmtDate(newDevice.WarrantyExpires)
-        })
+                .FieldName = "Warranty Expires",
+                .OldValue = fmtDate(currentDevice.WarrantyExpires),
+                .NewValue = fmtDate(newDevice.WarrantyExpires)
+            })
         End If
 
         ' STATUS
         If currentDevice.Status <> newDevice.Status Then
             sb.AppendLine($"Status: {currentDevice.Status}  →  {newDevice.Status}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Status",
-            .OldValue = currentDevice.Status,
-            .NewValue = newDevice.Status
-        })
+                .FieldName = "Status",
+                .OldValue = currentDevice.Status,
+                .NewValue = newDevice.Status
+            })
         End If
 
         ' COST
@@ -502,50 +502,50 @@ Public Class Edit
         If oldCostStr <> newCostStr Then
             sb.AppendLine($"Cost: {oldCostStr}  →  {newCostStr}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Cost",
-            .OldValue = oldCostStr,
-            .NewValue = newCostStr
-        })
+                .FieldName = "Cost",
+                .OldValue = oldCostStr,
+                .NewValue = newCostStr
+            })
         End If
 
         ' NOTES
         If currentDevice.Notes <> newDevice.Notes Then
             sb.AppendLine("Notes: (changed)")
             changes.Add(New DeviceChange With {
-            .FieldName = "Notes",
-            .OldValue = currentDevice.Notes,
-            .NewValue = newDevice.Notes
-        })
+                .FieldName = "Notes",
+                .OldValue = currentDevice.Notes,
+                .NewValue = newDevice.Notes
+            })
         End If
 
         ' SPECS (optional, one row, still shorter than whole state)
         If currentDevice.Specs <> newDevice.Specs Then
             sb.AppendLine("Specs: (changed)")
             changes.Add(New DeviceChange With {
-            .FieldName = "Specs",
-            .OldValue = currentDevice.Specs,
-            .NewValue = newDevice.Specs
-        })
+                .FieldName = "Specs",
+                .OldValue = currentDevice.Specs,
+                .NewValue = newDevice.Specs
+            })
         End If
 
         ' BRAND (by name)
         If currentDevice.BrandPointer <> newDevice.BrandPointer Then
             Dim oldBrandName As String =
-            If(currentDevice.BrandPointer.HasValue AndAlso currentDevice.BrandPointer.Value > 0,
-               mdl.GetBrandName(currentDevice.BrandPointer.Value),
-               "N/A")
+                If(currentDevice.BrandPointer.HasValue AndAlso currentDevice.BrandPointer.Value > 0,
+                   mdl.GetBrandName(currentDevice.BrandPointer.Value),
+                   "N/A")
 
             Dim newBrandName As String =
-            If(newDevice.BrandPointer.HasValue AndAlso newDevice.BrandPointer.Value > 0,
-               mdl.GetBrandName(newDevice.BrandPointer.Value),
-               "N/A")
+                If(newDevice.BrandPointer.HasValue AndAlso newDevice.BrandPointer.Value > 0,
+                   mdl.GetBrandName(newDevice.BrandPointer.Value),
+                   "N/A")
 
             sb.AppendLine($"Brand: {oldBrandName}  →  {newBrandName}")
             changes.Add(New DeviceChange With {
-            .FieldName = "Brand",
-            .OldValue = oldBrandName,
-            .NewValue = newBrandName
-        })
+                .FieldName = "Brand",
+                .OldValue = oldBrandName,
+                .NewValue = newBrandName
+            })
         End If
 
         ' ============================
@@ -560,16 +560,16 @@ Public Class Edit
         ' 6. SHOW CONFIRMATION MESSAGEBOX
         ' ============================
         Dim summaryText As String =
-        "You are about to update this device with the following changes:" &
-        vbCrLf & vbCrLf &
-        sb.ToString() &
-        vbCrLf &
-        "Are you sure you want to update these fields?"
+            "You are about to update this device with the following changes:" &
+            vbCrLf & vbCrLf &
+            sb.ToString() &
+            vbCrLf &
+            "Are you sure you want to update these fields?"
 
         Dim result = MessageBox.Show(summaryText,
-                                 "Confirm Update",
-                                 MessageBoxButtons.YesNo,
-                                 MessageBoxIcon.Question)
+                                     "Confirm Update",
+                                     MessageBoxButtons.YesNo,
+                                     MessageBoxIcon.Question)
 
         If result <> DialogResult.Yes Then
             ' user cancelled
@@ -599,11 +599,11 @@ Public Class Edit
             ' one history row per changed field
             For Each ch In changes
                 mdl.InsertDeviceHistory(
-                    currentDevice.Pointer,
-                    ch.FieldName,
-                    ch.OldValue,
-                    ch.NewValue,
-                    userID)
+                        currentDevice.Pointer,
+                        ch.FieldName,
+                        ch.OldValue,
+                        ch.NewValue,
+                        userID)
             Next
 
             ' 🔄 REFRESH HISTORY GRID SO NEW ROWS APPEAR IMMEDIATELY
@@ -682,10 +682,10 @@ Public Class Edit
             Dim rowPanel As New Panel With {.Width = specsflowpnl.ClientSize.Width - 2, .Height = 32, .Margin = New Padding(0, 0, 0, 4)}
             Dim lbl As New Label With {.Text = labelName & ":", .AutoSize = False, .Width = 140}
             Dim txt As New TextBox With {
-            .Text = fieldValue,
-            .Tag = labelName,
-            .BorderStyle = BorderStyle.FixedSingle
-            }
+                .Text = fieldValue,
+                .Tag = labelName,
+                .BorderStyle = BorderStyle.FixedSingle
+                }
 
 
             rowPanel.Controls.Add(lbl)
@@ -706,7 +706,7 @@ Public Class Edit
         sb.AppendLine($"NSOC Name: {d.NsocName}")
 
         Dim fmtDate As Func(Of Date?, String) =
-        Function(x) If(x.HasValue, x.Value.ToString("yyyy-MM-dd"), "N/A")
+            Function(x) If(x.HasValue, x.Value.ToString("yyyy-MM-dd"), "N/A")
 
         sb.AppendLine($"Purchase Date: {fmtDate(d.PurchaseDate)}")
         sb.AppendLine($"Warranty Expires: {fmtDate(d.WarrantyExpires)}")
@@ -870,9 +870,9 @@ Public Class Edit
 
     ' Build *display* text for old/new specs showing ONLY changed items
     Private Sub BuildSpecsDiffDisplay(oldSpec As String,
-                                  newSpec As String,
-                                  ByRef oldDisplay As String,
-                                  ByRef newDisplay As String)
+                                      newSpec As String,
+                                      ByRef oldDisplay As String,
+                                      ByRef newDisplay As String)
 
         Dim oldDict = ParseSpecsToDict(oldSpec)
         Dim newDict = ParseSpecsToDict(newSpec)
@@ -959,9 +959,9 @@ Public Class Edit
 
                         If Not hasValue Then
                             MessageBox.Show(info.PropName & " is required.",
-                                            "Validation Error",
-                                            MessageBoxButtons.OK,
-                                            MessageBoxIcon.Warning)
+                                                "Validation Error",
+                                                MessageBoxButtons.OK,
+                                                MessageBoxIcon.Warning)
                             ctrl.Focus()
                             Return False
                         End If

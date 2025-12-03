@@ -161,15 +161,27 @@ Public Class Add
 
             Dim rowPanel As New Panel With {.Width = deviceflowpnl.ClientSize.Width - 2, .Height = 40, .Margin = New Padding(0, 0, 0, 6)}
 
+            Dim labelText As String = prop("property_name").ToString()
+
+            ' 👉 Add peso sign to label when this is the Cost field
+            If propName = "cost" Then
+                labelText &= " (₱)"
+            End If
+
+            If isRequired Then
+                labelText &= " *"
+            End If
+
             Dim lbl As New Label With {
-                .Text = prop("property_name").ToString() & If(isRequired, " *", ""),
-                .AutoSize = False,
-                .Width = 160,
-                .Location = New Point(5, 8),
-                .TextAlign = ContentAlignment.MiddleLeft,
-                .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                .ForeColor = If(isRequired, Color.Red, Color.Black)
-            }
+            .Text = labelText,
+            .AutoSize = False,
+            .Width = 160,
+            .Location = New Point(5, 8),
+            .TextAlign = ContentAlignment.MiddleLeft,
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+            .ForeColor = If(isRequired, Color.Red, Color.Black)
+        }
+
 
             Dim inputCtrl As Control
             If propName = "brand" Then
@@ -188,12 +200,21 @@ Public Class Add
                 inputCtrl = cb
             Else
                 Dim txt As New TextBox With {
-                    .Name = "txt_" & prop("pointer").ToString(),
-                    .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
-                    .Height = 26
-                }
+            .Name = "txt_" & prop("pointer").ToString(),
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+            .Height = 26
+        }
+
+                ' 👉 If this is the Cost field, format & validate as numeric
+                If propName = "cost" Then
+                    txt.TextAlign = HorizontalAlignment.Left
+                    AddHandler txt.KeyPress, AddressOf CostTextBox_KeyPress
+                    AddHandler txt.Leave, AddressOf CostTextBox_Leave
+                End If
+
                 inputCtrl = txt
             End If
+
 
             ' Store field info for validation
             inputCtrl.Tag = New FieldInfo With {.Required = isRequired, .PropName = prop("property_name").ToString()}
@@ -215,6 +236,52 @@ Public Class Add
         AdjustDynamicControlsWidth()
         LoadSpecsForCategory(selectedCategory.Pointer)
     End Sub
+
+
+    ' ========================
+    ' 🔹 COST TEXTBOX HANDLERS
+    ' ========================
+    Private Sub CostTextBox_KeyPress(sender As Object, e As KeyPressEventArgs)
+        Dim txt As TextBox = DirectCast(sender, TextBox)
+
+        ' Allow control keys (Backspace, Delete, arrows, etc.)
+        If Char.IsControl(e.KeyChar) Then
+            Return
+        End If
+
+        ' Allow digits
+        If Char.IsDigit(e.KeyChar) Then
+            Return
+        End If
+
+        ' Allow one decimal separator (.)
+        If e.KeyChar = "."c Then
+            If txt.Text.Contains("."c) Then
+                e.Handled = True
+            End If
+            Return
+        End If
+
+        ' Block anything else
+        e.Handled = True
+    End Sub
+
+    Private Sub CostTextBox_Leave(sender As Object, e As EventArgs)
+        Dim txt As TextBox = DirectCast(sender, TextBox)
+        If String.IsNullOrWhiteSpace(txt.Text) Then Exit Sub
+
+        Dim amount As Decimal
+        If Decimal.TryParse(txt.Text, amount) Then
+            ' Format as 2 decimal places when leaving the field
+            txt.Text = amount.ToString("N2") ' e.g. 1,234.50 based on current culture
+        Else
+            MessageBox.Show("Please enter a valid amount for Cost.", "Invalid Amount", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            txt.Focus()
+        End If
+    End Sub
+
+
+
 
     ' ========================  
     ' 🔹 LOAD SPECS  
@@ -347,20 +414,36 @@ Public Class Add
 
             ' ===== SPECS FIELDS =====
             Dim specList As New List(Of String)
-            For Each row As Control In specsflowpnl.Controls
-                If TypeOf row Is Panel Then
-                    Dim lbl As Label = Nothing
-                    Dim txt As TextBox = Nothing
-                    For Each c As Control In row.Controls
-                        If TypeOf c Is Label Then lbl = TryCast(c, Label)
-                        If TypeOf c Is TextBox Then txt = TryCast(c, TextBox)
-                    Next
-                    If lbl IsNot Nothing AndAlso txt IsNot Nothing Then
-                        specList.Add(lbl.Text.TrimEnd(":"c) & ": " & txt.Text.Trim())
+
+            If specscb.SelectedIndex >= 0 AndAlso TypeOf specscb.SelectedItem Is DeviceSpecification Then
+
+                For Each row As Control In specsflowpnl.Controls
+                    If TypeOf row Is Panel Then
+                        Dim lbl As Label = Nothing
+                        Dim txt As TextBox = Nothing
+
+                        For Each c As Control In row.Controls
+                            If TypeOf c Is Label Then lbl = TryCast(c, Label)
+                            If TypeOf c Is TextBox Then txt = TryCast(c, TextBox)
+                        Next
+
+                        If lbl IsNot Nothing AndAlso txt IsNot Nothing Then
+                            specList.Add(lbl.Text.TrimEnd(":"c) & ": " & txt.Text.Trim())
+                        End If
                     End If
+                Next
+
+                If specList.Count > 0 Then
+                    device.Specs = String.Join("; ", specList)
+                Else
+                    device.Specs = Nothing
                 End If
-            Next
-            device.Specs = String.Join("; ", specList)
+            Else
+                ' No specs selected at all
+                device.Specs = Nothing
+            End If
+
+
 
             ' ===== DEVICEFLOWPANEL FIELDS =====
             For Each row As Control In deviceflowpnl.Controls
@@ -374,6 +457,19 @@ Public Class Add
                                 Case "serial number" : device.SerialNumber = If(value <> "", value, Nothing)
                                 Case "property number" : device.PropertyNumber = If(value <> "", value, Nothing)
                                 Case "nsoc name" : device.NsocName = If(value <> "", value, Nothing)
+                                Case "cost"
+                                    If value <> "" Then
+                                        Dim amount As Decimal
+                                        If Decimal.TryParse(value, amount) Then
+                                            device.Cost = amount
+                                        Else
+                                            MessageBox.Show("Invalid amount for Cost.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                                            ctrl.Focus()
+                                            Return
+                                        End If
+                                    Else
+                                        device.Cost = Nothing
+                                    End If
                             End Select
                         ElseIf TypeOf ctrl Is ComboBox Then
                             Dim cb As ComboBox = DirectCast(ctrl, ComboBox)

@@ -18,6 +18,7 @@ Public Class EditUnit
     Private currentDevices As New List(Of Integer)
     Private removedDevices As New List(Of Integer)
     Private addedDevices As New List(Of Integer)
+    Public Event UnitSaved()
 
     Private originalDeviceList As DataTable          ' for devicecb filtering
     Private isFiltering As Boolean = False           ' shared flag for both combos
@@ -755,7 +756,8 @@ Public Class EditUnit
         remarksText,
         userId
     )
-
+        ' give feedback to parent form
+        RaiseEvent UnitSaved()
 
         MessageBox.Show("Changes saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub

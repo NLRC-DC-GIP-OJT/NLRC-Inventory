@@ -3,12 +3,25 @@ Imports System.Drawing
 
 Public Class QRView
 
-    Private currentEncryptedText As String = ""
+    Private unitId As Integer ' store the Unit ID / pointer
+    Private baseQR As Bitmap = Nothing ' store generated QR so we can resize without regenerating
+    Private lastEncryptedText As String = "" ' optional: keep the encrypted string
 
-    ' Shows the QR code for the given encrypted text
-    Public Sub ShowQR(encryptedText As String)
-        currentEncryptedText = encryptedText
-        GenerateQR()
+    ' Shows the QR code for the given Unit ID
+    Public Sub ShowQR(id As Integer)
+        unitId = id ' store the Unit ID
+        ' ==============================
+        ' 1) Generate QR + get ENCRYPTED text
+        ' ==============================
+        Dim enc As String = Nothing
+        baseQR = QRGenerator.GenerateUnitQR(unitId, enc)
+        lastEncryptedText = enc
+
+        ' ==============================
+        ' 2) Render QR into panel
+        ' ==============================
+        RenderQR()
+
         ' Attach resize handler for auto-scaling
         AddHandler panelqr.Resize, AddressOf PanelQR_Resize
     End Sub
@@ -24,26 +37,20 @@ Public Class QRView
     ' Auto-resize QR on panel resize
     ' ==========================
     Private Sub PanelQR_Resize(sender As Object, e As EventArgs)
-        GenerateQR()
+        RenderQR()
     End Sub
 
     ' ==========================
-    ' Generate and display QR
+    ' Generate and display QR from baseQR
     ' ==========================
-    Private Sub GenerateQR()
-        If String.IsNullOrEmpty(currentEncryptedText) Then Return
-        panelqr.Controls.Clear()
+    Private Sub RenderQR()
+        If baseQR Is Nothing Then Return
 
-        ' Generate QR code
-        Dim qrGen As New QRCodeGenerator()
-        Dim qrData = qrGen.CreateQrCode(currentEncryptedText, QRCodeGenerator.ECCLevel.Q)
-        Dim qrCode As New QRCode(qrData)
+        panelqr.Controls.Clear()
 
         ' Determine the square size to maintain aspect ratio
         Dim side As Integer = Math.Min(panelqr.Width, panelqr.Height)
-
-        ' Create minimal QR image
-        Dim qrImage As Bitmap = qrCode.GetGraphic(1)
+        If side <= 0 Then Return
 
         ' Resize QR image to fit square panel
         Dim finalQR As New Bitmap(side, side)
@@ -51,7 +58,7 @@ Public Class QRView
             g.InterpolationMode = Drawing2D.InterpolationMode.NearestNeighbor
             g.PixelOffsetMode = Drawing2D.PixelOffsetMode.Half
             g.Clear(panelqr.BackColor) ' keep background consistent
-            g.DrawImage(qrImage, 0, 0, side, side)
+            g.DrawImage(baseQR, 0, 0, side, side)
         End Using
 
         ' Add PictureBox centered in panel
@@ -71,7 +78,7 @@ Public Class QRView
     End Sub
 
     Private Sub printbtn_Click(sender As Object, e As EventArgs) Handles printbtn.Click
-        ' Find the form that hosts this EditUnit
+        ' (unchanged)
         Dim hostForm As Form = Me.FindForm()
         If hostForm Is Nothing Then
             MessageBox.Show("Host form not found.", "Layout Error",
@@ -79,9 +86,7 @@ Public Class QRView
             Return
         End If
 
-        ' 🔎 Find the panel named "printqrformat" anywhere in the form
         Dim found() As Control = hostForm.Controls.Find("printqrformat", True)
-
         If found Is Nothing OrElse found.Length = 0 Then
             MessageBox.Show("Panel 'printqrformat' not found on the form.", "Layout Error",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -95,7 +100,6 @@ Public Class QRView
             Return
         End If
 
-        ' ✅ Show QRPrintView inside printqrformat panel
         printPanel.Visible = True
         printPanel.BringToFront()
         printPanel.Controls.Clear()
@@ -110,6 +114,5 @@ Public Class QRView
         Dim parentPanel As Panel = TryCast(Me.Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
-
 
 End Class

@@ -407,6 +407,9 @@ Public Class AddUnits
 
         If success Then
             MessageBox.Show("Unit saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            ' give feedback to parent form
+            RaiseEvent UnitSaved()
             unitsdgv.Rows.Clear()
             unitnametxt.Clear()
 

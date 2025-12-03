@@ -20,6 +20,14 @@ Public Class Units
         Try
             Dim dt As DataTable = mdl.GetUnitsSummary()
 
+            ' If the query failed
+            If dt Is Nothing Then
+                allFilteredRows = New List(Of DataRow)()
+                allunitsdgv.DataSource = Nothing
+                MessageBox.Show("Failed to load units data.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
             ' Filter search
             Dim filtered = dt.AsEnumerable()
             If Not String.IsNullOrWhiteSpace(search) AndAlso Not (filtertxt.ForeColor = Color.Gray AndAlso search = "Search") Then
@@ -29,14 +37,19 @@ Public Class Units
 
             allFilteredRows = filtered.ToList()
             totalPages = Math.Ceiling(allFilteredRows.Count / pageSize)
+            If totalPages < 1 Then totalPages = 1
             If currentPage > totalPages Then currentPage = totalPages
             If currentPage < 1 Then currentPage = 1
 
             Dim pageRows = allFilteredRows.Skip((currentPage - 1) * pageSize).Take(pageSize)
+
+            ' <<< IMPORTANT FIX >>>:
+            ' If there are no rows for the current page, bind an EMPTY clone of the original datatable
+            ' so the DataGridView still has columns (prevents Columns.Count = 0).
             If pageRows.Any() Then
                 allunitsdgv.DataSource = pageRows.CopyToDataTable()
             Else
-                allunitsdgv.DataSource = Nothing
+                allunitsdgv.DataSource = dt.Clone() ' <-- safe empty table with correct columns
             End If
 
             ' Setup grid
@@ -68,17 +81,17 @@ Public Class Units
             assignedToCboCol.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
             assignedToCboCol.Items.AddRange(personnelNames.ToArray())
 
-            ' >>> CHANGED PART HERE <<<
-            'allunitsdgv.Columns.Insert(2, assignedToCboCol) ' OLD LINE
-            Dim insertIndex As Integer = Math.Min(2, allunitsdgv.Columns.Count)
+            ' Insert ComboBox column safely (index bounded)
+            Dim insertIndex As Integer = Math.Min(2, Math.Max(0, allunitsdgv.Columns.Count))
             allunitsdgv.Columns.Insert(insertIndex, assignedToCboCol)
-            ' >>> END OF CHANGE <<<
 
             ' --- Fix column order: Unit Name | Device No | Assigned To | Created At | Updated At ---
             Dim fixedOrder As String() = {"Unit Name", "Device No", "Assigned To", "Created At", "Updated At"}
             For i As Integer = 0 To fixedOrder.Length - 1
                 If allunitsdgv.Columns.Contains(fixedOrder(i)) Then
-                    allunitsdgv.Columns(fixedOrder(i)).DisplayIndex = i
+                    ' clamp the display index to available columns
+                    Dim safeIndex As Integer = Math.Min(i, Math.Max(0, allunitsdgv.Columns.Count - 1))
+                    allunitsdgv.Columns(fixedOrder(i)).DisplayIndex = safeIndex
                 End If
             Next
 
@@ -110,6 +123,7 @@ Public Class Units
             MessageBox.Show("Error loading units: " & ex.Message)
         End Try
     End Sub
+
 
 
     ' ----------------- Edit/View Buttons -----------------

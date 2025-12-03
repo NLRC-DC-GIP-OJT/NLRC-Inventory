@@ -145,10 +145,13 @@ Public Class model
                 conn.Open()
 
                 ' ============================
-                ' 🔥 Get or Create SPEC POINTER
+                ' Get or Create SPEC POINTER (ONLY IF THERE ARE SPECS)
                 ' ============================
-                Dim specsPointer As Integer = GetSpecsPointer(device.Specs, device.DevCategoryPointer, conn)
+                Dim specsPointer As Integer? = Nothing
 
+                If Not String.IsNullOrWhiteSpace(device.Specs) Then
+                    specsPointer = GetSpecsPointer(device.Specs, device.DevCategoryPointer, conn)
+                End If
 
                 Dim query As String
 
@@ -159,6 +162,7 @@ Public Class model
                              brands=@brand,
                              model=@model,
                              specs=@specsPointer,
+                             cost=@cost,
                              status=@status,
                              nsoc_name=@nsoc,
                              serial_number=@serial,
@@ -172,8 +176,8 @@ Public Class model
                 Else
                     ' INSERT
                     query = "INSERT INTO inv_devices 
-                         (dev_category_pointer, brands, model, specs, status, nsoc_name, serial_number, property_number, purchase_date, warranty_expires, notes, created_at, updated_at, created_by, updated_by)
-                         VALUES (@category, @brand, @model, @specsPointer, @status, @nsoc, @serial, @property, @purchase, @warranty, @notes, NOW(), NOW(), @userID, @userID)"
+                         (dev_category_pointer, brands, model, specs, status, nsoc_name, serial_number, property_number, purchase_date, warranty_expires, cost, notes, created_at, updated_at, created_by, updated_by)
+                         VALUES (@category, @brand, @model, @specsPointer, @status, @nsoc, @serial, @property, @purchase, @warranty, @cost, @notes, NOW(), NOW(), @userID, @userID)"
                 End If
 
                 Using cmd As New MySqlCommand(query, conn)
@@ -182,7 +186,21 @@ Public Class model
                     cmd.Parameters.AddWithValue("@brand", device.BrandPointer)
                     cmd.Parameters.AddWithValue("@model", device.Model)
                     cmd.Parameters.AddWithValue("@nsoc", device.NsocName)
-                    cmd.Parameters.AddWithValue("@specsPointer", specsPointer)
+
+                    ' Specs pointer: NULL when no specs
+                    If specsPointer.HasValue AndAlso specsPointer.Value > 0 Then
+                        cmd.Parameters.AddWithValue("@specsPointer", specsPointer.Value)
+                    Else
+                        cmd.Parameters.AddWithValue("@specsPointer", DBNull.Value)
+                    End If
+
+                    ' Cost: if Nothing, send DBNull so it can be NULL in table
+                    If device.Cost.HasValue Then
+                        cmd.Parameters.AddWithValue("@cost", device.Cost.Value)
+                    Else
+                        cmd.Parameters.AddWithValue("@cost", DBNull.Value)
+                    End If
+
                     cmd.Parameters.AddWithValue("@status", device.Status)
                     cmd.Parameters.AddWithValue("@serial", device.SerialNumber)
                     cmd.Parameters.AddWithValue("@property", device.PropertyNumber)
@@ -203,14 +221,20 @@ Public Class model
         End Try
     End Function
 
+
     Private Function GetSpecsPointer(specText As String, categoryId As Integer, conn As MySqlConnection) As Integer
+        '  Never create or look up specs if text is empty
+        If String.IsNullOrWhiteSpace(specText) Then
+            Return 0
+        End If
+
         ' CHECK IF SPECS ALREADY EXIST
         Dim checkSql As String = "SELECT pointer FROM inv_specs WHERE specs=@spec AND category_id=@cat LIMIT 1"
         Using cmd As New MySqlCommand(checkSql, conn)
             cmd.Parameters.AddWithValue("@spec", specText)
             cmd.Parameters.AddWithValue("@cat", categoryId)
             Dim result = cmd.ExecuteScalar()
-            If result IsNot Nothing Then
+            If result IsNot Nothing AndAlso result IsNot DBNull.Value Then
                 Return CInt(result)
             End If
         End Using
@@ -226,6 +250,7 @@ Public Class model
         Dim idCmd As New MySqlCommand("SELECT LAST_INSERT_ID()", conn)
         Return CInt(idCmd.ExecuteScalar())
     End Function
+
 
 
 

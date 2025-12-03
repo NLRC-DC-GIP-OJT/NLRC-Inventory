@@ -99,7 +99,7 @@ Partial Class devices
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1364, 6)
+        addbtn.Location = New Point(1368, 7)
         addbtn.Margin = New Padding(3, 2, 3, 2)
         addbtn.Name = "addbtn"
         addbtn.Size = New Size(114, 41)
@@ -111,7 +111,7 @@ Partial Class devices
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
         filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(887, 13)
+        filtertxt.Location = New Point(802, 11)
         filtertxt.Margin = New Padding(3, 2, 3, 2)
         filtertxt.Name = "filtertxt"
         filtertxt.Size = New Size(315, 32)
@@ -151,7 +151,7 @@ Partial Class devices
         exportbtn.BackColor = Color.CornflowerBlue
         exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         exportbtn.ForeColor = Color.White
-        exportbtn.Location = New Point(1227, 6)
+        exportbtn.Location = New Point(1245, 6)
         exportbtn.Margin = New Padding(3, 2, 3, 2)
         exportbtn.Name = "exportbtn"
         exportbtn.Size = New Size(114, 41)
@@ -209,7 +209,7 @@ Partial Class devices
         btnPrev.Location = New Point(642, 835)
         btnPrev.Margin = New Padding(3, 2, 3, 2)
         btnPrev.Name = "btnPrev"
-        btnPrev.Size = New Size(82, 36)
+        btnPrev.Size = New Size(82, 34)
         btnPrev.TabIndex = 15
         btnPrev.Text = "Previous"
         btnPrev.UseVisualStyleBackColor = False

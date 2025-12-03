@@ -31,10 +31,10 @@ Partial Class QRView
         ' 
         ' panelqr
         ' 
-        panelqr.Location = New Point(6, 30)
+        panelqr.Location = New Point(6, 26)
         panelqr.Margin = New Padding(3, 2, 3, 2)
         panelqr.Name = "panelqr"
-        panelqr.Size = New Size(278, 206)
+        panelqr.Size = New Size(278, 210)
         panelqr.TabIndex = 0
         ' 
         ' Label7
@@ -88,5 +88,6 @@ Partial Class QRView
     Friend WithEvents Label7 As Label
     Friend WithEvents printbtn As Button
     Friend WithEvents closepnl As Panel
+    Friend WithEvents Label1 As Label
 
 End Class

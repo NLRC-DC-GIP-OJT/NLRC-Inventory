@@ -56,10 +56,10 @@ Partial Class Units
         Panel1.Controls.Add(filtertxt)
         Panel1.Controls.Add(addbtn)
         Panel1.Controls.Add(Label3)
-        Panel1.Location = New Point(37, 13)
+        Panel1.Location = New Point(37, 20)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1492, 64)
+        Panel1.Size = New Size(1492, 57)
         Panel1.TabIndex = 0
         ' 
         ' multibtn
@@ -68,7 +68,7 @@ Partial Class Units
         multibtn.BackColor = Color.CornflowerBlue
         multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         multibtn.ForeColor = Color.White
-        multibtn.Location = New Point(999, 11)
+        multibtn.Location = New Point(999, 7)
         multibtn.Margin = New Padding(3, 2, 3, 2)
         multibtn.Name = "multibtn"
         multibtn.Size = New Size(184, 40)
@@ -82,7 +82,7 @@ Partial Class Units
         unitaddbtn.BackColor = Color.CornflowerBlue
         unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
-        unitaddbtn.Location = New Point(1196, 11)
+        unitaddbtn.Location = New Point(1196, 8)
         unitaddbtn.Margin = New Padding(3, 2, 3, 2)
         unitaddbtn.Name = "unitaddbtn"
         unitaddbtn.Size = New Size(141, 40)
@@ -94,7 +94,7 @@ Partial Class Units
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
         filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(210, 15)
+        filtertxt.Location = New Point(210, 11)
         filtertxt.Margin = New Padding(3, 2, 3, 2)
         filtertxt.Name = "filtertxt"
         filtertxt.Size = New Size(406, 32)
@@ -106,7 +106,7 @@ Partial Class Units
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1347, 11)
+        addbtn.Location = New Point(1347, 8)
         addbtn.Margin = New Padding(3, 2, 3, 2)
         addbtn.Name = "addbtn"
         addbtn.Size = New Size(122, 40)
@@ -119,7 +119,7 @@ Partial Class Units
         Label3.BackColor = Color.Transparent
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(3, 13)
+        Label3.Location = New Point(3, 11)
         Label3.Name = "Label3"
         Label3.Size = New Size(185, 30)
         Label3.TabIndex = 7

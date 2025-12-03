@@ -573,12 +573,12 @@ Public Class devices
                 .FileName = "Devices_Export.csv"
             }
 
-            If saveDlg.ShowDialog() <> DialogResult.OK Then Exit Sub
+            If saveDlg.ShowDialog <> DialogResult.OK Then Exit Sub
 
-            Using sw As New IO.StreamWriter(saveDlg.FileName, False, System.Text.Encoding.UTF8)
+            Using sw As New IO.StreamWriter(saveDlg.FileName, False, Encoding.UTF8)
 
                 ' HEADERS (same order as your DataGridView)
-                Dim headers As String() = {
+                Dim headers = {
                     "NSOC Name",
                     "Device (Category - Brand - Model)",
                     "Property Number",
@@ -592,17 +592,17 @@ Public Class devices
                 sw.WriteLine(String.Join(",", headers.Select(Function(s) $"""{s}""")))
 
                 ' ROWS (export ALL PAGES, not only current view)
-                For Each r As DataRow In allFilteredRows
+                For Each r In allFilteredRows
                     Dim line As New List(Of String)
 
-                    line.Add($"""{r("NSOC Name").ToString()}""")
-                    line.Add($"""{r("Device").ToString()}""")
-                    line.Add($"""{r("Property Number").ToString()}""")
-                    line.Add($"""{r("Specifications").ToString()}""")
-                    line.Add($"""{r("Status").ToString()}""")
-                    line.Add($"""{r("Serial Number").ToString()}""")
-                    line.Add($"""{r("Purchase Date").ToString()}""")
-                    line.Add($"""{r("Warranty Expires").ToString()}""")
+                    line.Add($"""{r("NSOC Name").ToString}""")
+                    line.Add($"""{r("Device").ToString}""")
+                    line.Add($"""{r("Property Number").ToString}""")
+                    line.Add($"""{r("Specifications").ToString}""")
+                    line.Add($"""{r("Status").ToString}""")
+                    line.Add($"""{r("Serial Number").ToString}""")
+                    line.Add($"""{r("Purchase Date").ToString}""")
+                    line.Add($"""{r("Warranty Expires").ToString}""")
 
                     sw.WriteLine(String.Join(",", line))
                 Next
@@ -614,5 +614,8 @@ Public Class devices
             MessageBox.Show("Error exporting: " & ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
-    
+
+    Private Sub importbtn_Click(sender As Object, e As EventArgs)
+
+    End Sub
 End Class

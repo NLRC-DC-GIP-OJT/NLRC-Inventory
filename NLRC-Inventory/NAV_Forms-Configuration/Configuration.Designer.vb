@@ -96,7 +96,7 @@ Partial Class Configuration
         Panel1.Controls.Add(cattxt)
         Panel1.Controls.Add(Label5)
         Panel1.Controls.Add(Label1)
-        Panel1.Location = New Point(37, 76)
+        Panel1.Location = New Point(37, 80)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
         Panel1.Size = New Size(462, 365)
@@ -257,7 +257,7 @@ Partial Class Configuration
         Panel3.Controls.Add(addspecsbtn)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label4)
-        Panel3.Location = New Point(1032, 76)
+        Panel3.Location = New Point(1032, 78)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
         Panel3.Size = New Size(488, 365)
@@ -470,7 +470,7 @@ Partial Class Configuration
         Panel2.Controls.Add(catcb)
         Panel2.Controls.Add(brandtxt)
         Panel2.Controls.Add(Label8)
-        Panel2.Location = New Point(526, 76)
+        Panel2.Location = New Point(526, 80)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(477, 365)
@@ -513,7 +513,7 @@ Partial Class Configuration
         Panel7.BackgroundImage = CType(resources.GetObject("Panel7.BackgroundImage"), Image)
         Panel7.BorderStyle = BorderStyle.FixedSingle
         Panel7.Controls.Add(Label3)
-        Panel7.Location = New Point(18, 10)
+        Panel7.Location = New Point(18, 23)
         Panel7.Margin = New Padding(3, 2, 3, 2)
         Panel7.Name = "Panel7"
         Panel7.Size = New Size(1526, 44)
