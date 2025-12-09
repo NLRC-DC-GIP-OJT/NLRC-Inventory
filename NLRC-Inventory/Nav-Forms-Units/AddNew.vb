@@ -102,6 +102,7 @@ Public Class AddNew
         previewTable.Columns.Add("status", GetType(String))
         previewTable.Columns.Add("total_devices", GetType(Integer))
         previewTable.Columns.Add("dev_category_pointer", GetType(Integer))
+        previewTable.Columns.Add("category_name", GetType(String))  ' <-- NEW
 
         unitsdgv1.DataSource = previewTable
 
@@ -116,37 +117,44 @@ Public Class AddNew
 
         ' Customize DataGridView appearance after binding
         AddHandler unitsdgv1.DataBindingComplete,
-            Sub()
-                With unitsdgv1
-                    ' Hide internal columns
-                    If .Columns.Contains("pointer") Then .Columns("pointer").Visible = False
-                    If .Columns.Contains("dev_category_pointer") Then .Columns("dev_category_pointer").Visible = False
+         Sub()
+             With unitsdgv1
+                 ' Hide internal columns
+                 If .Columns.Contains("pointer") Then .Columns("pointer").Visible = False
+                 If .Columns.Contains("dev_category_pointer") Then .Columns("dev_category_pointer").Visible = False
 
-                    ' Rename headers
-                    If .Columns.Contains("brands") Then .Columns("brands").HeaderText = "Brand"
-                    If .Columns.Contains("model") Then .Columns("model").HeaderText = "Model"
-                    If .Columns.Contains("status") Then .Columns("status").HeaderText = "Status"
-                    If .Columns.Contains("total_devices") Then .Columns("total_devices").HeaderText = "Total Devices Available"
-                    If .Columns.Contains("removeBtn") Then
-                        .Columns("removeBtn").DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-                        .Columns("removeBtn").Width = 80
-                    End If
+                 ' Rename headers
+                 If .Columns.Contains("category_name") Then .Columns("category_name").HeaderText = "Category"
+                 If .Columns.Contains("brands") Then .Columns("brands").HeaderText = "Brand"
+                 If .Columns.Contains("model") Then .Columns("model").HeaderText = "Model"
+                 If .Columns.Contains("status") Then .Columns("status").HeaderText = "Status"
+                 If .Columns.Contains("total_devices") Then .Columns("total_devices").HeaderText = "Total Devices Available"
+                 If .Columns.Contains("removeBtn") Then
+                     .Columns("removeBtn").DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                     .Columns("removeBtn").Width = 80
+                 End If
 
-                    ' Make columns fill the width of the DataGridView
-                    .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                 ' Order: Category, Brand, Model, Status, Total, Remove
+                 If .Columns.Contains("category_name") Then .Columns("category_name").DisplayIndex = 0
+                 If .Columns.Contains("brands") Then .Columns("brands").DisplayIndex = 1
+                 If .Columns.Contains("model") Then .Columns("model").DisplayIndex = 2
+                 If .Columns.Contains("status") Then .Columns("status").DisplayIndex = 3
+                 If .Columns.Contains("total_devices") Then .Columns("total_devices").DisplayIndex = 4
+                 If .Columns.Contains("removeBtn") Then .Columns("removeBtn").DisplayIndex = 5
 
-                    ' Style header
-                    .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 10, FontStyle.Bold)
-                    .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+                 .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                 .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 10, FontStyle.Bold)
+                 .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
 
-                    ' Make rows read-only and prevent adding/deleting manually
-                    .ReadOnly = True
-                    .AllowUserToAddRows = False
-                    .AllowUserToDeleteRows = False
-                    .SelectionMode = DataGridViewSelectionMode.FullRowSelect
-                    .MultiSelect = False
-                End With
-            End Sub
+                 .ReadOnly = True
+                 .AllowUserToAddRows = False
+                 .AllowUserToDeleteRows = False
+                 .SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                 .MultiSelect = False
+             End With
+         End Sub
+
+
 
         ' Default quantity
         quantitxt.Text = "1"
@@ -196,12 +204,22 @@ Public Class AddNew
 
             ' Add display_name column showing Brand - Model (Total)
             If Not filteredDevices.Columns.Contains("display_name") Then
-                filteredDevices.Columns.Add(
-                    "display_name",
-                    GetType(String),
-                    "brands + ' - ' + model + ' (' + Convert(total_devices, 'System.String') + ')' "
-                )
+                filteredDevices.Columns.Add("display_name", GetType(String))
             End If
+
+            ' Build display_name manually – handles NULL model
+            For Each r As DataRow In filteredDevices.Rows
+                Dim brand As String = If(Convert.IsDBNull(r("brands")), "", r("brands").ToString())
+                Dim mdl As String = If(Convert.IsDBNull(r("model")), "", r("model").ToString())
+                Dim total As Integer = If(Convert.IsDBNull(r("total_devices")), 0, CInt(r("total_devices")))
+
+                If String.IsNullOrWhiteSpace(mdl) Then
+                    r("display_name") = $"{brand} ({total})"
+                Else
+                    r("display_name") = $"{brand} - {mdl} ({total})"
+                End If
+            Next
+
 
             ' Bind to ComboBox
             devicecb1.DataSource = filteredDevices
@@ -275,12 +293,31 @@ Public Class AddNew
             Dim newRow As DataRow = previewTable.NewRow()
             newRow("pointer") = Convert.ToInt32(found(0)("pointer"))
             newRow("brands") = If(found(0)("brands") Is DBNull.Value, "", found(0)("brands").ToString())
-            newRow("model") = If(found(0)("model") Is DBNull.Value, "", found(0)("model").ToString())
+
+            If Convert.IsDBNull(found(0)("model")) Then
+                newRow("model") = DBNull.Value
+            Else
+                newRow("model") = found(0)("model").ToString()
+            End If
+
             newRow("status") = If(found(0)("status") Is DBNull.Value, "", found(0)("status").ToString())
             newRow("total_devices") = Convert.ToInt32(found(0)("total_devices"))
-            newRow("dev_category_pointer") = Convert.ToInt32(found(0)("dev_category_pointer"))
+
+            Dim catPtrObj As Object = found(0)("dev_category_pointer")
+            Dim catPtr As Integer? = Nothing
+            If catPtrObj IsNot DBNull.Value Then
+                catPtr = Convert.ToInt32(catPtrObj)
+                newRow("dev_category_pointer") = catPtr
+            Else
+                newRow("dev_category_pointer") = DBNull.Value
+            End If
+
+            ' 🔹 Use your GetCategoryName here
+            newRow("category_name") = mdl.GetCategoryName(catPtr)
+
             previewTable.Rows.Add(newRow)
         End If
+
 
         ' Refresh ComboBox and available stock after adding
         Dim selectedCategory = CType(catecb.SelectedItem, DeviceCategory)
@@ -308,8 +345,15 @@ Public Class AddNew
 
         For Each row As DataRow In previewTable.Rows
             Dim brandName As String = row("brands").ToString()
-            Dim modelName As String = row("model").ToString()
-            confirmMessage &= $"{brandName} {modelName}: Quantity {quantity}" & Environment.NewLine
+            Dim modelName As String = If(row.IsNull("model"), "", row("model").ToString())
+
+            Dim label As String = brandName
+            If Not String.IsNullOrWhiteSpace(modelName) Then
+                label &= " " & modelName
+            End If
+
+            confirmMessage &= $"{label}: Quantity {quantity}" & Environment.NewLine
+
             totalUnits += quantity
         Next
 
@@ -332,9 +376,17 @@ Public Class AddNew
         For Each row As DataRow In previewTable.Rows
             Dim newRow As DataRow = selectedDevices.NewRow()
             newRow("pointer") = Convert.ToInt32(row("pointer"))
-            newRow("model") = row("model").ToString()
+
+            Dim mObj As Object = row("model")
+            If mObj Is Nothing OrElse mObj Is DBNull.Value OrElse mObj.ToString().Trim() = "" Then
+                newRow("model") = DBNull.Value
+            Else
+                newRow("model") = mObj.ToString().Trim()
+            End If
+
             newRow("status") = row("status").ToString()
             newRow("dev_category_pointer") = Convert.ToInt32(row("dev_category_pointer"))
+
 
             If IsNumeric(row("brands")) Then
                 newRow("brands") = Convert.ToInt32(row("brands"))

@@ -31,16 +31,16 @@ Public Class Dashboard
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         userlbl.Text = LoggedUser
 
-        ' Init auto-resize based on the designed size/layout
         InitializeLayoutScaling()
-
-        ' Load default dashboard content
         LoadDashboard()
 
-        ' Start timer for clock
+        ' highlight Dashboard by default
+        SetActiveButton(dashbtn)
+
         Timer1.Interval = 1000
         Timer1.Start()
     End Sub
+
 
     ' ========================
     ' 🔁 AUTO-RESIZE SUPPORT
@@ -134,20 +134,31 @@ Public Class Dashboard
     ' Button Clicks to load UserControls
     ' ========================
     Private Sub dashbtn_Click(sender As Object, e As EventArgs) Handles dashbtn.Click
+        SetActiveButton(dashbtn)
         LoadDashboard()
     End Sub
 
     Private Sub devicebtn_Click(sender As Object, e As EventArgs) Handles devicebtn.Click
+        SetActiveButton(devicebtn)
         LoadUserControl(New devices())
     End Sub
 
     Private Sub unitbtn_Click(sender As Object, e As EventArgs) Handles unitbtn.Click
+        SetActiveButton(unitbtn)
         LoadUserControl(New Units())
     End Sub
 
     Private Sub confibtn_Click(sender As Object, e As EventArgs) Handles confibtn.Click
-        LoadUserControl(New Configuration)
+        SetActiveButton(confibtn)
+        LoadUserControl(New Configuration())
     End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        SetActiveButton(Button1)
+        LoadUserControl(New Reports())
+    End Sub
+
+
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         Dim result = MessageBox.Show("Are you sure?", "You want to Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
@@ -166,5 +177,24 @@ Public Class Dashboard
             Me.Close()
         End If
     End Sub
+    ' ========================
+    ' NAV BUTTON HIGHLIGHT
+    ' ========================
+    Private Sub SetActiveButton(active As Button)
+        ' List all nav buttons that you want to highlight
+        Dim navButtons() As Button = {dashbtn, devicebtn, unitbtn, confibtn, Button1}
+
+        For Each btn As Button In navButtons
+            btn.BackColor = SystemColors.Control    ' normal background
+            btn.ForeColor = Color.Black             ' normal text
+            btn.FlatAppearance.BorderSize = 0
+        Next
+
+        ' Highlight the active one (SKY BLUE)
+        active.BackColor = Color.SkyBlue
+        active.ForeColor = Color.White
+        active.FlatAppearance.BorderSize = 1
+    End Sub
+
 
 End Class

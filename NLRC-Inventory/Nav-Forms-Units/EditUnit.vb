@@ -164,8 +164,10 @@ Public Class EditUnit
     ' ========================
     Public Sub LoadUnit(unitId As Integer, unitName As String, assignedToId As Integer, devices As DataTable)
         Me.unitId = unitId
-        Me.originalUnitName = unitName
+        Me.originalUnitName = unitName.Trim()
         Me.originalAssignedId = assignedToId
+
+        remarkstxt.Text = mdl.GetUnitRemarks(unitId)
 
         LoadAssignments()
         LoadDeviceCombo()
@@ -203,30 +205,55 @@ Public Class EditUnit
                 End If
             End If
 
-            ' Button text: Category - Brand - Model
-            Dim baseText As String = ExtractBaseText(dr("DeviceAndSpecs").ToString())
+            ' ============================
+            ' ✅ Build base text safely
+            '     - if we have category/brand/model columns, use them
+            '     - model can be empty
+            '     - otherwise fall back to DeviceAndSpecs parsing
+            ' ============================
+            Dim baseText As String = ""
 
-            ' Build full specs: NSOC Name + Property No + ONLY actual specs
+            If devices.Columns.Contains("category_name") AndAlso
+               devices.Columns.Contains("brand_name") Then
+
+                Dim cat = SafeStr(dr, "category_name")
+                Dim brand = SafeStr(dr, "brand_name")
+                Dim model = SafeStr(dr, "model")   ' "" if NULL
+
+                If model = "" Then
+                    baseText = $"{cat} - {brand}"
+                Else
+                    baseText = $"{cat} - {brand} - {model}"
+                End If
+            Else
+                Dim deviceAndSpecs = SafeStr(dr, "DeviceAndSpecs")
+                baseText = ExtractBaseText(deviceAndSpecs)
+            End If
+
+            ' ============================
+            ' ✅ Build full specs exactly like before,
+            '    but using SafeStr for DeviceAndSpecs
+            ' ============================
             Dim specsParts As New List(Of String)
 
-            If dr.Table.Columns.Contains("nsoc_name") AndAlso
-                Not IsDBNull(dr("nsoc_name")) AndAlso dr("nsoc_name").ToString().Trim() <> "" Then
-                specsParts.Add("NSOC Name:" & dr("nsoc_name").ToString().Trim())
+            If dr.Table.Columns.Contains("nsoc_name") Then
+                Dim nsoc = SafeStr(dr, "nsoc_name")
+                If nsoc <> "" Then specsParts.Add("NSOC Name:" & nsoc)
             End If
 
-            If dr.Table.Columns.Contains("property_number") AndAlso
-                Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
-                specsParts.Add("Property No:" & dr("property_number").ToString().Trim())
+            If dr.Table.Columns.Contains("property_number") Then
+                Dim prop = SafeStr(dr, "property_number")
+                If prop <> "" Then specsParts.Add("Property No:" & prop)
             End If
 
-            ' DeviceAndSpecs now ends with either s.specs OR 'No specs available'
-            Dim rawSpecs = dr("DeviceAndSpecs").ToString().Trim()
+            Dim rawSpecs = SafeStr(dr, "DeviceAndSpecs")
             Dim onlySpecs = ExtractOnlySpecs(rawSpecs)
 
-            ' if onlySpecs = "No specs available" it will NOT create any key in ParseSpecs
-            If onlySpecs <> "" AndAlso Not onlySpecs.Equals("No specs available", StringComparison.OrdinalIgnoreCase) Then
+            If onlySpecs <> "" AndAlso
+                Not onlySpecs.Equals("No specs available", StringComparison.OrdinalIgnoreCase) Then
                 specsParts.Add(onlySpecs)
             End If
+
 
             Dim fullSpecs As String = String.Join(";", specsParts)
 
@@ -247,17 +274,50 @@ Public Class EditUnit
 
 
     Private Function ExtractBaseText(fullText As String) As String
-        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
-        If parts.Length < 3 Then Return fullText.Trim()
-        Return $"{parts(0).Trim()} - {parts(1).Trim()} - {parts(2).Trim()}"
+        If String.IsNullOrWhiteSpace(fullText) Then Return ""
+
+        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None) _
+                        .Select(Function(p) p.Trim()) _
+                        .Where(Function(p) p <> "") _
+                        .ToArray()
+
+        Select Case parts.Length
+            Case 0
+                Return ""
+            Case 1
+                Return parts(0)
+            Case 2
+                ' Category - Brand
+                Return parts(0) & " - " & parts(1)
+            Case 3
+                ' Assume: Category - Brand - <SPECS> (no model)
+                ' 👉 base text should just be Category - Brand
+                Return parts(0) & " - " & parts(1)
+            Case Else
+                ' Category - Brand - Model - <specs...>
+                Return parts(0) & " - " & parts(1) & " - " & parts(2)
+        End Select
     End Function
 
     Private Function ExtractOnlySpecs(fullText As String) As String
         If String.IsNullOrWhiteSpace(fullText) Then Return String.Empty
-        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
-        If parts.Length <= 3 Then Return String.Empty
+
+        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None) _
+                        .Select(Function(p) p.Trim()) _
+                        .Where(Function(p) p <> "") _
+                        .ToArray()
+
+        If parts.Length <= 2 Then Return String.Empty
+
+        If parts.Length = 3 Then
+            ' Format: Category - Brand - <SPECS> (no model)
+            Return parts(2)
+        End If
+
+        ' 4+ → Category - Brand - Model - <SPECS...>
         Return String.Join(" - ", parts.Skip(3)).Trim()
     End Function
+
 
     ' ========================
     ' LOAD DEVICE COMBO
@@ -271,7 +331,7 @@ Public Class EditUnit
 
         If dt Is Nothing OrElse dt.Rows.Count = 0 Then
             MessageBox.Show("No devices found in the database.", "Notice",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+                        MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return
         End If
 
@@ -279,11 +339,27 @@ Public Class EditUnit
             dt.Columns.Add("HiddenSpecs", GetType(String))
         End If
 
+        ' ✅ make sure DeviceDisplay exists so we can control how it looks
+        If Not dt.Columns.Contains("DeviceDisplay") Then
+            dt.Columns.Add("DeviceDisplay", GetType(String))
+        End If
+
         For Each row As DataRow In dt.Rows
             Dim id = CInt(row("device_id"))
             deviceQuantities(id) = CInt(row("qty"))
 
-            Dim base = $"{row("category_name")} - {row("brand_name")} - {row("model")}"
+            Dim cat = SafeStr(row, "category_name")
+            Dim brand = SafeStr(row, "brand_name")
+            Dim model = SafeStr(row, "model")  ' will be "" if NULL
+
+            Dim base As String
+            If model = "" Then
+                ' 👈 if no model, just show Category - Brand
+                base = $"{cat} - {brand}"
+            Else
+                base = $"{cat} - {brand} - {model}"
+            End If
+
             Dim hiddenSpecs As New List(Of String)
 
             If Not IsDBNull(row("nsoc_name")) AndAlso row("nsoc_name").ToString().Trim() <> "" Then
@@ -300,9 +376,13 @@ Public Class EditUnit
             deviceFullSpecs(id) = row("HiddenSpecs").ToString()
             deviceBaseDisplay(id) = base
 
+            ' ✅ build a display text even when model is empty
+            Dim qty = deviceQuantities(id)
+            row("DeviceDisplay") = $"{base} ({qty})"
+
             ' ✅ category_pointer from GetDevicesForUnits1
             If dt.Columns.Contains("category_pointer") AndAlso
-               Not IsDBNull(row("category_pointer")) Then
+           Not IsDBNull(row("category_pointer")) Then
 
                 deviceCategory(id) = CInt(row("category_pointer"))
             End If
@@ -320,6 +400,7 @@ Public Class EditUnit
 
         originalDeviceList = dt.Copy()
     End Sub
+
 
 
     Private Sub UpdateComboList()
@@ -622,31 +703,32 @@ Public Class EditUnit
     Private Sub savebtn_Click(sender As Object, e As EventArgs) Handles savebtn.Click
         Dim newUnitName As String = unitnametxt.Text.Trim()
 
-        If String.IsNullOrWhiteSpace(newUnitName) Then
-            MessageBox.Show("Unit name is required.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            unitnametxt.Focus()
-            Return
-        End If
-
-        If Not newUnitName.Equals(originalUnitName, StringComparison.OrdinalIgnoreCase) Then
+        ' ⚠️ If unit name is blank, skip duplicate name validation entirely
+        If newUnitName <> "" AndAlso Not newUnitName.Equals(originalUnitName, StringComparison.OrdinalIgnoreCase) Then
             If mdl.IsUnitNameExists(newUnitName) Then
                 MessageBox.Show($"The unit name '{newUnitName}' already exists in the database.",
-                                    "Duplicate Unit",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Warning)
+                "Duplicate Unit",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning)
                 unitnametxt.Focus()
                 unitnametxt.SelectAll()
                 Return
             End If
         End If
 
+
         Dim newAssignedId As Integer = If(selectedAssignedId.HasValue, selectedAssignedId.Value, originalAssignedId)
         Dim remarksText = remarkstxt.Text.Trim()
+
+        ' 🔹 Use the same names for summary and for DB history
+        Dim oldAssignedName As String = GetNameById(originalAssignedId)
+        Dim newAssignedName As String = GetNameById(newAssignedId)
+
         Dim sb As New StringBuilder()
         sb.AppendLine("You are about to save the following changes:" & vbCrLf)
 
         If newUnitName <> originalUnitName Then sb.AppendLine($"- Unit Name: {originalUnitName} → {newUnitName}")
-        If newAssignedId <> originalAssignedId Then sb.AppendLine($"- Assigned Personnel: {GetNameById(originalAssignedId)} → {GetNameById(newAssignedId)}")
+        If newAssignedId <> originalAssignedId Then sb.AppendLine($"- Assigned Personnel: {oldAssignedName} → {newAssignedName}")
 
         If removedDevices.Any() Then
             sb.AppendLine("- Removed Devices:")
@@ -754,7 +836,9 @@ Public Class EditUnit
         editedDevicesWithChanges.ToDictionary(Function(k) k.Key, Function(k) k.Value),
         newUnitName,
         remarksText,
-        userId
+        userId,
+        oldAssignedName,
+        newAssignedName
     )
         ' give feedback to parent form
         RaiseEvent UnitSaved()
@@ -946,5 +1030,15 @@ Public Class EditUnit
         Dim parentPanel = TryCast(Parent, Panel)
         If parentPanel IsNot Nothing Then parentPanel.Visible = False
     End Sub
+
+
+
+    'HELPER
+    ' ✅ Safely get a trimmed string from a DataRow (handles DBNull / missing column)
+    Private Function SafeStr(row As DataRow, colName As String) As String
+        If Not row.Table.Columns.Contains(colName) Then Return ""
+        If IsDBNull(row(colName)) OrElse row(colName) Is Nothing Then Return ""
+        Return row(colName).ToString().Trim()
+    End Function
 
 End Class

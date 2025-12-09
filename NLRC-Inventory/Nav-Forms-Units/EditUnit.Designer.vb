@@ -88,7 +88,7 @@ Partial Class EditUnit
         ' 
         Label2.AutoSize = True
         Label2.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label2.ForeColor = Color.Red
+        Label2.ForeColor = Color.Black
         Label2.Location = New Point(23, 57)
         Label2.Name = "Label2"
         Label2.Size = New Size(95, 18)

@@ -362,7 +362,7 @@ Partial Class DashboardControl
         ' 
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
-        Label3.Location = New Point(19, 9)
+        Label3.Location = New Point(30, 16)
         Label3.Name = "Label3"
         Label3.Size = New Size(149, 30)
         Label3.TabIndex = 15

@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
-Partial Class Units
+Partial Class Reports
     Inherits System.Windows.Forms.UserControl
 
     'UserControl overrides dispose to clean up the component list.
@@ -26,49 +26,96 @@ Partial Class Units
         Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
+        Label1 = New Label()
+        devicecb = New ComboBox()
+        exportbtn = New Button()
+        filtertxt = New TextBox()
         multibtn = New Button()
         unitaddbtn = New Button()
-        filtertxt = New TextBox()
         addbtn = New Button()
         Label3 = New Label()
-        Panel2 = New Panel()
-        allunitsdgv = New DataGridView()
-        unitpnl = New Panel()
-        btnNext = New Button()
         btnPrev = New Button()
         lblPageInfo = New Label()
-        Panel3 = New Panel()
-        savedgvbtn = New Button()
+        btnNext = New Button()
+        Panel2 = New Panel()
+        allunitsdgv = New DataGridView()
         Panel1.SuspendLayout()
         Panel2.SuspendLayout()
         CType(allunitsdgv, ComponentModel.ISupportInitialize).BeginInit()
-        Panel3.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
         ' 
-        Panel1.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
         Panel1.BorderStyle = BorderStyle.FixedSingle
+        Panel1.Controls.Add(Label1)
+        Panel1.Controls.Add(devicecb)
+        Panel1.Controls.Add(exportbtn)
+        Panel1.Controls.Add(filtertxt)
         Panel1.Controls.Add(multibtn)
         Panel1.Controls.Add(unitaddbtn)
-        Panel1.Controls.Add(filtertxt)
         Panel1.Controls.Add(addbtn)
         Panel1.Controls.Add(Label3)
-        Panel1.Location = New Point(37, 20)
+        Panel1.Dock = DockStyle.Top
+        Panel1.Location = New Point(0, 0)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1492, 57)
-        Panel1.TabIndex = 0
+        Panel1.Size = New Size(1567, 75)
+        Panel1.TabIndex = 1
+        ' 
+        ' Label1
+        ' 
+        Label1.AutoSize = True
+        Label1.BackColor = Color.Transparent
+        Label1.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
+        Label1.ForeColor = Color.Black
+        Label1.Location = New Point(934, 20)
+        Label1.Name = "Label1"
+        Label1.Size = New Size(78, 30)
+        Label1.TabIndex = 29
+        Label1.Text = "Filter :"
+        ' 
+        ' devicecb
+        ' 
+        devicecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        devicecb.FormattingEnabled = True
+        devicecb.Location = New Point(1018, 19)
+        devicecb.Margin = New Padding(3, 2, 3, 2)
+        devicecb.Name = "devicecb"
+        devicecb.Size = New Size(226, 33)
+        devicecb.TabIndex = 15
+        ' 
+        ' exportbtn
+        ' 
+        exportbtn.BackColor = Color.CornflowerBlue
+        exportbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        exportbtn.ForeColor = Color.White
+        exportbtn.Location = New Point(1366, 10)
+        exportbtn.Margin = New Padding(3, 2, 3, 2)
+        exportbtn.Name = "exportbtn"
+        exportbtn.Size = New Size(131, 50)
+        exportbtn.TabIndex = 28
+        exportbtn.Text = "Export"
+        exportbtn.UseVisualStyleBackColor = False
+        ' 
+        ' filtertxt
+        ' 
+        filtertxt.BorderStyle = BorderStyle.FixedSingle
+        filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        filtertxt.Location = New Point(267, 20)
+        filtertxt.Margin = New Padding(3, 2, 3, 2)
+        filtertxt.Name = "filtertxt"
+        filtertxt.Size = New Size(571, 32)
+        filtertxt.TabIndex = 24
         ' 
         ' multibtn
         ' 
         multibtn.Anchor = AnchorStyles.None
         multibtn.BackColor = Color.CornflowerBlue
-        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        multibtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         multibtn.ForeColor = Color.White
-        multibtn.Location = New Point(999, 7)
+        multibtn.Location = New Point(1681, -7)
         multibtn.Margin = New Padding(3, 2, 3, 2)
         multibtn.Name = "multibtn"
         multibtn.Size = New Size(184, 40)
@@ -80,9 +127,9 @@ Partial Class Units
         ' 
         unitaddbtn.Anchor = AnchorStyles.Top
         unitaddbtn.BackColor = Color.CornflowerBlue
-        unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        unitaddbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
-        unitaddbtn.Location = New Point(1196, 8)
+        unitaddbtn.Location = New Point(1878, 8)
         unitaddbtn.Margin = New Padding(3, 2, 3, 2)
         unitaddbtn.Name = "unitaddbtn"
         unitaddbtn.Size = New Size(141, 40)
@@ -90,23 +137,13 @@ Partial Class Units
         unitaddbtn.Text = "Create Unit"
         unitaddbtn.UseVisualStyleBackColor = False
         ' 
-        ' filtertxt
-        ' 
-        filtertxt.BorderStyle = BorderStyle.FixedSingle
-        filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(210, 11)
-        filtertxt.Margin = New Padding(3, 2, 3, 2)
-        filtertxt.Name = "filtertxt"
-        filtertxt.Size = New Size(406, 32)
-        filtertxt.TabIndex = 20
-        ' 
         ' addbtn
         ' 
         addbtn.Anchor = AnchorStyles.Top
         addbtn.BackColor = Color.CornflowerBlue
-        addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        addbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1347, 8)
+        addbtn.Location = New Point(2029, 8)
         addbtn.Margin = New Padding(3, 2, 3, 2)
         addbtn.Name = "addbtn"
         addbtn.Size = New Size(122, 40)
@@ -119,22 +156,62 @@ Partial Class Units
         Label3.BackColor = Color.Transparent
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(3, 11)
+        Label3.Location = New Point(28, 20)
         Label3.Name = "Label3"
-        Label3.Size = New Size(185, 30)
+        Label3.Size = New Size(317, 30)
         Label3.TabIndex = 7
-        Label3.Text = "Unit Assignment"
+        Label3.Text = "Inventory Reports"
+        ' 
+        ' btnPrev
+        ' 
+        btnPrev.Anchor = AnchorStyles.Bottom
+        btnPrev.AutoSize = True
+        btnPrev.BackColor = Color.CornflowerBlue
+        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnPrev.ForeColor = Color.White
+        btnPrev.Location = New Point(673, 818)
+        btnPrev.Margin = New Padding(3, 2, 3, 2)
+        btnPrev.Name = "btnPrev"
+        btnPrev.Size = New Size(85, 47)
+        btnPrev.TabIndex = 21
+        btnPrev.Text = "Previous"
+        btnPrev.UseVisualStyleBackColor = False
+        ' 
+        ' lblPageInfo
+        ' 
+        lblPageInfo.Anchor = AnchorStyles.Bottom
+        lblPageInfo.AutoSize = True
+        lblPageInfo.Font = New Font("Segoe UI Semibold", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblPageInfo.Location = New Point(766, 832)
+        lblPageInfo.Name = "lblPageInfo"
+        lblPageInfo.Size = New Size(86, 21)
+        lblPageInfo.TabIndex = 20
+        lblPageInfo.Text = "Page 1 of 1"
+        ' 
+        ' btnNext
+        ' 
+        btnNext.Anchor = AnchorStyles.Bottom
+        btnNext.AutoSize = True
+        btnNext.BackColor = Color.CornflowerBlue
+        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnNext.ForeColor = Color.White
+        btnNext.Location = New Point(866, 819)
+        btnNext.Margin = New Padding(3, 2, 3, 2)
+        btnNext.Name = "btnNext"
+        btnNext.Size = New Size(94, 47)
+        btnNext.TabIndex = 22
+        btnNext.Text = "Next"
+        btnNext.UseVisualStyleBackColor = False
         ' 
         ' Panel2
         ' 
-        Panel2.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel2.AutoSize = True
         Panel2.Controls.Add(allunitsdgv)
-        Panel2.Location = New Point(37, 92)
+        Panel2.Location = New Point(29, 99)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1492, 715)
-        Panel2.TabIndex = 1
+        Panel2.Size = New Size(1503, 707)
+        Panel2.TabIndex = 23
         ' 
         ' allunitsdgv
         ' 
@@ -144,7 +221,7 @@ Partial Class Units
         allunitsdgv.AllowUserToResizeRows = False
         DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
         DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle1.Font = New Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle1.ForeColor = Color.White
         DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
         DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
@@ -153,7 +230,7 @@ Partial Class Units
         allunitsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
         DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
         DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9.0F)
         DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
         DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
         DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
@@ -170,131 +247,41 @@ Partial Class Units
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         allunitsdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        allunitsdgv.Size = New Size(1492, 715)
-        allunitsdgv.TabIndex = 1
+        allunitsdgv.Size = New Size(1503, 707)
+        allunitsdgv.TabIndex = 3
         ' 
-        ' unitpnl
+        ' Reports
         ' 
-        unitpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        unitpnl.AutoSize = True
-        unitpnl.BorderStyle = BorderStyle.FixedSingle
-        unitpnl.Location = New Point(274, 127)
-        unitpnl.Margin = New Padding(3, 2, 3, 2)
-        unitpnl.Name = "unitpnl"
-        unitpnl.Size = New Size(1024, 602)
-        unitpnl.TabIndex = 2
-        unitpnl.Visible = False
-        ' 
-        ' btnNext
-        ' 
-        btnNext.Anchor = AnchorStyles.Bottom
-        btnNext.AutoSize = True
-        btnNext.BackColor = Color.CornflowerBlue
-        btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnNext.ForeColor = Color.White
-        btnNext.Location = New Point(877, 825)
-        btnNext.Margin = New Padding(3, 2, 3, 2)
-        btnNext.Name = "btnNext"
-        btnNext.Size = New Size(94, 42)
-        btnNext.TabIndex = 19
-        btnNext.Text = "Next"
-        btnNext.UseVisualStyleBackColor = False
-        ' 
-        ' btnPrev
-        ' 
-        btnPrev.Anchor = AnchorStyles.Bottom
-        btnPrev.AutoSize = True
-        btnPrev.BackColor = Color.CornflowerBlue
-        btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnPrev.ForeColor = Color.White
-        btnPrev.Location = New Point(684, 825)
-        btnPrev.Margin = New Padding(3, 2, 3, 2)
-        btnPrev.Name = "btnPrev"
-        btnPrev.Size = New Size(85, 42)
-        btnPrev.TabIndex = 18
-        btnPrev.Text = "Previous"
-        btnPrev.UseVisualStyleBackColor = False
-        ' 
-        ' lblPageInfo
-        ' 
-        lblPageInfo.Anchor = AnchorStyles.Bottom
-        lblPageInfo.AutoSize = True
-        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblPageInfo.Location = New Point(775, 837)
-        lblPageInfo.Name = "lblPageInfo"
-        lblPageInfo.Size = New Size(86, 21)
-        lblPageInfo.TabIndex = 17
-        lblPageInfo.Text = "Page 1 of 1"
-        ' 
-        ' Panel3
-        ' 
-        Panel3.AutoSize = True
-        Panel3.Controls.Add(savedgvbtn)
-        Panel3.Controls.Add(unitpnl)
-        Panel3.Controls.Add(Panel1)
-        Panel3.Controls.Add(Panel2)
-        Panel3.Controls.Add(btnPrev)
-        Panel3.Controls.Add(lblPageInfo)
-        Panel3.Controls.Add(btnNext)
-        Panel3.Dock = DockStyle.Fill
-        Panel3.Location = New Point(0, 0)
-        Panel3.Margin = New Padding(3, 2, 3, 2)
-        Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1567, 882)
-        Panel3.TabIndex = 20
-        ' 
-        ' savedgvbtn
-        ' 
-        savedgvbtn.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        savedgvbtn.AutoSize = True
-        savedgvbtn.BackColor = Color.CornflowerBlue
-        savedgvbtn.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        savedgvbtn.ForeColor = Color.White
-        savedgvbtn.Location = New Point(1319, 823)
-        savedgvbtn.Margin = New Padding(3, 2, 3, 2)
-        savedgvbtn.Name = "savedgvbtn"
-        savedgvbtn.Size = New Size(210, 44)
-        savedgvbtn.TabIndex = 20
-        savedgvbtn.Text = "Save"
-        savedgvbtn.UseVisualStyleBackColor = False
-        savedgvbtn.Visible = False
-        ' 
-        ' Units
-        ' 
-        AutoScaleDimensions = New SizeF(7F, 15F)
+        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
         AutoScaleMode = AutoScaleMode.Font
-        Controls.Add(Panel3)
-        Margin = New Padding(3, 2, 3, 2)
-        Name = "Units"
+        Controls.Add(Panel2)
+        Controls.Add(btnPrev)
+        Controls.Add(lblPageInfo)
+        Controls.Add(btnNext)
+        Controls.Add(Panel1)
+        Name = "Reports"
         Size = New Size(1567, 882)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         Panel2.ResumeLayout(False)
         CType(allunitsdgv, ComponentModel.ISupportInitialize).EndInit()
-        Panel3.ResumeLayout(False)
-        Panel3.PerformLayout()
         ResumeLayout(False)
         PerformLayout()
     End Sub
-    Friend WithEvents unitsdgv As DataGridView
-    Friend WithEvents TabMain As TabControl
-    Friend WithEvents UnitTab As TabPage
-    Friend WithEvents savedgvbtn As Button
-    Friend WithEvents AddUnitTab As TabPage
-    Friend WithEvents unitpnl As Panel
-    Friend WithEvents unitnametxt As TextBox
-    Friend WithEvents savebtn As Button
+
     Friend WithEvents Panel1 As Panel
-    Friend WithEvents Label3 As Label
-    Friend WithEvents Panel2 As Panel
-    Friend WithEvents allunitsdgv As DataGridView
+    Friend WithEvents multibtn As Button
+    Friend WithEvents unitaddbtn As Button
     Friend WithEvents addbtn As Button
-    Friend WithEvents btnNext As Button
+    Friend WithEvents Label3 As Label
     Friend WithEvents btnPrev As Button
     Friend WithEvents lblPageInfo As Label
+    Friend WithEvents btnNext As Button
+    Friend WithEvents Panel2 As Panel
+    Friend WithEvents exportbtn As Button
     Friend WithEvents filtertxt As TextBox
-    Friend WithEvents unitaddbtn As Button
-    Friend WithEvents Panel3 As Panel
-    Friend WithEvents multibtn As Button
+    Friend WithEvents allunitsdgv As DataGridView
+    Friend WithEvents devicecb As ComboBox
+    Friend WithEvents Label1 As Label
 
 End Class

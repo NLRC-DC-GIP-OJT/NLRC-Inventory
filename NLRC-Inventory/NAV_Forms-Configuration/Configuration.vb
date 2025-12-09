@@ -120,7 +120,7 @@ Public Class Configuration
         If editingCategoryId = 0 Then
 
             ' 1) Insert into inv_device_category and get pointer
-            categoryId = db.InsertDeviceCategoryReturnId(categoryName, "", userId)
+            categoryId = db.InsertDeviceCategoryReturnId(categoryName, userId)
 
             If categoryId <= 0 Then
                 MessageBox.Show("Failed to insert category.")
@@ -151,7 +151,7 @@ Public Class Configuration
             ' UPDATE EXISTING CATEGORY
             ' ===========================
             categoryId = editingCategoryId
-            db.UpdateDeviceCategory(categoryId, categoryName, "", userId)
+            db.UpdateDeviceCategory(categoryId, categoryName, userId)
 
             ' ===========================
             ' UPDATE PROPERTIES
@@ -196,16 +196,6 @@ Public Class Configuration
         LoadFixedProperties()
     End Sub
 
-
-
-
-
-
-
-
-
-
-
     ' === Load Device Categories to devicedgv ===
     Private Sub LoadDeviceCategories()
         Try
@@ -223,9 +213,6 @@ Public Class Configuration
                 ' Rename columns for consistency
                 If devicedgv.Columns.Contains("CategoryName") Then
                     devicedgv.Columns("CategoryName").HeaderText = "Category Name"
-                End If
-                If devicedgv.Columns.Contains("Description") Then
-                    devicedgv.Columns("Description").HeaderText = "Description"
                 End If
 
                 ' === Add Edit button ===

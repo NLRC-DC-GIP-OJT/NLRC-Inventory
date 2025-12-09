@@ -54,7 +54,7 @@ Partial Class devices
         Panel1.Location = New Point(33, 95)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1496, 723)
+        Panel1.Size = New Size(1496, 714)
         Panel1.TabIndex = 7
         ' 
         ' devicesdgv
@@ -91,7 +91,7 @@ Partial Class devices
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         devicesdgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicesdgv.Size = New Size(1496, 723)
+        devicesdgv.Size = New Size(1496, 714)
         devicesdgv.TabIndex = 0
         ' 
         ' addbtn
@@ -99,10 +99,10 @@ Partial Class devices
         addbtn.BackColor = Color.CornflowerBlue
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
-        addbtn.Location = New Point(1368, 7)
+        addbtn.Location = New Point(1414, 10)
         addbtn.Margin = New Padding(3, 2, 3, 2)
         addbtn.Name = "addbtn"
-        addbtn.Size = New Size(114, 41)
+        addbtn.Size = New Size(114, 54)
         addbtn.TabIndex = 8
         addbtn.Text = "Add Device"
         addbtn.UseVisualStyleBackColor = False
@@ -111,7 +111,7 @@ Partial Class devices
         ' 
         filtertxt.BorderStyle = BorderStyle.FixedSingle
         filtertxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        filtertxt.Location = New Point(802, 11)
+        filtertxt.Location = New Point(802, 22)
         filtertxt.Margin = New Padding(3, 2, 3, 2)
         filtertxt.Name = "filtertxt"
         filtertxt.Size = New Size(315, 32)
@@ -121,7 +121,7 @@ Partial Class devices
         ' 
         statuscb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         statuscb.FormattingEnabled = True
-        statuscb.Location = New Point(570, 11)
+        statuscb.Location = New Point(570, 22)
         statuscb.Margin = New Padding(3, 2, 3, 2)
         statuscb.Name = "statuscb"
         statuscb.Size = New Size(226, 33)
@@ -129,9 +129,9 @@ Partial Class devices
         ' 
         ' Panel2
         ' 
-        Panel2.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel2.BackColor = Color.Transparent
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
+        Panel2.BackgroundImageLayout = ImageLayout.Stretch
         Panel2.BorderStyle = BorderStyle.FixedSingle
         Panel2.Controls.Add(exportbtn)
         Panel2.Controls.Add(addbtn)
@@ -140,10 +140,11 @@ Partial Class devices
         Panel2.Controls.Add(brandscb)
         Panel2.Controls.Add(Label3)
         Panel2.Controls.Add(statuscb)
-        Panel2.Location = New Point(33, 19)
+        Panel2.Dock = DockStyle.Top
+        Panel2.Location = New Point(0, 0)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1496, 58)
+        Panel2.Size = New Size(1567, 75)
         Panel2.TabIndex = 13
         ' 
         ' exportbtn
@@ -151,10 +152,10 @@ Partial Class devices
         exportbtn.BackColor = Color.CornflowerBlue
         exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         exportbtn.ForeColor = Color.White
-        exportbtn.Location = New Point(1245, 6)
+        exportbtn.Location = New Point(1278, 10)
         exportbtn.Margin = New Padding(3, 2, 3, 2)
         exportbtn.Name = "exportbtn"
-        exportbtn.Size = New Size(114, 41)
+        exportbtn.Size = New Size(114, 54)
         exportbtn.TabIndex = 15
         exportbtn.Text = "Export"
         exportbtn.UseVisualStyleBackColor = False
@@ -163,7 +164,7 @@ Partial Class devices
         ' 
         catecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         catecb.FormattingEnabled = True
-        catecb.Location = New Point(113, 12)
+        catecb.Location = New Point(113, 21)
         catecb.Margin = New Padding(3, 2, 3, 2)
         catecb.Name = "catecb"
         catecb.Size = New Size(226, 33)
@@ -173,7 +174,7 @@ Partial Class devices
         ' 
         brandscb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         brandscb.FormattingEnabled = True
-        brandscb.Location = New Point(345, 12)
+        brandscb.Location = New Point(345, 22)
         brandscb.Margin = New Padding(3, 2, 3, 2)
         brandscb.Name = "brandscb"
         brandscb.Size = New Size(219, 33)
@@ -184,7 +185,7 @@ Partial Class devices
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(19, 11)
+        Label3.Location = New Point(19, 20)
         Label3.Name = "Label3"
         Label3.Size = New Size(88, 30)
         Label3.TabIndex = 6
@@ -194,7 +195,7 @@ Partial Class devices
         ' 
         lblPageInfo.Anchor = AnchorStyles.Bottom
         lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        lblPageInfo.Location = New Point(730, 839)
+        lblPageInfo.Location = New Point(732, 832)
         lblPageInfo.Name = "lblPageInfo"
         lblPageInfo.Size = New Size(100, 30)
         lblPageInfo.TabIndex = 14
@@ -206,10 +207,10 @@ Partial Class devices
         btnPrev.BackColor = Color.CornflowerBlue
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
-        btnPrev.Location = New Point(642, 835)
+        btnPrev.Location = New Point(631, 818)
         btnPrev.Margin = New Padding(3, 2, 3, 2)
         btnPrev.Name = "btnPrev"
-        btnPrev.Size = New Size(82, 34)
+        btnPrev.Size = New Size(93, 49)
         btnPrev.TabIndex = 15
         btnPrev.Text = "Previous"
         btnPrev.UseVisualStyleBackColor = False
@@ -220,10 +221,10 @@ Partial Class devices
         btnNext.BackColor = Color.CornflowerBlue
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
-        btnNext.Location = New Point(836, 835)
+        btnNext.Location = New Point(836, 819)
         btnNext.Margin = New Padding(3, 2, 3, 2)
         btnNext.Name = "btnNext"
-        btnNext.Size = New Size(82, 36)
+        btnNext.Size = New Size(89, 49)
         btnNext.TabIndex = 16
         btnNext.Text = "Next"
         btnNext.UseVisualStyleBackColor = False
@@ -231,7 +232,7 @@ Partial Class devices
         ' addpnl
         ' 
         addpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        addpnl.Location = New Point(335, 69)
+        addpnl.Location = New Point(335, 32)
         addpnl.Margin = New Padding(3, 2, 3, 2)
         addpnl.Name = "addpnl"
         addpnl.Size = New Size(845, 762)

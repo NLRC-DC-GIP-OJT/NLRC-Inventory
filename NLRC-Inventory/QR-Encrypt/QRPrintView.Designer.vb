@@ -32,11 +32,11 @@ Partial Class QRPrintView
         Label6 = New Label()
         Label2 = New Label()
         Label1 = New Label()
-        Panel3 = New Panel()
-        Button2 = New Button()
-        Button1 = New Button()
+        formatprintpnl = New Panel()
+        cancelbtn = New Button()
+        printbtn = New Button()
         Panel1.SuspendLayout()
-        Panel3.SuspendLayout()
+        formatprintpnl.SuspendLayout()
         SuspendLayout()
         ' 
         ' Panel1
@@ -65,7 +65,6 @@ Partial Class QRPrintView
         ' 
         ' qrpnl
         ' 
-        qrpnl.BorderStyle = BorderStyle.FixedSingle
         qrpnl.Location = New Point(357, 123)
         qrpnl.Margin = New Padding(3, 2, 3, 2)
         qrpnl.Name = "qrpnl"
@@ -146,41 +145,41 @@ Partial Class QRPrintView
         Label1.TabIndex = 26
         Label1.Text = "PLEASE DO NOT REMOVE!"
         ' 
-        ' Panel3
+        ' formatprintpnl
         ' 
-        Panel3.BackColor = Color.Navy
-        Panel3.Controls.Add(Label2)
-        Panel3.Controls.Add(Label1)
-        Panel3.Controls.Add(Panel1)
-        Panel3.Location = New Point(10, 10)
-        Panel3.Margin = New Padding(3, 2, 3, 2)
-        Panel3.Name = "Panel3"
-        Panel3.Size = New Size(607, 384)
-        Panel3.TabIndex = 27
+        formatprintpnl.BackColor = Color.Navy
+        formatprintpnl.Controls.Add(Label2)
+        formatprintpnl.Controls.Add(Label1)
+        formatprintpnl.Controls.Add(Panel1)
+        formatprintpnl.Location = New Point(10, 10)
+        formatprintpnl.Margin = New Padding(3, 2, 3, 2)
+        formatprintpnl.Name = "formatprintpnl"
+        formatprintpnl.Size = New Size(607, 384)
+        formatprintpnl.TabIndex = 27
         ' 
-        ' Button2
+        ' cancelbtn
         ' 
-        Button2.FlatAppearance.BorderSize = 2
-        Button2.FlatStyle = FlatStyle.Flat
-        Button2.Font = New Font("Arial Narrow", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Button2.Location = New Point(325, 403)
-        Button2.Name = "Button2"
-        Button2.Size = New Size(292, 43)
-        Button2.TabIndex = 39
-        Button2.Text = "Cancel"
-        Button2.UseVisualStyleBackColor = True
+        cancelbtn.FlatAppearance.BorderSize = 2
+        cancelbtn.FlatStyle = FlatStyle.Flat
+        cancelbtn.Font = New Font("Arial Narrow", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        cancelbtn.Location = New Point(325, 403)
+        cancelbtn.Name = "cancelbtn"
+        cancelbtn.Size = New Size(292, 43)
+        cancelbtn.TabIndex = 39
+        cancelbtn.Text = "Cancel"
+        cancelbtn.UseVisualStyleBackColor = True
         ' 
-        ' Button1
+        ' printbtn
         ' 
-        Button1.FlatAppearance.BorderSize = 2
-        Button1.FlatStyle = FlatStyle.Flat
-        Button1.Font = New Font("Arial Narrow", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Button1.Location = New Point(10, 403)
-        Button1.Name = "Button1"
-        Button1.Size = New Size(292, 43)
-        Button1.TabIndex = 40
-        Button1.Text = "View Print Preview"
-        Button1.UseVisualStyleBackColor = True
+        printbtn.FlatAppearance.BorderSize = 2
+        printbtn.FlatStyle = FlatStyle.Flat
+        printbtn.Font = New Font("Arial Narrow", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        printbtn.Location = New Point(10, 403)
+        printbtn.Name = "printbtn"
+        printbtn.Size = New Size(292, 43)
+        printbtn.TabIndex = 40
+        printbtn.Text = "View Print Preview"
+        printbtn.UseVisualStyleBackColor = True
         ' 
         ' QRPrintView
         ' 
@@ -188,16 +187,16 @@ Partial Class QRPrintView
         AutoScaleMode = AutoScaleMode.Font
         BackColor = Color.White
         BorderStyle = BorderStyle.FixedSingle
-        Controls.Add(Button1)
-        Controls.Add(Button2)
-        Controls.Add(Panel3)
+        Controls.Add(printbtn)
+        Controls.Add(cancelbtn)
+        Controls.Add(formatprintpnl)
         Margin = New Padding(3, 2, 3, 2)
         Name = "QRPrintView"
         Size = New Size(626, 454)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
-        Panel3.ResumeLayout(False)
-        Panel3.PerformLayout()
+        formatprintpnl.ResumeLayout(False)
+        formatprintpnl.PerformLayout()
         ResumeLayout(False)
     End Sub
 
@@ -211,8 +210,8 @@ Partial Class QRPrintView
     Friend WithEvents Label4 As Label
     Friend WithEvents Label6 As Label
     Friend WithEvents formatpnl As Panel
-    Friend WithEvents Panel3 As Panel
-    Friend WithEvents Button2 As Button
-    Friend WithEvents Button1 As Button
+    Friend WithEvents formatprintpnl As Panel
+    Friend WithEvents cancelbtn As Button
+    Friend WithEvents printbtn As Button
 
 End Class

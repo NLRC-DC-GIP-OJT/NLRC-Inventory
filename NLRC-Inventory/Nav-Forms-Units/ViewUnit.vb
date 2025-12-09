@@ -125,20 +125,55 @@ Public Class ViewUnit
         ' Loop through devices and populate panels
         For Each dr As DataRow In devices.Rows
             Dim devId As Integer = CInt(dr("DeviceID"))
-            Dim baseText As String = ExtractBaseText(dr("DeviceAndSpecs").ToString())
 
-            ' Build full specs: NSOC Name + Property# + remaining specs
+            ' ============================
+            ' 🔹 Build display text:
+            '     Category - Brand  (if no model)
+            '     Category - Brand - Model  (if model exists)
+            ' ============================
+            Dim baseText As String = ""
+
+            If devices.Columns.Contains("category_name") AndAlso
+               devices.Columns.Contains("brand_name") Then
+
+                Dim cat = SafeStr(dr, "category_name")
+                Dim brand = SafeStr(dr, "brand_name")
+                Dim model = SafeStr(dr, "model") ' "" if NULL
+
+                If model = "" Then
+                    baseText = $"{cat} - {brand}"
+                Else
+                    baseText = $"{cat} - {brand} - {model}"
+                End If
+            Else
+                ' fallback if those columns are not present
+                Dim deviceAndSpecs = SafeStr(dr, "DeviceAndSpecs")
+                baseText = ExtractBaseText(deviceAndSpecs)
+            End If
+
+            ' ============================
+            ' 🔹 Build full specs:
+            '     NSOC Name + Property No + ONLY actual specs
+            ' ============================
             Dim specsParts As New List(Of String)
-            If dr.Table.Columns.Contains("nsoc_name") AndAlso Not IsDBNull(dr("nsoc_name")) AndAlso dr("nsoc_name").ToString().Trim() <> "" Then
-                specsParts.Add("NSOC Name:" & dr("nsoc_name").ToString().Trim())
-            End If
-            If dr.Table.Columns.Contains("property_number") AndAlso Not IsDBNull(dr("property_number")) AndAlso dr("property_number").ToString().Trim() <> "" Then
-                specsParts.Add("Property No:" & dr("property_number").ToString().Trim())
+
+            If dr.Table.Columns.Contains("nsoc_name") Then
+                Dim nsoc = SafeStr(dr, "nsoc_name")
+                If nsoc <> "" Then specsParts.Add("NSOC Name:" & nsoc)
             End If
 
-            Dim rawSpecs = dr("DeviceAndSpecs").ToString()
-            Dim specsOnly = CleanSpecs(rawSpecs)
-            If specsOnly <> "" Then specsParts.Add(specsOnly)
+            If dr.Table.Columns.Contains("property_number") Then
+                Dim prop = SafeStr(dr, "property_number")
+                If prop <> "" Then specsParts.Add("Property No:" & prop)
+            End If
+
+            ' DeviceAndSpecs is like: Category - Brand (- Model) - <SPEC STRING>
+            Dim rawSpecs = SafeStr(dr, "DeviceAndSpecs")
+            Dim onlySpecs = ExtractOnlySpecs(rawSpecs)
+
+            If onlySpecs <> "" Then
+                specsParts.Add(onlySpecs)
+            End If
 
             Dim fullSpecs As String = String.Join(";", specsParts)
 
@@ -150,6 +185,7 @@ Public Class ViewUnit
             ' Add device to panel (read-only)
             AddDeviceToPanelReadOnly(devId, baseText, fullSpecs)
         Next
+
     End Sub
 
 
@@ -234,10 +270,50 @@ Public Class ViewUnit
     End Function
 
     Private Function ExtractBaseText(fullText As String) As String
-        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None)
-        If parts.Length < 3 Then Return fullText.Trim()
-        Return $"{parts(0).Trim()} - {parts(1).Trim()} - {parts(2).Trim()}"
+        If String.IsNullOrWhiteSpace(fullText) Then Return ""
+
+        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None) _
+                        .Select(Function(p) p.Trim()) _
+                        .Where(Function(p) p <> "") _
+                        .ToArray()
+
+        Select Case parts.Length
+            Case 0
+                Return ""
+            Case 1
+                Return parts(0)
+            Case 2
+                ' Category - Brand
+                Return parts(0) & " - " & parts(1)
+            Case 3
+                ' Assume Category - Brand - <SPECS> (no model)
+                ' 👉 base text should just be Category - Brand
+                Return parts(0) & " - " & parts(1)
+            Case Else
+                ' Category - Brand - Model - <specs...>
+                Return parts(0) & " - " & parts(1) & " - " & parts(2)
+        End Select
     End Function
+
+    Private Function ExtractOnlySpecs(fullText As String) As String
+        If String.IsNullOrWhiteSpace(fullText) Then Return String.Empty
+
+        Dim parts = fullText.Split(New String() {" - "}, StringSplitOptions.None) _
+                        .Select(Function(p) p.Trim()) _
+                        .Where(Function(p) p <> "") _
+                        .ToArray()
+
+        If parts.Length <= 2 Then Return String.Empty
+
+        If parts.Length = 3 Then
+            ' Format: Category - Brand - <SPECS> (no model)
+            Return parts(2)
+        End If
+
+        ' 4+ → Category - Brand - Model - <SPECS...>
+        Return String.Join(" - ", parts.Skip(3)).Trim()
+    End Function
+
 
     Private Function CleanSpecs(rawSpecs As String) As String
         If String.IsNullOrWhiteSpace(rawSpecs) Then Return ""
@@ -285,6 +361,12 @@ Public Class ViewUnit
     End Sub
 
 
+    ' ✅ Safely get a trimmed string from a DataRow (handles DBNull / missing column)
+    Private Function SafeStr(row As DataRow, colName As String) As String
+        If Not row.Table.Columns.Contains(colName) Then Return ""
+        If IsDBNull(row(colName)) OrElse row(colName) Is Nothing Then Return ""
+        Return row(colName).ToString().Trim()
+    End Function
 
 
 

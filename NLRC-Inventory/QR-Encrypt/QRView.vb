@@ -78,25 +78,24 @@ Public Class QRView
     End Sub
 
     Private Sub printbtn_Click(sender As Object, e As EventArgs) Handles printbtn.Click
-        ' (unchanged)
         Dim hostForm As Form = Me.FindForm()
         If hostForm Is Nothing Then
             MessageBox.Show("Host form not found.", "Layout Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
 
         Dim found() As Control = hostForm.Controls.Find("printqrformat", True)
         If found Is Nothing OrElse found.Length = 0 Then
             MessageBox.Show("Panel 'printqrformat' not found on the form.", "Layout Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
 
         Dim printPanel As Panel = TryCast(found(0), Panel)
         If printPanel Is Nothing Then
             MessageBox.Show("'printqrformat' is not a Panel.", "Layout Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
 
@@ -107,8 +106,13 @@ Public Class QRView
         Dim qrView As New QRPrintView()
         qrView.Dock = DockStyle.Fill
         printPanel.Controls.Add(qrView)
+
+        ' 🔹 PASS THE QR IMAGE + ENCRYPTED TEXT TO QRPrintView
+        qrView.LoadQR(baseQR, lastEncryptedText)
+
         qrView.BringToFront()
     End Sub
+
 
     Private Sub closepnl_Paint(sender As Object, e As EventArgs) Handles closepnl.Click
         Dim parentPanel As Panel = TryCast(Me.Parent, Panel)

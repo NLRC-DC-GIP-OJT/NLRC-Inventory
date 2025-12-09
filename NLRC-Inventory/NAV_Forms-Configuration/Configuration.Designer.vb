@@ -79,7 +79,7 @@ Partial Class Configuration
         Label3.AutoSize = True
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(7, 5)
+        Label3.Location = New Point(32, 20)
         Label3.Name = "Label3"
         Label3.Size = New Size(238, 30)
         Label3.TabIndex = 7
@@ -96,7 +96,7 @@ Partial Class Configuration
         Panel1.Controls.Add(cattxt)
         Panel1.Controls.Add(Label5)
         Panel1.Controls.Add(Label1)
-        Panel1.Location = New Point(37, 80)
+        Panel1.Location = New Point(37, 96)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
         Panel1.Size = New Size(462, 365)
@@ -257,7 +257,7 @@ Partial Class Configuration
         Panel3.Controls.Add(addspecsbtn)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label4)
-        Panel3.Location = New Point(1032, 78)
+        Panel3.Location = New Point(1032, 97)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
         Panel3.Size = New Size(488, 365)
@@ -382,7 +382,7 @@ Partial Class Configuration
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         devicedgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicedgv.Size = New Size(462, 391)
+        devicedgv.Size = New Size(462, 365)
         devicedgv.TabIndex = 1
         ' 
         ' specsdgv
@@ -419,7 +419,7 @@ Partial Class Configuration
         DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle6.ForeColor = Color.Black
         specsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
-        specsdgv.Size = New Size(488, 391)
+        specsdgv.Size = New Size(488, 365)
         specsdgv.TabIndex = 1
         ' 
         ' branddgv
@@ -456,7 +456,7 @@ Partial Class Configuration
         DataGridViewCellStyle9.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle9.ForeColor = Color.Black
         branddgv.RowsDefaultCellStyle = DataGridViewCellStyle9
-        branddgv.Size = New Size(477, 391)
+        branddgv.Size = New Size(477, 365)
         branddgv.TabIndex = 1
         ' 
         ' Panel2
@@ -470,7 +470,7 @@ Partial Class Configuration
         Panel2.Controls.Add(catcb)
         Panel2.Controls.Add(brandtxt)
         Panel2.Controls.Add(Label8)
-        Panel2.Location = New Point(526, 80)
+        Panel2.Location = New Point(526, 97)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
         Panel2.Size = New Size(477, 365)
@@ -480,43 +480,44 @@ Partial Class Configuration
         ' 
         Panel6.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel6.Controls.Add(branddgv)
-        Panel6.Location = New Point(526, 458)
+        Panel6.Location = New Point(526, 484)
         Panel6.Margin = New Padding(3, 2, 3, 2)
         Panel6.Name = "Panel6"
-        Panel6.Size = New Size(477, 391)
+        Panel6.Size = New Size(477, 365)
         Panel6.TabIndex = 15
         ' 
         ' Panel4
         ' 
         Panel4.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel4.Controls.Add(specsdgv)
-        Panel4.Location = New Point(1032, 458)
+        Panel4.Location = New Point(1032, 484)
         Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(488, 391)
+        Panel4.Size = New Size(488, 365)
         Panel4.TabIndex = 16
         ' 
         ' Panel5
         ' 
         Panel5.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel5.Controls.Add(devicedgv)
-        Panel5.Location = New Point(37, 458)
+        Panel5.Location = New Point(37, 484)
         Panel5.Margin = New Padding(3, 2, 3, 2)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(462, 391)
+        Panel5.Size = New Size(462, 365)
         Panel5.TabIndex = 16
         ' 
         ' Panel7
         ' 
-        Panel7.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Panel7.BackColor = Color.Transparent
         Panel7.BackgroundImage = CType(resources.GetObject("Panel7.BackgroundImage"), Image)
+        Panel7.BackgroundImageLayout = ImageLayout.Stretch
         Panel7.BorderStyle = BorderStyle.FixedSingle
         Panel7.Controls.Add(Label3)
-        Panel7.Location = New Point(18, 23)
+        Panel7.Dock = DockStyle.Top
+        Panel7.Location = New Point(0, 0)
         Panel7.Margin = New Padding(3, 2, 3, 2)
         Panel7.Name = "Panel7"
-        Panel7.Size = New Size(1526, 44)
+        Panel7.Size = New Size(1567, 75)
         Panel7.TabIndex = 17
         ' 
         ' Configuration

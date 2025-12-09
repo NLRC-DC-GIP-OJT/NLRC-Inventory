@@ -468,29 +468,49 @@ Public Class Units
 
     ' ---------------- Validate Assigned To -----------------
     Private Sub allunitsdgv_CellValidating(sender As Object, e As DataGridViewCellValidatingEventArgs) Handles allunitsdgv.CellValidating
-        If allunitsdgv.Columns(e.ColumnIndex).HeaderText = "Assigned To" Then
-            Dim inputName As String = e.FormattedValue.ToString().Trim()
-            If String.IsNullOrEmpty(inputName) Then Return
+        If allunitsdgv.Columns(e.ColumnIndex).HeaderText <> "Assigned To" Then Return
 
-            Dim normalize As Func(Of String, String) = Function(s) s.ToLower().Replace(",", "").Trim()
-            Dim normalizedInput As String = normalize(inputName)
+        Dim inputName As String = e.FormattedValue.ToString().Trim()
+        If String.IsNullOrEmpty(inputName) Then Return
 
-            Dim isValid As Boolean = personnelNames.Any(Function(fullName)
-                                                            Dim n = normalize(fullName)
-                                                            If n = normalizedInput Then Return True
-                                                            Dim parts = n.Split(" "c)
-                                                            If parts.Length >= 2 Then
-                                                                Dim swapped = parts(1) & " " & parts(0)
-                                                                If swapped = normalizedInput Then Return True
-                                                            End If
-                                                            Return False
-                                                        End Function)
+        Dim normalize As Func(Of String, String) = Function(s) s.ToLower().Replace(",", "").Trim()
+        Dim normalizedInput As String = normalize(inputName)
 
-            If Not isValid Then
-                MessageBox.Show($"Assigned personnel '{inputName}' does not exist in the database.", "Invalid Personnel", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                allunitsdgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = String.Empty
-                e.Cancel = True
+        Dim matchedName As String = Nothing
+
+        For Each fullName In personnelNames
+            Dim n = normalize(fullName)
+
+            ' exact match
+            If n = normalizedInput Then
+                matchedName = fullName
+                Exit For
             End If
+
+            ' allow swapped (FIRST LAST vs LAST FIRST)
+            Dim parts = n.Split(" "c)
+            If parts.Length >= 2 Then
+                Dim swapped = parts(1) & " " & parts(0)
+                If swapped = normalizedInput Then
+                    matchedName = fullName
+                    Exit For
+                End If
+            End If
+        Next
+
+        If matchedName Is Nothing Then
+            ' ❌ invalid → your original behaviour
+            MessageBox.Show($"Assigned personnel '{inputName}' does not exist in the database.",
+                            "Invalid Personnel",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning)
+            allunitsdgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = String.Empty
+            e.Cancel = True
+        Else
+            ' ✅ IMPORTANT: set the cell value to the *real* item from the ComboBox list
+            allunitsdgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = matchedName
+            ' no need to cancel, validation passes
         End If
     End Sub
+
 End Class

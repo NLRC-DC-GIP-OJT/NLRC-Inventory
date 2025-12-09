@@ -30,6 +30,7 @@ Partial Class Dashboard
         Panel7 = New Panel()
         Panel6 = New Panel()
         Panel3 = New Panel()
+        Button1 = New Button()
         Button5 = New Button()
         confibtn = New Button()
         unitbtn = New Button()
@@ -116,6 +117,7 @@ Partial Class Dashboard
         Panel3.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left
         Panel3.AutoSize = True
         Panel3.BackColor = Color.White
+        Panel3.Controls.Add(Button1)
         Panel3.Controls.Add(Button5)
         Panel3.Controls.Add(confibtn)
         Panel3.Controls.Add(unitbtn)
@@ -126,6 +128,22 @@ Partial Class Dashboard
         Panel3.Name = "Panel3"
         Panel3.Size = New Size(286, 881)
         Panel3.TabIndex = 3
+        ' 
+        ' Button1
+        ' 
+        Button1.AutoSize = True
+        Button1.Dock = DockStyle.Top
+        Button1.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        Button1.Image = CType(resources.GetObject("Button1.Image"), Image)
+        Button1.ImageAlign = ContentAlignment.MiddleLeft
+        Button1.Location = New Point(0, 475)
+        Button1.Margin = New Padding(3, 2, 3, 2)
+        Button1.Name = "Button1"
+        Button1.Padding = New Padding(22, 0, 0, 0)
+        Button1.Size = New Size(286, 135)
+        Button1.TabIndex = 5
+        Button1.Text = "        REPORTS"
+        Button1.UseVisualStyleBackColor = True
         ' 
         ' Button5
         ' 
@@ -329,4 +347,5 @@ Partial Class Dashboard
     Friend WithEvents Panel5 As Panel
     Friend WithEvents Panel6 As Panel
     Friend WithEvents Panel7 As Panel
+    Friend WithEvents Button1 As Button
 End Class

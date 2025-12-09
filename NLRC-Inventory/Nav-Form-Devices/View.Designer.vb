@@ -55,10 +55,10 @@ Partial Class View
         Panel4.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel4.Controls.Add(historydgv)
         Panel4.Controls.Add(cancelbtn)
-        Panel4.Location = New Point(401, 460)
+        Panel4.Location = New Point(401, 458)
         Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(427, 294)
+        Panel4.Size = New Size(425, 294)
         Panel4.TabIndex = 24
         ' 
         ' historydgv
@@ -104,7 +104,7 @@ Partial Class View
         ' 
         Label5.Anchor = AnchorStyles.Top
         Label5.Font = New Font("Segoe UI Black", 19.8000011F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(209, 9)
+        Label5.Location = New Point(208, 9)
         Label5.Name = "Label5"
         Label5.Size = New Size(463, 43)
         Label5.TabIndex = 25
@@ -117,10 +117,10 @@ Partial Class View
         Panel2.Controls.Add(notetxt)
         Panel2.Controls.Add(Label7)
         Panel2.Controls.Add(Label6)
-        Panel2.Location = New Point(407, 52)
+        Panel2.Location = New Point(405, 52)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(427, 372)
+        Panel2.Size = New Size(427, 370)
         Panel2.TabIndex = 26
         ' 
         ' specsflowpnl
@@ -133,7 +133,7 @@ Partial Class View
         specsflowpnl.Location = New Point(11, 110)
         specsflowpnl.Margin = New Padding(3, 2, 3, 2)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(406, 251)
+        specsflowpnl.Size = New Size(406, 249)
         specsflowpnl.TabIndex = 18
         specsflowpnl.WrapContents = False
         ' 
@@ -177,7 +177,7 @@ Partial Class View
         Panel1.Location = New Point(11, 52)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(378, 503)
+        Panel1.Size = New Size(378, 501)
         Panel1.TabIndex = 23
         ' 
         ' deviceflowpnl
@@ -215,10 +215,10 @@ Partial Class View
         Panel3.Controls.Add(purchaseDatePicker)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label1)
-        Panel3.Location = New Point(14, 577)
+        Panel3.Location = New Point(14, 575)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(365, 134)
+        Panel3.Size = New Size(363, 134)
         Panel3.TabIndex = 22
         ' 
         ' warrantyDatePicker
@@ -273,6 +273,7 @@ Partial Class View
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
+        BorderStyle = BorderStyle.FixedSingle
         Controls.Add(Label3)
         Controls.Add(Panel4)
         Controls.Add(Label5)
@@ -281,7 +282,7 @@ Partial Class View
         Controls.Add(Panel3)
         Margin = New Padding(3, 2, 3, 2)
         Name = "View"
-        Size = New Size(845, 762)
+        Size = New Size(843, 760)
         Panel4.ResumeLayout(False)
         CType(historydgv, ComponentModel.ISupportInitialize).EndInit()
         Panel2.ResumeLayout(False)
