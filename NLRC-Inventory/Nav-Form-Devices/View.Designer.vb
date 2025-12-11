@@ -185,7 +185,7 @@ Partial Class View
         deviceflowpnl.Location = New Point(3, 80)
         deviceflowpnl.Margin = New Padding(3, 2, 3, 2)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(372, 274)
+        deviceflowpnl.Size = New Size(372, 419)
         deviceflowpnl.TabIndex = 11
         ' 
         ' Label2

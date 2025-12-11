@@ -7,13 +7,6 @@ Public Class Dashboard
     Private model As New model() ' Your Model class
 
     ' ========================
-    ' 🔁 AUTO-RESIZE FIELDS
-    ' ========================
-    Private originalSize As Size
-    Private originalBounds As New Dictionary(Of Control, Rectangle)
-    Private layoutInitialized As Boolean = False
-
-    ' ========================
     ' Constructors
     ' ========================
     Public Sub New()
@@ -31,7 +24,8 @@ Public Class Dashboard
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         userlbl.Text = LoggedUser
 
-        InitializeLayoutScaling()
+        ' ❌ Removed InitializeLayoutScaling()
+
         LoadDashboard()
 
         ' highlight Dashboard by default
@@ -39,72 +33,6 @@ Public Class Dashboard
 
         Timer1.Interval = 1000
         Timer1.Start()
-    End Sub
-
-
-    ' ========================
-    ' 🔁 AUTO-RESIZE SUPPORT
-    ' ========================
-    Private Sub InitializeLayoutScaling()
-        If layoutInitialized Then Return
-        If Me.DesignMode Then Return ' avoid running in designer
-
-        originalSize = Me.Size
-        originalBounds.Clear()
-        StoreOriginalBounds(Me)
-        layoutInitialized = True
-    End Sub
-
-    Private Sub StoreOriginalBounds(parent As Control)
-        For Each ctrl As Control In parent.Controls
-            If Not originalBounds.ContainsKey(ctrl) Then
-                originalBounds.Add(ctrl, ctrl.Bounds)
-            End If
-
-            If ctrl.HasChildren Then
-                StoreOriginalBounds(ctrl)
-            End If
-        Next
-    End Sub
-
-    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
-        Me.SuspendLayout()
-
-        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
-            Dim ctrl As Control = kvp.Key
-            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
-
-            Dim r As Rectangle = kvp.Value
-            ctrl.Bounds = New Rectangle(
-                CInt(r.X * scaleX),
-                CInt(r.Y * scaleY),
-                CInt(r.Width * scaleX),
-                CInt(r.Height * scaleY)
-            )
-
-            ' Optional: scale fonts
-            If ctrl.Font IsNot Nothing Then
-                Dim f As Font = ctrl.Font
-                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
-                If newSize > 4 Then
-                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
-                End If
-            End If
-        Next
-
-        Me.ResumeLayout()
-    End Sub
-
-    Protected Overrides Sub OnResize(e As EventArgs)
-        MyBase.OnResize(e)
-
-        If Not layoutInitialized Then Return
-        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
-
-        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
-        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
-
-        ApplyScale(scaleX, scaleY)
     End Sub
 
     ' ========================
@@ -158,8 +86,6 @@ Public Class Dashboard
         LoadUserControl(New Reports())
     End Sub
 
-
-
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         Dim result = MessageBox.Show("Are you sure?", "You want to Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
 
@@ -177,6 +103,7 @@ Public Class Dashboard
             Me.Close()
         End If
     End Sub
+
     ' ========================
     ' NAV BUTTON HIGHLIGHT
     ' ========================
@@ -184,17 +111,18 @@ Public Class Dashboard
         ' List all nav buttons that you want to highlight
         Dim navButtons() As Button = {dashbtn, devicebtn, unitbtn, confibtn, Button1}
 
+        ' Reset them to their designer look
         For Each btn As Button In navButtons
-            btn.BackColor = SystemColors.Control    ' normal background
-            btn.ForeColor = Color.Black             ' normal text
+            btn.UseVisualStyleBackColor = True      ' keeps the BackColor set in designer
             btn.FlatAppearance.BorderSize = 0
+            btn.ForeColor = Color.Black             ' change if you use another default
         Next
 
-        ' Highlight the active one (SKY BLUE)
-        active.BackColor = Color.SkyBlue
+        ' Highlight the active one
+        Dim activeColor As Color = ColorTranslator.FromHtml("#5596D5")
+        active.BackColor = activeColor
         active.ForeColor = Color.White
         active.FlatAppearance.BorderSize = 1
     End Sub
-
 
 End Class

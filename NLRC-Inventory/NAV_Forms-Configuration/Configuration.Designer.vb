@@ -22,15 +22,15 @@ Partial Class Configuration
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle7 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle8 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle9 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle10 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle11 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle12 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle13 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle14 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle15 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle16 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle17 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle18 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Configuration))
         Label3 = New Label()
         Panel1 = New Panel()
@@ -99,7 +99,7 @@ Partial Class Configuration
         Panel1.Location = New Point(37, 96)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(462, 365)
+        Panel1.Size = New Size(462, 458)
         Panel1.TabIndex = 8
         ' 
         ' propertyflowpnl
@@ -112,20 +112,20 @@ Partial Class Configuration
         propertyflowpnl.Location = New Point(18, 128)
         propertyflowpnl.Margin = New Padding(3, 2, 3, 2)
         propertyflowpnl.Name = "propertyflowpnl"
-        propertyflowpnl.Size = New Size(422, 179)
+        propertyflowpnl.Size = New Size(422, 248)
         propertyflowpnl.TabIndex = 10
         propertyflowpnl.WrapContents = False
         ' 
         ' catbtn
         ' 
         catbtn.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        catbtn.BackColor = Color.DarkBlue
+        catbtn.BackColor = Color.CornflowerBlue
         catbtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catbtn.ForeColor = Color.White
-        catbtn.Location = New Point(99, 311)
+        catbtn.Location = New Point(99, 397)
         catbtn.Margin = New Padding(3, 2, 3, 2)
         catbtn.Name = "catbtn"
-        catbtn.Size = New Size(260, 48)
+        catbtn.Size = New Size(260, 45)
         catbtn.TabIndex = 5
         catbtn.Text = "Insert Category"
         catbtn.UseVisualStyleBackColor = False
@@ -167,8 +167,9 @@ Partial Class Configuration
         ' 
         Label1.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label1.AutoSize = True
+        Label1.BackColor = Color.Transparent
         Label1.Font = New Font("Segoe UI", 14.25F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label1.ForeColor = Color.RoyalBlue
+        Label1.ForeColor = Color.CornflowerBlue
         Label1.Location = New Point(129, 8)
         Label1.Name = "Label1"
         Label1.Size = New Size(196, 25)
@@ -178,13 +179,13 @@ Partial Class Configuration
         ' brandbtn
         ' 
         brandbtn.Anchor = AnchorStyles.None
-        brandbtn.BackColor = Color.Green
+        brandbtn.BackColor = Color.CornflowerBlue
         brandbtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         brandbtn.ForeColor = Color.White
-        brandbtn.Location = New Point(177, 195)
+        brandbtn.Location = New Point(177, 241)
         brandbtn.Margin = New Padding(3, 2, 3, 2)
         brandbtn.Name = "brandbtn"
-        brandbtn.Size = New Size(144, 39)
+        brandbtn.Size = New Size(144, 46)
         brandbtn.TabIndex = 6
         brandbtn.Text = "Insert Brand"
         brandbtn.UseVisualStyleBackColor = False
@@ -194,7 +195,7 @@ Partial Class Configuration
         brandtxt.Anchor = AnchorStyles.None
         brandtxt.BorderStyle = BorderStyle.FixedSingle
         brandtxt.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        brandtxt.Location = New Point(91, 128)
+        brandtxt.Location = New Point(91, 184)
         brandtxt.Margin = New Padding(3, 2, 3, 2)
         brandtxt.Name = "brandtxt"
         brandtxt.Size = New Size(313, 26)
@@ -205,7 +206,7 @@ Partial Class Configuration
         Label8.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label8.AutoSize = True
         Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(15, 102)
+        Label8.Location = New Point(15, 94)
         Label8.Name = "Label8"
         Label8.Size = New Size(112, 18)
         Label8.TabIndex = 5
@@ -216,7 +217,7 @@ Partial Class Configuration
         catcb.Anchor = AnchorStyles.None
         catcb.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catcb.FormattingEnabled = True
-        catcb.Location = New Point(91, 68)
+        catcb.Location = New Point(91, 127)
         catcb.Margin = New Padding(3, 2, 3, 2)
         catcb.Name = "catcb"
         catcb.Size = New Size(313, 26)
@@ -238,7 +239,7 @@ Partial Class Configuration
         Label2.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label2.AutoSize = True
         Label2.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label2.ForeColor = Color.ForestGreen
+        Label2.ForeColor = Color.CornflowerBlue
         Label2.Location = New Point(203, 8)
         Label2.Name = "Label2"
         Label2.Size = New Size(105, 25)
@@ -260,7 +261,7 @@ Partial Class Configuration
         Panel3.Location = New Point(1032, 97)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(488, 365)
+        Panel3.Size = New Size(488, 457)
         Panel3.TabIndex = 9
         ' 
         ' flowpnl
@@ -270,23 +271,23 @@ Partial Class Configuration
         flowpnl.BorderStyle = BorderStyle.FixedSingle
         flowpnl.FlowDirection = FlowDirection.TopDown
         flowpnl.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        flowpnl.Location = New Point(24, 128)
+        flowpnl.Location = New Point(24, 122)
         flowpnl.Margin = New Padding(3, 2, 3, 2)
         flowpnl.Name = "flowpnl"
-        flowpnl.Size = New Size(438, 131)
+        flowpnl.Size = New Size(438, 233)
         flowpnl.TabIndex = 9
         flowpnl.WrapContents = False
         ' 
         ' btnInsertSpecs
         ' 
         btnInsertSpecs.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        btnInsertSpecs.BackColor = Color.DarkOrchid
+        btnInsertSpecs.BackColor = Color.CornflowerBlue
         btnInsertSpecs.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         btnInsertSpecs.ForeColor = Color.White
-        btnInsertSpecs.Location = New Point(95, 306)
+        btnInsertSpecs.Location = New Point(95, 403)
         btnInsertSpecs.Margin = New Padding(3, 2, 3, 2)
         btnInsertSpecs.Name = "btnInsertSpecs"
-        btnInsertSpecs.Size = New Size(290, 49)
+        btnInsertSpecs.Size = New Size(290, 43)
         btnInsertSpecs.TabIndex = 7
         btnInsertSpecs.Text = "Insert Specs Template"
         btnInsertSpecs.UseVisualStyleBackColor = False
@@ -296,7 +297,7 @@ Partial Class Configuration
         Label10.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Label10.AutoSize = True
         Label10.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label10.Location = New Point(22, 100)
+        Label10.Location = New Point(22, 98)
         Label10.Name = "Label10"
         Label10.Size = New Size(141, 18)
         Label10.TabIndex = 7
@@ -307,7 +308,7 @@ Partial Class Configuration
         catcb1.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         catcb1.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         catcb1.FormattingEnabled = True
-        catcb1.Location = New Point(24, 66)
+        catcb1.Location = New Point(24, 64)
         catcb1.Margin = New Padding(3, 2, 3, 2)
         catcb1.Name = "catcb1"
         catcb1.Size = New Size(438, 26)
@@ -319,10 +320,10 @@ Partial Class Configuration
         addspecsbtn.FlatAppearance.BorderSize = 2
         addspecsbtn.FlatStyle = FlatStyle.Flat
         addspecsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        addspecsbtn.Location = New Point(76, 269)
+        addspecsbtn.Location = New Point(76, 363)
         addspecsbtn.Margin = New Padding(3, 2, 3, 2)
         addspecsbtn.Name = "addspecsbtn"
-        addspecsbtn.Size = New Size(335, 33)
+        addspecsbtn.Size = New Size(335, 35)
         addspecsbtn.TabIndex = 8
         addspecsbtn.Text = "+ Add Specification Field"
         addspecsbtn.UseVisualStyleBackColor = True
@@ -331,7 +332,7 @@ Partial Class Configuration
         ' 
         Label9.AutoSize = True
         Label9.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(22, 39)
+        Label9.Location = New Point(22, 38)
         Label9.Name = "Label9"
         Label9.Size = New Size(192, 18)
         Label9.TabIndex = 7
@@ -341,7 +342,7 @@ Partial Class Configuration
         ' 
         Label4.AutoSize = True
         Label4.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        Label4.ForeColor = Color.DarkViolet
+        Label4.ForeColor = Color.CornflowerBlue
         Label4.Location = New Point(161, 8)
         Label4.Name = "Label4"
         Label4.Size = New Size(166, 25)
@@ -354,23 +355,23 @@ Partial Class Configuration
         devicedgv.AllowUserToDeleteRows = False
         devicedgv.AllowUserToResizeColumns = False
         devicedgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle1.ForeColor = Color.White
-        DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
-        devicedgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle10.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle10.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle10.ForeColor = Color.White
+        DataGridViewCellStyle10.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle10.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle10.WrapMode = DataGridViewTriState.True
+        devicedgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle10
         devicedgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
-        devicedgv.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle11.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle11.BackColor = SystemColors.Window
+        DataGridViewCellStyle11.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle11.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle11.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle11.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle11.WrapMode = DataGridViewTriState.False
+        devicedgv.DefaultCellStyle = DataGridViewCellStyle11
         devicedgv.Dock = DockStyle.Fill
         devicedgv.Location = New Point(0, 0)
         devicedgv.Margin = New Padding(3, 2, 3, 2)
@@ -378,11 +379,11 @@ Partial Class Configuration
         devicedgv.ReadOnly = True
         devicedgv.RowHeadersVisible = False
         devicedgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle3.BackColor = Color.AliceBlue
-        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle3.ForeColor = Color.Black
-        devicedgv.RowsDefaultCellStyle = DataGridViewCellStyle3
-        devicedgv.Size = New Size(462, 365)
+        DataGridViewCellStyle12.BackColor = Color.AliceBlue
+        DataGridViewCellStyle12.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle12.ForeColor = Color.Black
+        devicedgv.RowsDefaultCellStyle = DataGridViewCellStyle12
+        devicedgv.Size = New Size(462, 291)
         devicedgv.TabIndex = 1
         ' 
         ' specsdgv
@@ -391,23 +392,23 @@ Partial Class Configuration
         specsdgv.AllowUserToDeleteRows = False
         specsdgv.AllowUserToResizeColumns = False
         specsdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle4.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle4.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle4.ForeColor = Color.White
-        DataGridViewCellStyle4.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
-        specsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        DataGridViewCellStyle13.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle13.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle13.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle13.ForeColor = Color.White
+        DataGridViewCellStyle13.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle13.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle13.WrapMode = DataGridViewTriState.True
+        specsdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle13
         specsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle5.BackColor = SystemColors.Window
-        DataGridViewCellStyle5.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle5.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
-        specsdgv.DefaultCellStyle = DataGridViewCellStyle5
+        DataGridViewCellStyle14.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle14.BackColor = SystemColors.Window
+        DataGridViewCellStyle14.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle14.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle14.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle14.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle14.WrapMode = DataGridViewTriState.False
+        specsdgv.DefaultCellStyle = DataGridViewCellStyle14
         specsdgv.Dock = DockStyle.Fill
         specsdgv.Location = New Point(0, 0)
         specsdgv.Margin = New Padding(3, 2, 3, 2)
@@ -415,11 +416,11 @@ Partial Class Configuration
         specsdgv.ReadOnly = True
         specsdgv.RowHeadersVisible = False
         specsdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle6.BackColor = Color.AliceBlue
-        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle6.ForeColor = Color.Black
-        specsdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
-        specsdgv.Size = New Size(488, 365)
+        DataGridViewCellStyle15.BackColor = Color.AliceBlue
+        DataGridViewCellStyle15.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle15.ForeColor = Color.Black
+        specsdgv.RowsDefaultCellStyle = DataGridViewCellStyle15
+        specsdgv.Size = New Size(488, 291)
         specsdgv.TabIndex = 1
         ' 
         ' branddgv
@@ -428,23 +429,23 @@ Partial Class Configuration
         branddgv.AllowUserToDeleteRows = False
         branddgv.AllowUserToResizeColumns = False
         branddgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle7.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle7.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle7.ForeColor = Color.White
-        DataGridViewCellStyle7.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle7.WrapMode = DataGridViewTriState.True
-        branddgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
+        DataGridViewCellStyle16.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle16.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle16.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle16.ForeColor = Color.White
+        DataGridViewCellStyle16.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle16.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle16.WrapMode = DataGridViewTriState.True
+        branddgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle16
         branddgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle8.BackColor = SystemColors.Window
-        DataGridViewCellStyle8.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle8.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle8.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle8.WrapMode = DataGridViewTriState.False
-        branddgv.DefaultCellStyle = DataGridViewCellStyle8
+        DataGridViewCellStyle17.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle17.BackColor = SystemColors.Window
+        DataGridViewCellStyle17.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle17.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle17.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle17.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle17.WrapMode = DataGridViewTriState.False
+        branddgv.DefaultCellStyle = DataGridViewCellStyle17
         branddgv.Dock = DockStyle.Fill
         branddgv.Location = New Point(0, 0)
         branddgv.Margin = New Padding(3, 2, 3, 2)
@@ -452,11 +453,11 @@ Partial Class Configuration
         branddgv.ReadOnly = True
         branddgv.RowHeadersVisible = False
         branddgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle9.BackColor = Color.AliceBlue
-        DataGridViewCellStyle9.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle9.ForeColor = Color.Black
-        branddgv.RowsDefaultCellStyle = DataGridViewCellStyle9
-        branddgv.Size = New Size(477, 365)
+        DataGridViewCellStyle18.BackColor = Color.AliceBlue
+        DataGridViewCellStyle18.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle18.ForeColor = Color.Black
+        branddgv.RowsDefaultCellStyle = DataGridViewCellStyle18
+        branddgv.Size = New Size(477, 291)
         branddgv.TabIndex = 1
         ' 
         ' Panel2
@@ -473,37 +474,37 @@ Partial Class Configuration
         Panel2.Location = New Point(526, 97)
         Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(477, 365)
+        Panel2.Size = New Size(477, 457)
         Panel2.TabIndex = 14
         ' 
         ' Panel6
         ' 
         Panel6.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel6.Controls.Add(branddgv)
-        Panel6.Location = New Point(526, 484)
+        Panel6.Location = New Point(526, 569)
         Panel6.Margin = New Padding(3, 2, 3, 2)
         Panel6.Name = "Panel6"
-        Panel6.Size = New Size(477, 365)
+        Panel6.Size = New Size(477, 291)
         Panel6.TabIndex = 15
         ' 
         ' Panel4
         ' 
         Panel4.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel4.Controls.Add(specsdgv)
-        Panel4.Location = New Point(1032, 484)
+        Panel4.Location = New Point(1032, 569)
         Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(488, 365)
+        Panel4.Size = New Size(488, 291)
         Panel4.TabIndex = 16
         ' 
         ' Panel5
         ' 
         Panel5.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel5.Controls.Add(devicedgv)
-        Panel5.Location = New Point(37, 484)
+        Panel5.Location = New Point(37, 569)
         Panel5.Margin = New Padding(3, 2, 3, 2)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(462, 365)
+        Panel5.Size = New Size(462, 291)
         Panel5.TabIndex = 16
         ' 
         ' Panel7

@@ -129,40 +129,81 @@ Public Class AddUnits
     ' Unit1: Devices
     ' =========================
     Private Sub LoadDevices()
-        ' Get devices from the database with Category-Brand-Model
+        ' Get devices from the database with Category-Brand-Model, status, ass_status, unit_status
         originalDeviceList = mdl.GetDevicesForUnits()
 
         If originalDeviceList Is Nothing OrElse originalDeviceList.Rows.Count = 0 Then
-            MessageBox.Show("No devices found in the database.", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            MessageBox.Show("No devices found in the database.", "Notice",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information)
+            devicecb.DataSource = Nothing
+            devicecb.Items.Clear()
+            devicecb.Text = ""
             Return
         End If
 
-        ' Only working devices
-        Dim workingDevices As DataTable
+        ' ============================================
+        ' 🔹 Only show devices that are:
+        '     - status      = Working
+        '     - ass_status  = Unassigned (or empty/NULL)
+        '     - unit_status = Unassigned (or empty/NULL)
+        ' ============================================
+        Dim available As DataTable
+
         Try
-            workingDevices = originalDeviceList.AsEnumerable() _
-                .Where(Function(r) r.Field(Of String)("status").Trim().ToLower() = "working") _
-                .CopyToDataTable()
-        Catch ex As InvalidOperationException
-            ' No working devices
-            workingDevices = originalDeviceList.Clone()
+            Dim query = originalDeviceList.AsEnumerable().
+            Where(Function(r)
+                      Dim opStatus As String = SafeStr(r, "status").ToLower()
+                      Dim assStatus As String = SafeStr(r, "ass_status").ToLower()
+                      Dim unitStatus As String = SafeStr(r, "unit_status").ToLower()
+
+                      Dim isWorking As Boolean = (opStatus = "working" OrElse opStatus = "")
+                      Dim isAssUnassigned As Boolean = (assStatus = "" OrElse assStatus = "unassigned")
+                      Dim isUnitUnassigned As Boolean = (unitStatus = "" OrElse unitStatus = "unassigned")
+
+                      Return isWorking AndAlso isAssUnassigned AndAlso isUnitUnassigned
+                  End Function)
+
+            If query.Any() Then
+                available = query.CopyToDataTable()
+            Else
+                available = originalDeviceList.Clone()
+            End If
+        Catch ex As Exception
+            available = originalDeviceList.Clone()
         End Try
 
-        ' Remove duplicates based on Category-Brand-Model (Device column)
+        ' ============================================
+        ' 🔹 Remove duplicates by "Device" text
+        ' ============================================
         Dim distinctDevices As DataTable
+
         Try
-            distinctDevices = workingDevices.AsEnumerable() _
-                .GroupBy(Function(r) r.Field(Of String)("Device")) _
-                .Select(Function(g) g.First()) _
-                .CopyToDataTable()
-        Catch ex As InvalidOperationException
-            ' No distinct devices
-            distinctDevices = workingDevices.Clone()
+            Dim query2 = available.AsEnumerable().
+            GroupBy(Function(r) SafeStr(r, "Device")).
+            Select(Function(g) g.First())
+
+            If query2.Any() Then
+                distinctDevices = query2.CopyToDataTable()
+            Else
+                distinctDevices = available.Clone()
+            End If
+        Catch ex As Exception
+            distinctDevices = available.Clone()
         End Try
 
         originalDeviceList = distinctDevices
 
-        ' Bind to combo box
+        ' ============================================
+        ' 🔹 Bind to devicecb
+        ' ============================================
+        If originalDeviceList.Rows.Count = 0 Then
+            devicecb.DataSource = Nothing
+            devicecb.Items.Clear()
+            devicecb.Text = "No available devices"
+            devicecb.SelectedIndex = -1
+            Return
+        End If
+
         devicecb.DataSource = originalDeviceList.Copy()
         devicecb.DisplayMember = "Device"
         devicecb.ValueMember = "device_id"
@@ -171,6 +212,7 @@ Public Class AddUnits
         devicecb.IntegralHeight = False
         devicecb.DropDownHeight = 350
     End Sub
+
 
     ' =========================
     ' Filter handlers
@@ -461,6 +503,16 @@ Public Class AddUnits
             End If
         End If
     End Sub
+
+
+    ' ✅ Safely read string column from DataRow
+    Private Function SafeStr(row As DataRow, colName As String) As String
+        If row Is Nothing OrElse row.Table Is Nothing Then Return ""
+        If Not row.Table.Columns.Contains(colName) Then Return ""
+        If row.IsNull(colName) OrElse row(colName) Is Nothing Then Return ""
+        Return row(colName).ToString().Trim()
+    End Function
+
 
 
 End Class

@@ -65,10 +65,10 @@ Partial Class QRPrintView
         ' 
         ' qrpnl
         ' 
-        qrpnl.Location = New Point(357, 123)
+        qrpnl.Location = New Point(348, 120)
         qrpnl.Margin = New Padding(3, 2, 3, 2)
         qrpnl.Name = "qrpnl"
-        qrpnl.Size = New Size(206, 183)
+        qrpnl.Size = New Size(233, 205)
         qrpnl.TabIndex = 30
         ' 
         ' Label5

@@ -14,6 +14,8 @@ Public Class DashboardControl
     Private originalSize As Size
     Private originalBounds As New Dictionary(Of Control, Rectangle)
     Private layoutInitialized As Boolean = False
+    Private isCatGridReady As Boolean = False
+
 
     ' ========================
     ' Constructors
@@ -119,7 +121,8 @@ Public Class DashboardControl
     Private Sub InitializeDashboard()
         ' Draw initial charts
         DrawSerialPieChart()
-        DrawDeviceStatusBarGraph()
+        DrawDeviceAssignmentStatusGraph()
+        DrawDeviceOperationalStatusGraph()
 
         ' Update totals
         UpdateTotals()
@@ -140,7 +143,8 @@ Public Class DashboardControl
     ' ========================
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
         DrawSerialPieChart()
-        DrawDeviceStatusBarGraph()
+        DrawDeviceAssignmentStatusGraph()
+        DrawDeviceOperationalStatusGraph()
 
         ' Refresh totals
         UpdateTotals()
@@ -158,6 +162,7 @@ Public Class DashboardControl
     Private Sub UpdateTotals()
         totdevices.Text = model.GetTotalDevices().ToString()
         totunits.Text = model.GetTotalUnits().ToString()
+        totpersonnel.Text = model.GetTotalPersonnel().ToString()
     End Sub
 
     ' ========================
@@ -205,61 +210,67 @@ Public Class DashboardControl
     End Sub
 
     ' ========================
-    ' DRAW DEVICE STATUS BAR GRAPH ON PANEL8
+    ' GRAPH 1: ASSIGNMENT STATUS on Panel8
+    '   Unassigned = Working + Not Working
+    '   Assigned   = Assigned + Maintenance (For Repair)
+    '   (For Disposal is NOT shown here)
     ' ========================
-    Private Sub DrawDeviceStatusBarGraph()
-        Dim data = model.GetDeviceStatusCounts()
-        Dim statuses As String() = {"Working", "Assigned", "Maintenance", "Not Working"}
+    Private Sub DrawDeviceAssignmentStatusGraph()
+        Dim data = model.GetAssignmentStatusCounts()
+
+        Dim labels As String() = {"Unassigned", "Assigned", "For Disposal"}
         Dim values As Integer() = {
-            data("Working"),
-            data("Assigned"),
-            data("Maintenance"),
-            data("Not Working")
-        }
-        Dim colors As Color() = {Color.Green, Color.Blue, Color.Orange, Color.Red}
+        data("Unassigned"),
+        data("Assigned"),
+        data("For Disposal")
+    }
+
+        Dim colors As Color() = {
+        Color.FromArgb(129, 212, 250),
+        Color.FromArgb(128, 222, 234),
+        Color.FromArgb(200, 230, 201)
+    }
 
         Dim bmp As New Bitmap(Panel8.Width, Panel8.Height)
         Dim g As Graphics = Graphics.FromImage(bmp)
         g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
         g.Clear(Color.White)
 
-        Dim marginTop As Integer = 30
-        Dim marginBottom As Integer = 50
-        Dim marginLeft As Integer = 10
-        Dim marginRight As Integer = 10
+        Dim marginTop = 30, marginBottom = 50, marginLeft = 10, marginRight = 10
+        Dim chartHeight = Panel8.Height - marginTop - marginBottom
+        Dim chartWidth = Panel8.Width - marginLeft - marginRight
 
-        Dim chartHeight As Integer = Panel8.Height - marginTop - marginBottom
-        Dim chartWidth As Integer = Panel8.Width - marginLeft - marginRight
-
-        Dim numberOfBars As Integer = values.Length
-        Dim gap As Integer = 5
-        Dim barWidth As Integer = CInt((chartWidth - (gap * (numberOfBars - 1))) / numberOfBars)
+        Dim n = values.Length
+        Dim gap = 5
+        Dim barWidth As Integer = CInt((chartWidth - gap * (n - 1)) / n)
 
         Dim maxVal As Integer = values.Max()
         If maxVal = 0 Then maxVal = 1
 
-        Dim minBarHeight As Integer = 5
+        Dim minBarHeight = 5
         Dim labelFont As New Font("Arial", 9)
+        Dim valueFont As New Font("Arial", 10, FontStyle.Bold)
 
-        For i As Integer = 0 To numberOfBars - 1
-            Dim x As Integer = marginLeft + i * (barWidth + gap)
-            Dim barHeight As Integer = CInt(chartHeight * values(i) / maxVal)
+        For i = 0 To n - 1
+            Dim x = marginLeft + i * (barWidth + gap)
+            Dim barHeight = CInt(chartHeight * values(i) / maxVal)
             If values(i) > 0 AndAlso barHeight < minBarHeight Then barHeight = minBarHeight
+            Dim y = marginTop + chartHeight - barHeight
 
-            Dim y As Integer = marginTop + chartHeight - barHeight
-
-            g.FillRectangle(New SolidBrush(colors(i)), x, y, barWidth, barHeight)
+            Using b As New SolidBrush(colors(i))
+                g.FillRectangle(b, x, y, barWidth, barHeight)
+            End Using
             g.DrawRectangle(Pens.Black, x, y, barWidth, barHeight)
 
-            g.DrawString(values(i).ToString(), New Font("Arial", 10, FontStyle.Bold), Brushes.Black,
-                         x + (barWidth - g.MeasureString(values(i).ToString(),
-                         New Font("Arial", 10, FontStyle.Bold)).Width) / 2,
-                         y - 20)
+            Dim valText = values(i).ToString()
+            g.DrawString(valText, valueFont, Brushes.Black,
+                     x + (barWidth - g.MeasureString(valText, valueFont).Width) / 2,
+                     y - 20)
 
-            Dim segmentWidth As Double = Panel8.Width / numberOfBars
-            Dim labelX As Double = i * segmentWidth + (segmentWidth - g.MeasureString(statuses(i), labelFont).Width) / 2
+            Dim segmentWidth As Double = Panel8.Width / n
+            Dim labelX As Double = i * segmentWidth + (segmentWidth - g.MeasureString(labels(i), labelFont).Width) / 2
             Dim labelY As Integer = marginTop + chartHeight + 5
-            g.DrawString(statuses(i), labelFont, Brushes.Black, CSng(labelX), labelY)
+            g.DrawString(labels(i), labelFont, Brushes.Black, CSng(labelX), labelY)
         Next
 
         Panel8.BackgroundImage = bmp
@@ -267,15 +278,28 @@ Public Class DashboardControl
         g.Dispose()
     End Sub
 
+
+
+
+
+
+
     ' ========================
     ' LOAD CATEGORY DEVICE GRID WITH MULTICOLOR MINI GRAPHS AND COUNTS
     ' ========================
     Private Sub LoadCategoryDeviceGrid()
         Dim dt As DataTable = model.GetDevicesPerCategory()
+        If dt Is Nothing Then
+            catdgv.DataSource = Nothing
+            Return
+        End If
 
-        ' Attach DataTable to Grid
+        ' Add a ColorCode column to store HEX value (hidden in grid)
+        If Not dt.Columns.Contains("ColorCode") Then
+            dt.Columns.Add("ColorCode", GetType(String))
+        End If
+
         catdgv.DataSource = dt
-        catdgv.Columns("Count").Visible = False
         catdgv.RowHeadersVisible = False
         catdgv.ColumnHeadersVisible = False
         catdgv.AllowUserToAddRows = False
@@ -283,6 +307,10 @@ Public Class DashboardControl
         catdgv.AllowUserToResizeColumns = False
         catdgv.GridColor = Color.White
         catdgv.CellBorderStyle = DataGridViewCellBorderStyle.None
+
+        If catdgv.Columns.Contains("Count") Then
+            catdgv.Columns("Count").Visible = False
+        End If
 
         ' Add Graph column if needed
         If Not catdgv.Columns.Contains("Graph") Then
@@ -293,37 +321,49 @@ Public Class DashboardControl
             catdgv.Columns.Add(imgCol)
         End If
 
-        ' Set Column Widths
-        catdgv.Columns("Category").Width = CInt(catdgv.Width * 0.35)
-        catdgv.Columns("Graph").Width = CInt(catdgv.Width * 0.65)
+        ' Hide ColorCode column – we only use it to draw text
+        If catdgv.Columns.Contains("ColorCode") Then
+            catdgv.Columns("ColorCode").Visible = False
+        End If
 
-        ' Colors for each category
-        Dim colors As Color() = {Color.Green, Color.Blue, Color.Orange, Color.Red, Color.Purple, Color.CadetBlue, Color.Brown}
+        ' Set widths
+        If catdgv.Columns.Contains("Category") Then
+            catdgv.Columns("Category").Width = CInt(catdgv.Width * 0.35)
+        End If
+        If catdgv.Columns.Contains("Graph") Then
+            catdgv.Columns("Graph").Width = CInt(catdgv.Width * 0.65)
+        End If
 
-        ' Draw FULL-WIDTH BARS
-        For i As Integer = 0 To dt.Rows.Count - 1
+        ' HSB colors – bright, non-dark
+        Dim totalRows As Integer = dt.Rows.Count
 
+        For i As Integer = 0 To totalRows - 1
             Dim cellWidth As Integer = catdgv.Columns("Graph").Width
             Dim cellHeight As Integer = catdgv.Rows(i).Height
 
             Dim bmp As New Bitmap(cellWidth, cellHeight)
 
+            ' Generate bright color from HSB
+            Dim barColor As Color = GetCategoryColor(i, totalRows)
+            Dim colorHex As String = ColorTranslator.ToHtml(barColor)
+
+            ' Store HEX code in the hidden column
+            dt.Rows(i)("ColorCode") = colorHex
+
             Using g As Graphics = Graphics.FromImage(bmp)
                 g.Clear(Color.White)
                 g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
 
-                ' Full-width bar
-                Dim barColor As Color = colors(i Mod colors.Length)
                 g.FillRectangle(New SolidBrush(barColor), 0, 0, cellWidth - 2, cellHeight - 2)
                 g.DrawRectangle(Pens.Black, 0, 0, cellWidth - 2, cellHeight - 2)
 
-                ' Device count
                 Dim val As Integer = CInt(dt.Rows(i)("Count"))
                 Dim font As New Font("Arial", 9, FontStyle.Bold)
-                Dim text As String = val.ToString()
-                Dim textSize As SizeF = g.MeasureString(text, font)
 
-                ' Center the text inside the bar
+                ' 👉 COUNT + space + HEX code inside the bar
+                Dim text As String = val.ToString() & " [" & colorHex & "]"  ' two spaces
+
+                Dim textSize As SizeF = g.MeasureString(text, font)
                 Dim textX As Single = (cellWidth - textSize.Width) / 2
                 Dim textY As Single = (cellHeight - textSize.Height) / 2
 
@@ -336,6 +376,79 @@ Public Class DashboardControl
         catdgv.Columns("Graph").ReadOnly = True
     End Sub
 
+    ' ========================
+    ' GRAPH 2: OPERATIONAL STATUS on Panel16
+    '   Working     = Working + Assigned
+    '   Not Working = Not Working
+    '   For Repair  = Maintenance
+    '   For Disposal = For Disposal
+    ' ========================
+    Private Sub DrawDeviceOperationalStatusGraph()
+        Dim data = model.GetOperationalStatusCounts()
+
+        Dim labels As String() = {"Working", "Not Working", "For Repair"}
+        Dim values As Integer() = {
+        data("Working"),
+        data("Not Working"),
+        data("For Repair")
+    }
+
+        Dim colors As Color() = {
+        Color.FromArgb(129, 199, 132),
+        Color.FromArgb(239, 154, 154),
+        Color.FromArgb(255, 224, 130)
+    }
+
+        Dim bmp As New Bitmap(Panel16.Width, Panel16.Height)
+        Dim g As Graphics = Graphics.FromImage(bmp)
+        g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
+        g.Clear(Color.White)
+
+        Dim marginTop = 30, marginBottom = 50, marginLeft = 10, marginRight = 10
+        Dim chartHeight = Panel16.Height - marginTop - marginBottom
+        Dim chartWidth = Panel16.Width - marginLeft - marginRight
+
+        Dim n = values.Length
+        Dim gap = 5
+        Dim barWidth As Integer = CInt((chartWidth - gap * (n - 1)) / n)
+
+        Dim maxVal As Integer = values.Max()
+        If maxVal = 0 Then maxVal = 1
+
+        Dim minBarHeight = 5
+        Dim labelFont As New Font("Arial", 9)
+        Dim valueFont As New Font("Arial", 10, FontStyle.Bold)
+
+        For i = 0 To n - 1
+            Dim x = marginLeft + i * (barWidth + gap)
+            Dim barHeight = CInt(chartHeight * values(i) / maxVal)
+            If values(i) > 0 AndAlso barHeight < minBarHeight Then barHeight = minBarHeight
+            Dim y = marginTop + chartHeight - barHeight
+
+            Using b As New SolidBrush(colors(i))
+                g.FillRectangle(b, x, y, barWidth, barHeight)
+            End Using
+            g.DrawRectangle(Pens.Black, x, y, barWidth, barHeight)
+
+            Dim valText = values(i).ToString()
+            g.DrawString(valText, valueFont, Brushes.Black,
+                     x + (barWidth - g.MeasureString(valText, valueFont).Width) / 2,
+                     y - 20)
+
+            Dim segmentWidth As Double = Panel16.Width / n
+            Dim labelX As Double = i * segmentWidth + (segmentWidth - g.MeasureString(labels(i), labelFont).Width) / 2
+            Dim labelY As Integer = marginTop + chartHeight + 5
+            g.DrawString(labels(i), labelFont, Brushes.Black, CSng(labelX), labelY)
+        Next
+
+        Panel16.BackgroundImage = bmp
+        Panel16.BackgroundImageLayout = ImageLayout.None
+        g.Dispose()
+    End Sub
+
+
+
+
 
 
     ' ========================
@@ -345,6 +458,16 @@ Public Class DashboardControl
         Dim dt As DataTable = model.GetRecentUnitActivities()
 
         recentdgv.DataSource = dt
+
+        ' HEADER: no highlight on selection
+        recentdgv.EnableHeadersVisualStyles = False
+        With recentdgv.ColumnHeadersDefaultCellStyle
+            .BackColor = SystemColors.Control
+            .ForeColor = SystemColors.ControlText
+            .SelectionBackColor = .BackColor
+            .SelectionForeColor = .ForeColor
+        End With
+
         recentdgv.RowHeadersVisible = False
         recentdgv.ColumnHeadersVisible = True
         recentdgv.AllowUserToAddRows = False
@@ -358,6 +481,17 @@ Public Class DashboardControl
         recentdgv.MultiSelect = False
         recentdgv.CurrentCell = Nothing
 
+        ' 🔹 COLORS
+        recentdgv.BackgroundColor = Color.White
+        recentdgv.DefaultCellStyle.BackColor = Color.White
+        recentdgv.AlternatingRowsDefaultCellStyle.BackColor = Color.White
+
+        recentdgv.DefaultCellStyle.SelectionBackColor = Color.SkyBlue
+        recentdgv.DefaultCellStyle.SelectionForeColor = Color.Black
+
+        recentdgv.RowHeadersDefaultCellStyle.SelectionBackColor = Color.SkyBlue
+        recentdgv.RowHeadersDefaultCellStyle.SelectionForeColor = Color.Black
+
         If dt.Columns.Contains("ActivityDate") Then
             recentdgv.Columns("ActivityDate").DefaultCellStyle.Format = "MMM dd, yyyy HH:mm"
         End If
@@ -368,6 +502,8 @@ Public Class DashboardControl
         recentdgv.Columns("Remarks").HeaderText = "Remarks"
         recentdgv.Columns("ActivityDate").HeaderText = "Date"
     End Sub
+
+
 
     ' ========================
     ' DRAW UNIT & ASSIGNMENT GRAPH ON PANEL14
@@ -529,10 +665,23 @@ Public Class DashboardControl
     ' ========================
     ' LOAD RECENTLY ADDED DEVICES / UNITS
     ' ========================
+    ' ========================
+    ' LOAD RECENTLY ADDED DEVICES / UNITS
+    ' ========================
     Private Sub LoadRecentAddedActivity()
         Dim dt As DataTable = model.GetRecentAddedDevicesAndUnits(10)
 
         activitydgv.DataSource = dt
+
+        ' HEADER: no highlight on selection (USE activitydgv HERE)
+        activitydgv.EnableHeadersVisualStyles = False
+        With activitydgv.ColumnHeadersDefaultCellStyle
+            .BackColor = SystemColors.Control          ' normal header background
+            .ForeColor = SystemColors.ControlText      ' normal header text
+            .SelectionBackColor = .BackColor           ' same as normal → no highlight
+            .SelectionForeColor = .ForeColor
+        End With
+
         activitydgv.RowHeadersVisible = False
         activitydgv.ColumnHeadersVisible = True
         activitydgv.AllowUserToAddRows = False
@@ -545,7 +694,20 @@ Public Class DashboardControl
         activitydgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         activitydgv.MultiSelect = False
         activitydgv.CurrentCell = Nothing
+
+        ' 🔹 COLORS
+        activitydgv.BackgroundColor = Color.White
+        activitydgv.DefaultCellStyle.BackColor = Color.White
+        activitydgv.AlternatingRowsDefaultCellStyle.BackColor = Color.White
+
+        activitydgv.DefaultCellStyle.SelectionBackColor = Color.SkyBlue
+        activitydgv.DefaultCellStyle.SelectionForeColor = Color.Black
+
+        activitydgv.RowHeadersDefaultCellStyle.SelectionBackColor = Color.SkyBlue
+        activitydgv.RowHeadersDefaultCellStyle.SelectionForeColor = Color.Black
     End Sub
+
+
 
 
     ' ========================
@@ -629,5 +791,59 @@ Public Class DashboardControl
             historydgv.Columns("date").DefaultCellStyle.Format = "MMM dd, yyyy HH:mm"
         End If
     End Sub
+
+
+    ' ========================
+    ' HSB COLOR HELPERS
+    ' ========================
+    Private Function ColorFromHSB(hue As Single, sat As Single, bri As Single) As Color
+        ' hue: 0–360, sat: 0–1, bri: 0–1
+        If sat = 0 Then
+            Dim v As Integer = CInt(bri * 255)
+            Return Color.FromArgb(v, v, v)
+        End If
+
+        hue = hue Mod 360.0F
+        Dim hSection As Single = hue / 60.0F
+        Dim i As Integer = CInt(Math.Floor(hSection))
+        Dim f As Single = hSection - i
+
+        Dim p As Single = bri * (1.0F - sat)
+        Dim q As Single = bri * (1.0F - sat * f)
+        Dim t As Single = bri * (1.0F - sat * (1.0F - f))
+
+        Dim r As Single, g As Single, b As Single
+
+        Select Case i
+            Case 0
+                r = bri : g = t : b = p
+            Case 1
+                r = q : g = bri : b = p
+            Case 2
+                r = p : g = bri : b = t
+            Case 3
+                r = p : g = q : b = bri
+            Case 4
+                r = t : g = p : b = bri
+            Case Else ' 5
+                r = bri : g = p : b = q
+        End Select
+
+        Dim Rb As Integer = CInt(Math.Max(0, Math.Min(255, r * 255)))
+        Dim Gb As Integer = CInt(Math.Max(0, Math.Min(255, g * 255)))
+        Dim Bb As Integer = CInt(Math.Max(0, Math.Min(255, b * 255)))
+
+        Return Color.FromArgb(Rb, Gb, Bb)
+    End Function
+
+    Private Function GetCategoryColor(index As Integer, total As Integer) As Color
+        If total <= 0 Then Return Color.LightGray
+
+        ' even spacing around color wheel
+        Dim hue As Single = (CSng(index) / Math.Max(1, total)) * 360.0F
+
+        ' S = 0.6, B = 0.9 ⇒ bright, not too dark
+        Return ColorFromHSB(hue, 0.6F, 0.9F)
+    End Function
 
 End Class

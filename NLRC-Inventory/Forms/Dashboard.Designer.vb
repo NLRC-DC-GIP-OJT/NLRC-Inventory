@@ -86,7 +86,7 @@ Partial Class Dashboard
         ' 
         mainpnl.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         mainpnl.AutoSize = True
-        mainpnl.BackColor = Color.White
+        mainpnl.BackColor = Color.WhiteSmoke
         mainpnl.Location = New Point(334, 158)
         mainpnl.Margin = New Padding(3, 2, 3, 2)
         mainpnl.Name = "mainpnl"
@@ -132,86 +132,92 @@ Partial Class Dashboard
         ' Button1
         ' 
         Button1.AutoSize = True
+        Button1.BackColor = Color.WhiteSmoke
         Button1.Dock = DockStyle.Top
         Button1.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         Button1.Image = CType(resources.GetObject("Button1.Image"), Image)
         Button1.ImageAlign = ContentAlignment.MiddleLeft
-        Button1.Location = New Point(0, 475)
+        Button1.Location = New Point(0, 498)
         Button1.Margin = New Padding(3, 2, 3, 2)
         Button1.Name = "Button1"
         Button1.Padding = New Padding(22, 0, 0, 0)
         Button1.Size = New Size(286, 135)
         Button1.TabIndex = 5
         Button1.Text = "        REPORTS"
-        Button1.UseVisualStyleBackColor = True
+        Button1.UseVisualStyleBackColor = False
         ' 
         ' Button5
         ' 
         Button5.AutoSize = True
+        Button5.BackColor = Color.WhiteSmoke
         Button5.Dock = DockStyle.Bottom
         Button5.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         Button5.Image = CType(resources.GetObject("Button5.Image"), Image)
         Button5.ImageAlign = ContentAlignment.MiddleLeft
-        Button5.Location = New Point(0, 772)
+        Button5.Location = New Point(0, 764)
         Button5.Margin = New Padding(3, 2, 3, 2)
         Button5.Name = "Button5"
         Button5.Padding = New Padding(35, 0, 0, 0)
-        Button5.Size = New Size(286, 109)
+        Button5.Size = New Size(286, 117)
         Button5.TabIndex = 4
         Button5.Text = "    LOGOUT"
-        Button5.UseVisualStyleBackColor = True
+        Button5.UseVisualStyleBackColor = False
         ' 
         ' confibtn
         ' 
         confibtn.AutoSize = True
+        confibtn.BackColor = Color.WhiteSmoke
         confibtn.Dock = DockStyle.Top
         confibtn.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         confibtn.Image = CType(resources.GetObject("confibtn.Image"), Image)
         confibtn.ImageAlign = ContentAlignment.MiddleLeft
-        confibtn.Location = New Point(0, 340)
+        confibtn.Location = New Point(0, 363)
         confibtn.Margin = New Padding(3, 2, 3, 2)
         confibtn.Name = "confibtn"
         confibtn.Padding = New Padding(22, 0, 0, 0)
         confibtn.Size = New Size(286, 135)
         confibtn.TabIndex = 3
         confibtn.Text = "        SETTINGS"
-        confibtn.UseVisualStyleBackColor = True
+        confibtn.UseVisualStyleBackColor = False
         ' 
         ' unitbtn
         ' 
         unitbtn.AutoSize = True
+        unitbtn.BackColor = Color.WhiteSmoke
         unitbtn.Dock = DockStyle.Top
         unitbtn.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitbtn.Image = CType(resources.GetObject("unitbtn.Image"), Image)
         unitbtn.ImageAlign = ContentAlignment.MiddleLeft
-        unitbtn.Location = New Point(0, 230)
+        unitbtn.Location = New Point(0, 245)
         unitbtn.Margin = New Padding(3, 2, 3, 2)
         unitbtn.Name = "unitbtn"
         unitbtn.Padding = New Padding(22, 0, 0, 0)
-        unitbtn.Size = New Size(286, 110)
+        unitbtn.Size = New Size(286, 118)
         unitbtn.TabIndex = 2
         unitbtn.Text = "UNITS"
-        unitbtn.UseVisualStyleBackColor = True
+        unitbtn.UseVisualStyleBackColor = False
         ' 
         ' devicebtn
         ' 
         devicebtn.AutoSize = True
+        devicebtn.BackColor = Color.WhiteSmoke
         devicebtn.Dock = DockStyle.Top
         devicebtn.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         devicebtn.Image = CType(resources.GetObject("devicebtn.Image"), Image)
         devicebtn.ImageAlign = ContentAlignment.MiddleLeft
-        devicebtn.Location = New Point(0, 114)
+        devicebtn.Location = New Point(0, 122)
         devicebtn.Margin = New Padding(3, 2, 3, 2)
         devicebtn.Name = "devicebtn"
         devicebtn.Padding = New Padding(19, 0, 0, 0)
-        devicebtn.Size = New Size(286, 116)
+        devicebtn.Size = New Size(286, 123)
         devicebtn.TabIndex = 1
         devicebtn.Text = "      DEVICES" & vbCrLf & "                COMPONENTS"
-        devicebtn.UseVisualStyleBackColor = True
+        devicebtn.UseVisualStyleBackColor = False
         ' 
         ' dashbtn
         ' 
         dashbtn.AutoSize = True
+        dashbtn.BackColor = Color.WhiteSmoke
         dashbtn.Dock = DockStyle.Top
         dashbtn.Font = New Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         dashbtn.Image = CType(resources.GetObject("dashbtn.Image"), Image)
@@ -220,10 +226,10 @@ Partial Class Dashboard
         dashbtn.Margin = New Padding(3, 2, 3, 2)
         dashbtn.Name = "dashbtn"
         dashbtn.Padding = New Padding(18, 0, 0, 0)
-        dashbtn.Size = New Size(286, 114)
+        dashbtn.Size = New Size(286, 122)
         dashbtn.TabIndex = 0
         dashbtn.Text = "              DASHBOARD"
-        dashbtn.UseVisualStyleBackColor = True
+        dashbtn.UseVisualStyleBackColor = False
         ' 
         ' Panel5
         ' 

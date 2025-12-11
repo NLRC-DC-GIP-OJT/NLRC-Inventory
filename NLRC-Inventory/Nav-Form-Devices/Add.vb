@@ -134,11 +134,11 @@ Public Class Add
         deviceflowpnl.Controls.Clear()
         If catcb.SelectedIndex < 0 Then Return
 
-        Dim selectedCategory As DeviceCategory = TryCast(catcb.SelectedItem, DeviceCategory)
+        Dim selectedCategory = TryCast(catcb.SelectedItem, DeviceCategory)
         If selectedCategory Is Nothing Then Return
 
-        Dim props As DataTable = mdl.GetCategoryProperties(selectedCategory.Pointer)
-        Dim activeProps = props.AsEnumerable().Where(Function(r) Convert.ToBoolean(r("active")) = True).ToList()
+        Dim props = mdl.GetCategoryProperties(selectedCategory.Pointer)
+        Dim activeProps = props.AsEnumerable.Where(Function(r) Convert.ToBoolean(r("active")) = True).ToList
 
         deviceflowpnl.FlowDirection = FlowDirection.TopDown
         deviceflowpnl.WrapContents = False
@@ -155,13 +155,13 @@ Public Class Add
             Return
         End If
 
-        For Each prop As DataRow In activeProps
-            Dim propName As String = prop("property_name").ToString().ToLower()
-            Dim isRequired As Boolean = Convert.ToBoolean(prop("required"))
+        For Each prop In activeProps
+            Dim propName = prop("property_name").ToString.ToLower
+            Dim isRequired = Convert.ToBoolean(prop("required"))
 
             Dim rowPanel As New Panel With {.Width = deviceflowpnl.ClientSize.Width - 2, .Height = 40, .Margin = New Padding(0, 0, 0, 6)}
 
-            Dim labelText As String = prop("property_name").ToString()
+            Dim labelText = prop("property_name").ToString
 
             ' 👉 Add peso sign to label when this is the Cost field
             If propName = "cost" Then
@@ -186,7 +186,7 @@ Public Class Add
             Dim inputCtrl As Control
             If propName = "brand" Then
                 Dim cb As New ComboBox With {
-                    .Name = "cb_" & prop("pointer").ToString(),
+                    .Name = "cb_" & prop("pointer").ToString,
                     .DropDownStyle = ComboBoxStyle.DropDownList,
                     .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold)
                 }
@@ -200,7 +200,7 @@ Public Class Add
                 inputCtrl = cb
             Else
                 Dim txt As New TextBox With {
-            .Name = "txt_" & prop("pointer").ToString(),
+            .Name = "txt_" & prop("pointer").ToString,
             .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
             .Height = 26
         }
@@ -217,7 +217,7 @@ Public Class Add
 
 
             ' Store field info for validation
-            inputCtrl.Tag = New FieldInfo With {.Required = isRequired, .PropName = prop("property_name").ToString()}
+            inputCtrl.Tag = New FieldInfo With {.Required = isRequired, .PropName = prop("property_name").ToString}
 
             inputCtrl.Width = rowPanel.Width - lbl.Width - 20
             inputCtrl.Location = New Point(lbl.Right + 10, 5)
@@ -362,11 +362,10 @@ Public Class Add
         LayoutSpecsRows()
     End Sub
 
-    ' ========================  
-    ' 🔹 SAVE DEVICE  
-    ' ========================  
+    ' ========================
+    ' 🔹 SAVE DEVICE
+    ' ========================
     Private Sub addsbtn_Click(sender As Object, e As EventArgs) Handles addsbtn.Click
-
 
         ' ===== CATEGORY CHECK =====
         If catcb.SelectedIndex < 0 Then
@@ -405,12 +404,14 @@ Public Class Add
         ' ===== LOOP TO SAVE DEVICES =====
         For i As Integer = 1 To quantity
             Dim device As New InvDevice With {
-                .DevCategoryPointer = selectedCategory.Pointer,
-                .Notes = If(notetxt.Text.Trim() <> "", notetxt.Text.Trim(), Nothing),
-                .Status = "Working",
-                .PurchaseDate = purchaseDatePicker.Value,
-                .WarrantyExpires = warrantyDatePicker.Value
-            }
+            .DevCategoryPointer = selectedCategory.Pointer,
+            .Notes = If(notetxt.Text.Trim() <> "", notetxt.Text.Trim(), Nothing),
+            .Status = "Working",
+            .Ass_Status = "Unassigned",
+            .Unit_Status = "Unassigned",   ' 👈 NEW: unit_status column
+            .PurchaseDate = purchaseDatePicker.Value,
+            .WarrantyExpires = warrantyDatePicker.Value
+        }
 
             ' ===== SPECS FIELDS =====
             Dim specList As New List(Of String)
@@ -439,11 +440,8 @@ Public Class Add
                     device.Specs = Nothing
                 End If
             Else
-                ' No specs selected at all
                 device.Specs = Nothing
             End If
-
-
 
             ' ===== DEVICEFLOWPANEL FIELDS =====
             For Each row As Control In deviceflowpnl.Controls
@@ -493,6 +491,7 @@ Public Class Add
         notetxt.Clear()
         quanttxt.Text = "1"
     End Sub
+
 
     ' ========================  
     ' 🔹 CLOSE BUTTON  

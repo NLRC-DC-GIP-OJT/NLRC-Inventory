@@ -64,8 +64,9 @@ Partial Class AddNew
         Panel1.Controls.Add(Panel4)
         Panel1.Controls.Add(Label3)
         Panel1.Location = New Point(0, 0)
+        Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(1170, 61)
+        Panel1.Size = New Size(1024, 46)
         Panel1.TabIndex = 1
         ' 
         ' Panel4
@@ -73,9 +74,10 @@ Partial Class AddNew
         Panel4.BackColor = Color.Transparent
         Panel4.BackgroundImage = CType(resources.GetObject("Panel4.BackgroundImage"), Image)
         Panel4.BackgroundImageLayout = ImageLayout.Stretch
-        Panel4.Location = New Point(1114, 12)
+        Panel4.Location = New Point(975, 9)
+        Panel4.Margin = New Padding(3, 2, 3, 2)
         Panel4.Name = "Panel4"
-        Panel4.Size = New Size(35, 33)
+        Panel4.Size = New Size(31, 25)
         Panel4.TabIndex = 30
         ' 
         ' Label3
@@ -84,9 +86,9 @@ Partial Class AddNew
         Label3.BackColor = Color.Transparent
         Label3.Font = New Font("Segoe UI", 16.2F, FontStyle.Bold)
         Label3.ForeColor = Color.Black
-        Label3.Location = New Point(22, 11)
+        Label3.Location = New Point(19, 8)
         Label3.Name = "Label3"
-        Label3.Size = New Size(361, 38)
+        Label3.Size = New Size(283, 30)
         Label3.TabIndex = 8
         Label3.Text = "CREATE MULTIPLE ASSETS"
         ' 
@@ -101,9 +103,10 @@ Partial Class AddNew
         unit2pnl.Controls.Add(Label8)
         unit2pnl.Controls.Add(devicecb1)
         unit2pnl.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold Or FontStyle.Italic, GraphicsUnit.Point, CByte(0))
-        unit2pnl.Location = New Point(15, 67)
+        unit2pnl.Location = New Point(13, 50)
+        unit2pnl.Margin = New Padding(3, 2, 3, 2)
         unit2pnl.Name = "unit2pnl"
-        unit2pnl.Size = New Size(1138, 154)
+        unit2pnl.Size = New Size(996, 116)
         unit2pnl.TabIndex = 19
         unit2pnl.Visible = False
         ' 
@@ -112,9 +115,10 @@ Partial Class AddNew
         addbtn1.BackColor = Color.CornflowerBlue
         addbtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn1.ForeColor = Color.White
-        addbtn1.Location = New Point(1007, 92)
+        addbtn1.Location = New Point(881, 69)
+        addbtn1.Margin = New Padding(3, 2, 3, 2)
         addbtn1.Name = "addbtn1"
-        addbtn1.Size = New Size(113, 55)
+        addbtn1.Size = New Size(99, 41)
         addbtn1.TabIndex = 15
         addbtn1.Text = "Add"
         addbtn1.UseVisualStyleBackColor = False
@@ -123,9 +127,9 @@ Partial Class AddNew
         ' 
         devicestocklbl.AutoSize = True
         devicestocklbl.ForeColor = Color.RoyalBlue
-        devicestocklbl.Location = New Point(586, 96)
+        devicestocklbl.Location = New Point(513, 72)
         devicestocklbl.Name = "devicestocklbl"
-        devicestocklbl.Size = New Size(160, 28)
+        devicestocklbl.Size = New Size(128, 21)
         devicestocklbl.TabIndex = 29
         devicestocklbl.Text = "How many stock"
         ' 
@@ -133,9 +137,9 @@ Partial Class AddNew
         ' 
         checkstocklbl.AutoSize = True
         checkstocklbl.ForeColor = Color.RoyalBlue
-        checkstocklbl.Location = New Point(26, 96)
+        checkstocklbl.Location = New Point(23, 72)
         checkstocklbl.Name = "checkstocklbl"
-        checkstocklbl.Size = New Size(160, 28)
+        checkstocklbl.Size = New Size(128, 21)
         checkstocklbl.TabIndex = 28
         checkstocklbl.Text = "How many stock"
         ' 
@@ -143,9 +147,9 @@ Partial Class AddNew
         ' 
         Label9.AutoSize = True
         Label9.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(27, 13)
+        Label9.Location = New Point(24, 10)
         Label9.Name = "Label9"
-        Label9.Size = New Size(107, 23)
+        Label9.Size = New Size(87, 18)
         Label9.TabIndex = 27
         Label9.Text = "Category:"
         ' 
@@ -153,18 +157,19 @@ Partial Class AddNew
         ' 
         catecb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         catecb.FormattingEnabled = True
-        catecb.Location = New Point(27, 46)
+        catecb.Location = New Point(24, 34)
+        catecb.Margin = New Padding(3, 2, 3, 2)
         catecb.Name = "catecb"
-        catecb.Size = New Size(510, 39)
+        catecb.Size = New Size(447, 33)
         catecb.TabIndex = 26
         ' 
         ' Label8
         ' 
         Label8.AutoSize = True
         Label8.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(586, 13)
+        Label8.Location = New Point(513, 10)
         Label8.Name = "Label8"
-        Label8.Size = New Size(234, 23)
+        Label8.Size = New Size(190, 18)
         Label8.TabIndex = 12
         Label8.Text = "Devices / Components:"
         ' 
@@ -172,28 +177,30 @@ Partial Class AddNew
         ' 
         devicecb1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         devicecb1.FormattingEnabled = True
-        devicecb1.Location = New Point(586, 46)
+        devicecb1.Location = New Point(513, 34)
+        devicecb1.Margin = New Padding(3, 2, 3, 2)
         devicecb1.Name = "devicecb1"
-        devicecb1.Size = New Size(534, 39)
+        devicecb1.Size = New Size(468, 33)
         devicecb1.TabIndex = 9
         ' 
         ' remarktxt1
         ' 
         remarktxt1.BorderStyle = BorderStyle.FixedSingle
         remarktxt1.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        remarktxt1.Location = New Point(517, 13)
+        remarktxt1.Location = New Point(452, 10)
+        remarktxt1.Margin = New Padding(3, 2, 3, 2)
         remarktxt1.Multiline = True
         remarktxt1.Name = "remarktxt1"
-        remarktxt1.Size = New Size(462, 71)
+        remarktxt1.Size = New Size(404, 54)
         remarktxt1.TabIndex = 14
         ' 
         ' Label7
         ' 
         Label7.AutoSize = True
         Label7.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(383, 31)
+        Label7.Location = New Point(335, 23)
         Label7.Name = "Label7"
-        Label7.Size = New Size(103, 23)
+        Label7.Size = New Size(84, 18)
         Label7.TabIndex = 13
         Label7.Text = "Remarks:"
         ' 
@@ -203,18 +210,20 @@ Partial Class AddNew
         Panel5.Controls.Add(quantitxt)
         Panel5.Controls.Add(minusQuantityBtn)
         Panel5.Controls.Add(addQuantityBtn)
-        Panel5.Location = New Point(124, 17)
+        Panel5.Location = New Point(108, 13)
+        Panel5.Margin = New Padding(3, 2, 3, 2)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(229, 57)
+        Panel5.Size = New Size(200, 43)
         Panel5.TabIndex = 25
         ' 
         ' quantitxt
         ' 
         quantitxt.BorderStyle = BorderStyle.FixedSingle
         quantitxt.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        quantitxt.Location = New Point(59, 9)
+        quantitxt.Location = New Point(52, 7)
+        quantitxt.Margin = New Padding(3, 2, 3, 2)
         quantitxt.Name = "quantitxt"
-        quantitxt.Size = New Size(106, 38)
+        quantitxt.Size = New Size(93, 32)
         quantitxt.TabIndex = 21
         quantitxt.TextAlign = HorizontalAlignment.Center
         ' 
@@ -224,9 +233,10 @@ Partial Class AddNew
         minusQuantityBtn.BackgroundImageLayout = ImageLayout.Stretch
         minusQuantityBtn.FlatAppearance.BorderSize = 0
         minusQuantityBtn.FlatStyle = FlatStyle.Flat
-        minusQuantityBtn.Location = New Point(9, 9)
+        minusQuantityBtn.Location = New Point(8, 7)
+        minusQuantityBtn.Margin = New Padding(3, 2, 3, 2)
         minusQuantityBtn.Name = "minusQuantityBtn"
-        minusQuantityBtn.Size = New Size(39, 38)
+        minusQuantityBtn.Size = New Size(34, 28)
         minusQuantityBtn.TabIndex = 24
         minusQuantityBtn.UseVisualStyleBackColor = True
         ' 
@@ -236,9 +246,10 @@ Partial Class AddNew
         addQuantityBtn.BackgroundImageLayout = ImageLayout.Zoom
         addQuantityBtn.FlatAppearance.BorderSize = 0
         addQuantityBtn.FlatStyle = FlatStyle.Flat
-        addQuantityBtn.Location = New Point(177, 8)
+        addQuantityBtn.Location = New Point(155, 6)
+        addQuantityBtn.Margin = New Padding(3, 2, 3, 2)
         addQuantityBtn.Name = "addQuantityBtn"
-        addQuantityBtn.Size = New Size(36, 38)
+        addQuantityBtn.Size = New Size(32, 28)
         addQuantityBtn.TabIndex = 23
         addQuantityBtn.UseVisualStyleBackColor = True
         ' 
@@ -246,9 +257,9 @@ Partial Class AddNew
         ' 
         Label6.AutoSize = True
         Label6.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(7, 34)
+        Label6.Location = New Point(6, 26)
         Label6.Name = "Label6"
-        Label6.Size = New Size(98, 23)
+        Label6.Size = New Size(81, 18)
         Label6.TabIndex = 16
         Label6.Text = "Quantity:"
         ' 
@@ -256,9 +267,10 @@ Partial Class AddNew
         ' 
         Panel2.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Panel2.Controls.Add(unitsdgv1)
-        Panel2.Location = New Point(15, 227)
+        Panel2.Location = New Point(13, 170)
+        Panel2.Margin = New Padding(3, 2, 3, 2)
         Panel2.Name = "Panel2"
-        Panel2.Size = New Size(1138, 467)
+        Panel2.Size = New Size(996, 331)
         Panel2.TabIndex = 20
         ' 
         ' unitsdgv1
@@ -286,6 +298,7 @@ Partial Class AddNew
         unitsdgv1.DefaultCellStyle = DataGridViewCellStyle2
         unitsdgv1.Dock = DockStyle.Fill
         unitsdgv1.Location = New Point(0, 0)
+        unitsdgv1.Margin = New Padding(3, 2, 3, 2)
         unitsdgv1.Name = "unitsdgv1"
         unitsdgv1.ReadOnly = True
         unitsdgv1.RowHeadersVisible = False
@@ -294,7 +307,7 @@ Partial Class AddNew
         DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle3.ForeColor = Color.Black
         unitsdgv1.RowsDefaultCellStyle = DataGridViewCellStyle3
-        unitsdgv1.Size = New Size(1138, 467)
+        unitsdgv1.Size = New Size(996, 331)
         unitsdgv1.TabIndex = 2
         ' 
         ' Panel3
@@ -304,9 +317,10 @@ Partial Class AddNew
         Panel3.Controls.Add(Panel5)
         Panel3.Controls.Add(Label7)
         Panel3.Controls.Add(remarktxt1)
-        Panel3.Location = New Point(15, 697)
+        Panel3.Location = New Point(13, 512)
+        Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(1135, 99)
+        Panel3.Size = New Size(993, 74)
         Panel3.TabIndex = 21
         ' 
         ' savebtn1
@@ -314,23 +328,25 @@ Partial Class AddNew
         savebtn1.BackColor = Color.CornflowerBlue
         savebtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savebtn1.ForeColor = Color.White
-        savebtn1.Location = New Point(1007, 19)
+        savebtn1.Location = New Point(881, 14)
+        savebtn1.Margin = New Padding(3, 2, 3, 2)
         savebtn1.Name = "savebtn1"
-        savebtn1.Size = New Size(113, 55)
+        savebtn1.Size = New Size(99, 41)
         savebtn1.TabIndex = 16
         savebtn1.Text = "Save"
         savebtn1.UseVisualStyleBackColor = False
         ' 
         ' AddNew
         ' 
-        AutoScaleDimensions = New SizeF(8F, 20F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Panel3)
         Controls.Add(Panel2)
         Controls.Add(unit2pnl)
         Controls.Add(Panel1)
+        Margin = New Padding(3, 2, 3, 2)
         Name = "AddNew"
-        Size = New Size(1170, 802)
+        Size = New Size(1024, 602)
         Panel1.ResumeLayout(False)
         Panel1.PerformLayout()
         unit2pnl.ResumeLayout(False)

@@ -39,6 +39,7 @@ Partial Class Units
         lblPageInfo = New Label()
         Panel3 = New Panel()
         savedgvbtn = New Button()
+        qrbtngenerate = New Button()
         Panel1.SuspendLayout()
         Panel2.SuspendLayout()
         CType(allunitsdgv, ComponentModel.ISupportInitialize).BeginInit()
@@ -50,6 +51,7 @@ Partial Class Units
         Panel1.BackgroundImage = My.Resources.Resources.BG
         Panel1.BackgroundImageLayout = ImageLayout.Stretch
         Panel1.BorderStyle = BorderStyle.FixedSingle
+        Panel1.Controls.Add(qrbtngenerate)
         Panel1.Controls.Add(multibtn)
         Panel1.Controls.Add(unitaddbtn)
         Panel1.Controls.Add(filtertxt)
@@ -259,6 +261,20 @@ Partial Class Units
         savedgvbtn.UseVisualStyleBackColor = False
         savedgvbtn.Visible = False
         ' 
+        ' qrbtngenerate
+        ' 
+        qrbtngenerate.Anchor = AnchorStyles.None
+        qrbtngenerate.BackColor = Color.CornflowerBlue
+        qrbtngenerate.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        qrbtngenerate.ForeColor = Color.White
+        qrbtngenerate.Location = New Point(837, 11)
+        qrbtngenerate.Margin = New Padding(3, 2, 3, 2)
+        qrbtngenerate.Name = "qrbtngenerate"
+        qrbtngenerate.Size = New Size(184, 50)
+        qrbtngenerate.TabIndex = 23
+        qrbtngenerate.Text = "Generate QR"
+        qrbtngenerate.UseVisualStyleBackColor = False
+        ' 
         ' Units
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
@@ -296,5 +312,6 @@ Partial Class Units
     Friend WithEvents unitaddbtn As Button
     Friend WithEvents Panel3 As Panel
     Friend WithEvents multibtn As Button
+    Friend WithEvents qrbtngenerate As Button
 
 End Class

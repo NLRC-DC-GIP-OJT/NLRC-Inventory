@@ -22,9 +22,11 @@ Partial Class Edit
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel3 = New Panel()
+        opstatuscb = New ComboBox()
+        Label4 = New Label()
         warrantyDatePicker = New DateTimePicker()
         purchaseDatePicker = New DateTimePicker()
         Label9 = New Label()
@@ -57,39 +59,61 @@ Partial Class Edit
         ' Panel3
         ' 
         Panel3.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        Panel3.Controls.Add(opstatuscb)
+        Panel3.Controls.Add(Label4)
         Panel3.Controls.Add(warrantyDatePicker)
         Panel3.Controls.Add(purchaseDatePicker)
         Panel3.Controls.Add(Label9)
         Panel3.Controls.Add(Label1)
-        Panel3.Location = New Point(12, 570)
+        Panel3.Location = New Point(8, 531)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(381, 145)
+        Panel3.Size = New Size(381, 217)
         Panel3.TabIndex = 18
+        ' 
+        ' opstatuscb
+        ' 
+        opstatuscb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
+        opstatuscb.FormattingEnabled = True
+        opstatuscb.Location = New Point(129, 12)
+        opstatuscb.Margin = New Padding(3, 2, 3, 2)
+        opstatuscb.Name = "opstatuscb"
+        opstatuscb.Size = New Size(144, 33)
+        opstatuscb.TabIndex = 22
+        ' 
+        ' Label4
+        ' 
+        Label4.AutoSize = True
+        Label4.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        Label4.Location = New Point(46, 18)
+        Label4.Name = "Label4"
+        Label4.Size = New Size(63, 21)
+        Label4.TabIndex = 23
+        Label4.Text = "Status: "
         ' 
         ' warrantyDatePicker
         ' 
         warrantyDatePicker.Font = New Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        warrantyDatePicker.Location = New Point(20, 92)
+        warrantyDatePicker.Location = New Point(46, 153)
         warrantyDatePicker.Margin = New Padding(3, 2, 3, 2)
         warrantyDatePicker.Name = "warrantyDatePicker"
-        warrantyDatePicker.Size = New Size(290, 26)
+        warrantyDatePicker.Size = New Size(310, 26)
         warrantyDatePicker.TabIndex = 19
         ' 
         ' purchaseDatePicker
         ' 
         purchaseDatePicker.Font = New Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        purchaseDatePicker.Location = New Point(20, 36)
+        purchaseDatePicker.Location = New Point(46, 89)
         purchaseDatePicker.Margin = New Padding(3, 2, 3, 2)
         purchaseDatePicker.Name = "purchaseDatePicker"
-        purchaseDatePicker.Size = New Size(290, 26)
+        purchaseDatePicker.Size = New Size(310, 26)
         purchaseDatePicker.TabIndex = 17
         ' 
         ' Label9
         ' 
         Label9.AutoSize = True
         Label9.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(20, 66)
+        Label9.Location = New Point(43, 126)
         Label9.Name = "Label9"
         Label9.Size = New Size(135, 21)
         Label9.TabIndex = 18
@@ -99,7 +123,7 @@ Partial Class Edit
         ' 
         Label1.AutoSize = True
         Label1.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label1.Location = New Point(23, 10)
+        Label1.Location = New Point(46, 59)
         Label1.Name = "Label1"
         Label1.Size = New Size(131, 21)
         Label1.TabIndex = 17
@@ -215,7 +239,7 @@ Partial Class Edit
         Panel1.Location = New Point(10, 45)
         Panel1.Margin = New Padding(3, 2, 3, 2)
         Panel1.Name = "Panel1"
-        Panel1.Size = New Size(379, 503)
+        Panel1.Size = New Size(379, 480)
         Panel1.TabIndex = 19
         ' 
         ' Panel5
@@ -225,7 +249,7 @@ Partial Class Edit
         Panel5.Location = New Point(3, 80)
         Panel5.Margin = New Padding(3, 2, 3, 2)
         Panel5.Name = "Panel5"
-        Panel5.Size = New Size(373, 421)
+        Panel5.Size = New Size(373, 398)
         Panel5.TabIndex = 23
         ' 
         ' deviceflowpnl
@@ -234,7 +258,7 @@ Partial Class Edit
         deviceflowpnl.Location = New Point(0, 0)
         deviceflowpnl.Margin = New Padding(3, 2, 3, 2)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(373, 421)
+        deviceflowpnl.Size = New Size(373, 398)
         deviceflowpnl.TabIndex = 11
         ' 
         ' Label2
@@ -251,7 +275,7 @@ Partial Class Edit
         ' 
         catcb.Font = New Font("Segoe UI", 13.8F, FontStyle.Bold)
         catcb.FormattingEnabled = True
-        catcb.Location = New Point(44, 38)
+        catcb.Location = New Point(62, 38)
         catcb.Margin = New Padding(3, 2, 3, 2)
         catcb.Name = "catcb"
         catcb.Size = New Size(249, 33)
@@ -271,23 +295,23 @@ Partial Class Edit
         ' 
         ' historydgv
         ' 
-        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle1.BackColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle1.ForeColor = SystemColors.WindowText
-        DataGridViewCellStyle1.SelectionBackColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
-        historydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle3.BackColor = SystemColors.HighlightText
+        DataGridViewCellStyle3.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle3.ForeColor = SystemColors.WindowText
+        DataGridViewCellStyle3.SelectionBackColor = SystemColors.HighlightText
+        DataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle3.WrapMode = DataGridViewTriState.True
+        historydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle3
         historydgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle2.SelectionBackColor = SystemColors.HighlightText
-        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
-        historydgv.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle4.BackColor = SystemColors.Window
+        DataGridViewCellStyle4.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle4.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle4.SelectionBackColor = SystemColors.HighlightText
+        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.False
+        historydgv.DefaultCellStyle = DataGridViewCellStyle4
         historydgv.Location = New Point(0, 2)
         historydgv.Margin = New Padding(3, 2, 3, 2)
         historydgv.Name = "historydgv"
@@ -355,5 +379,7 @@ Partial Class Edit
     Friend WithEvents Panel4 As Panel
     Friend WithEvents historydgv As DataGridView
     Friend WithEvents Label3 As Label
+    Friend WithEvents opstatuscb As ComboBox
+    Friend WithEvents Label4 As Label
 
 End Class

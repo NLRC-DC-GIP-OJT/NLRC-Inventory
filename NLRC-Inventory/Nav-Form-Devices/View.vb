@@ -123,7 +123,7 @@ Public Class View
                     .Text = fieldValue,
                     .Tag = labelName,
                     .BorderStyle = BorderStyle.FixedSingle,
-                    .ReadOnly = True          ' 👈 view only
+                    .ReadOnly = True
                 }
 
                 row.Controls.Add(lbl)
@@ -157,6 +157,47 @@ Public Class View
         deviceflowpnl.FlowDirection = FlowDirection.TopDown
         deviceflowpnl.Padding = New Padding(0, 10, 0, 0)
 
+        ' ============================
+        ' 🔹 First: add STATUS row (always visible, read-only)
+        ' ============================
+        Dim statusPanel As New Panel With {
+            .Width = deviceflowpnl.ClientSize.Width - 2,
+            .Margin = New Padding(0, 0, 0, 15),
+            .Height = 40
+        }
+
+        Dim lblStatus As New Label With {
+            .Text = "Status:",
+            .AutoSize = False,
+            .Width = 160,
+            .Height = 24,
+            .Location = New Point(5, 5),
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+            .TextAlign = ContentAlignment.MiddleLeft
+        }
+
+        Dim txtStatus As New TextBox With {
+            .Name = "txtStatus",
+            .Font = New Font("Segoe UI Semibold", 10, FontStyle.Bold),
+            .Left = lblStatus.Right + 10,
+            .Top = 5,
+            .Width = statusPanel.Width - lblStatus.Width - 20,
+            .AutoSize = False,
+            .Height = 28,
+            .BorderStyle = BorderStyle.FixedSingle,
+            .ReadOnly = True,
+            .Text = If(currentDevice IsNot Nothing AndAlso currentDevice.Status IsNot Nothing,
+                       currentDevice.Status,
+                       String.Empty)
+        }
+
+        statusPanel.Controls.Add(lblStatus)
+        statusPanel.Controls.Add(txtStatus)
+        deviceflowpnl.Controls.Add(statusPanel)
+
+        ' ============================
+        ' 🔹 Then: other dynamic fields (read-only)
+        ' ============================
         Dim props As DataTable = mdl.GetCategoryProperties(categoryPointer)
         Dim activeProps = props.AsEnumerable().Where(Function(r) Convert.ToBoolean(r("active")) = True).ToList()
 
@@ -165,6 +206,11 @@ Public Class View
             Dim rawName As String = prop("property_name").ToString()
             Dim propName As String = rawName.Trim().ToLower()
             Dim propPointer As Integer = CInt(prop("pointer"))
+
+            ' Skip any legacy "status" property rows (we already show Status above)
+            If propName.Contains("status") Then
+                Continue For
+            End If
 
             Dim rowPanel As New Panel With {
                 .Width = deviceflowpnl.ClientSize.Width - 2,
@@ -197,7 +243,7 @@ Public Class View
                     .Top = 5,
                     .Width = rowPanel.Width - lbl.Width - 20,
                     .Height = 28,
-                    .Enabled = False       ' 👈 cannot change brand
+                    .Enabled = False
                 }
 
                 Dim brands = mdl.GetBrandsByCategory(categoryPointer)
@@ -238,7 +284,7 @@ Public Class View
                     .AutoSize = False,
                     .Height = 28,
                     .BorderStyle = BorderStyle.FixedSingle,
-                    .ReadOnly = True       ' 👈 main difference from Edit
+                    .ReadOnly = True
                 }
 
                 ' Load existing values
@@ -248,7 +294,6 @@ Public Class View
                     Case propName.Contains("property") : txt.Text = currentDevice.PropertyNumber
                     Case propName.Contains("nsoc") : txt.Text = currentDevice.NsocName
                     Case propName.Contains("cost") : txt.Text = If(currentDevice.Cost.HasValue, currentDevice.Cost.ToString(), "")
-                    Case propName.Contains("status") : txt.Text = currentDevice.Status
                     Case propName.Contains("notes") : txt.Text = currentDevice.Notes
                 End Select
 
@@ -311,8 +356,6 @@ Public Class View
         Next
     End Sub
 
-
-
     Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs)
         ' in View we can ignore changes or just keep as is; combo is disabled anyway
     End Sub
@@ -320,14 +363,10 @@ Public Class View
     ' ========================
     ' HISTORY GRID (SAME AS EDIT)
     ' ========================
-    ' ========================
-    ' HISTORY GRID (SAME AS EDIT)
-    ' ========================
     Private Sub LoadHistory(devicePointer As Integer)
         Dim dt As DataTable = mdl.GetDeviceHistory(devicePointer)
         If dt Is Nothing Then Return
 
-        ' make sure it builds columns from the DataTable
         historydgv.AutoGenerateColumns = True
 
         ' transform specs rows: only show changed specs
@@ -379,8 +418,6 @@ Public Class View
         End If
 
         With historydgv
-
-            ' 🔹 Remove visible selection color
             .DefaultCellStyle.SelectionBackColor = .DefaultCellStyle.BackColor
             .DefaultCellStyle.SelectionForeColor = .DefaultCellStyle.ForeColor
 
@@ -398,11 +435,10 @@ Public Class View
             .ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.False
             .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft
 
-            ' ⭐ FIX: top-align cells and remove extra space
             .RowsDefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
             .DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft
             .DefaultCellStyle.Padding = New Padding(0, 0, 0, 0)
-            .RowTemplate.Height = 18   ' you can adjust this if you want
+            .RowTemplate.Height = 18
 
             .CellBorderStyle = DataGridViewCellBorderStyle.None
             .ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None
@@ -440,8 +476,6 @@ Public Class View
             If .Columns.Contains("updated_by_name") Then .Columns("updated_by_name").Width = wUser
         End With
     End Sub
-
-
 
     ' === specs helpers (same as Edit) ===
     Private Function ParseSpecsToDict(specString As String) As Dictionary(Of String, String)

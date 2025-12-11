@@ -11,117 +11,191 @@ Public Class Units
     Private isLoading As Boolean = True
     Private assignedToCboCol As DataGridViewComboBoxColumn
     Private WithEvents refreshTimer As New Timer() With {
-    .Interval = 5000 ' 5000 ms = 5 seconds (change if you want)
-}
+        .Interval = 5000 ' 5000 ms = 5 seconds (change if you want)
+    }
+    Private allUnitsTable As DataTable          ' cache from DB
+    Private columnsInitialized As Boolean = False
+
+    ' === selection column + header checkbox ===
+    Private selectColumnName As String = "SelectQR"
+    Private selectAllCheckBox As CheckBox
+    ' ===============================================
 
 
-    ' ----------------- Load Units -----------------
-    Private Sub LoadAllUnits(Optional search As String = "")
+    ' ----------------- Load Units (FAST, cached) -----------------
+    Private Sub LoadAllUnits(Optional search As String = "",
+                         Optional reloadFromDb As Boolean = False)
+
         Try
-            Dim dt As DataTable = mdl.GetUnitsSummary()
+            ' 1) Only hit DB when needed
+            If reloadFromDb OrElse allUnitsTable Is Nothing Then
+                allUnitsTable = mdl.GetUnitsSummary()
 
-            ' If the query failed
-            If dt Is Nothing Then
-                allFilteredRows = New List(Of DataRow)()
-                allunitsdgv.DataSource = Nothing
-                MessageBox.Show("Failed to load units data.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
+                If allUnitsTable Is Nothing Then
+                    allFilteredRows = New List(Of DataRow)()
+                    allunitsdgv.DataSource = Nothing
+                    MessageBox.Show("Failed to load units data.", "Error",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    Return
+                End If
             End If
 
-            ' Filter search
-            Dim filtered = dt.AsEnumerable()
-            If Not String.IsNullOrWhiteSpace(search) AndAlso Not (filtertxt.ForeColor = Color.Gray AndAlso search = "Search") Then
+            ' 2) Filter in memory (no DB)
+            Dim filtered = allUnitsTable.AsEnumerable()
+
+            If Not String.IsNullOrWhiteSpace(search) AndAlso
+               Not (filtertxt.ForeColor = Color.Gray AndAlso search = "Search") Then
+
                 Dim s = search.ToLower()
-                filtered = filtered.Where(Function(r) r.ItemArray.Any(Function(val) val IsNot Nothing AndAlso val.ToString().ToLower().Contains(s)))
+
+                filtered = filtered.Where(
+                    Function(r)
+
+                        Dim hit As Boolean = False
+
+                        ' --- explicit Unit Name search ---
+                        If r.Table.Columns.Contains("Unit Name") AndAlso
+                           Not IsDBNull(r("Unit Name")) AndAlso
+                           r("Unit Name").ToString().ToLower().Contains(s) Then
+                            hit = True
+                        End If
+
+                        ' --- explicit Assigned To (personnel) search ---
+                        If Not hit AndAlso
+                           r.Table.Columns.Contains("Assigned To") AndAlso
+                           Not IsDBNull(r("Assigned To")) AndAlso
+                           r("Assigned To").ToString().ToLower().Contains(s) Then
+                            hit = True
+                        End If
+
+                        ' --- fallback: any other column ---
+                        If Not hit Then
+                            hit = r.ItemArray.Any(
+                                Function(val) val IsNot Nothing AndAlso
+                                               val.ToString().ToLower().Contains(s))
+                        End If
+
+                        Return hit
+                    End Function)
             End If
 
             allFilteredRows = filtered.ToList()
-            totalPages = Math.Ceiling(allFilteredRows.Count / pageSize)
+
+            ' 3) Pagination
+            totalPages = CInt(Math.Ceiling(allFilteredRows.Count / pageSize))
             If totalPages < 1 Then totalPages = 1
             If currentPage > totalPages Then currentPage = totalPages
             If currentPage < 1 Then currentPage = 1
 
             Dim pageRows = allFilteredRows.Skip((currentPage - 1) * pageSize).Take(pageSize)
 
-            ' <<< IMPORTANT FIX >>>:
-            ' If there are no rows for the current page, bind an EMPTY clone of the original datatable
-            ' so the DataGridView still has columns (prevents Columns.Count = 0).
+            Dim bindTable As DataTable
             If pageRows.Any() Then
-                allunitsdgv.DataSource = pageRows.CopyToDataTable()
+                bindTable = pageRows.CopyToDataTable()
             Else
-                allunitsdgv.DataSource = dt.Clone() ' <-- safe empty table with correct columns
+                bindTable = allUnitsTable.Clone()   ' empty but has columns
             End If
 
-            ' Setup grid
+            ' 4) Bind data
+            allunitsdgv.SuspendLayout()
+            allunitsdgv.DataSource = bindTable
+
             allunitsdgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             allunitsdgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect
             allunitsdgv.AllowUserToAddRows = False
-            allunitsdgv.ReadOnly = True
             allunitsdgv.RowHeadersVisible = False
 
-            ' Hide ID columns
             If allunitsdgv.Columns.Contains("unit_id") Then allunitsdgv.Columns("unit_id").Visible = False
             If allunitsdgv.Columns.Contains("personnel_id") Then allunitsdgv.Columns("personnel_id").Visible = False
 
-            ' Load personnel names
-            personnelNames = mdl.GetAssignments().AsEnumerable().[Select](Function(r) r("Full name").ToString()).ToList()
-
-            ' Replace Assigned To column with ComboBox
-            If allunitsdgv.Columns.Contains("Assigned To") Then
-                allunitsdgv.Columns.Remove("Assigned To")
+            ' 5) Initialize columns only once
+            If Not columnsInitialized Then
+                InitializeAssignedToColumn()
+                InitializeEditViewColumns()
+                columnsInitialized = True
             End If
 
-            assignedToCboCol = New DataGridViewComboBoxColumn()
-            assignedToCboCol.HeaderText = "Assigned To"
-            assignedToCboCol.Name = "Assigned To"
-            assignedToCboCol.DataPropertyName = "Assigned To"
-            assignedToCboCol.DropDownWidth = 200
-            assignedToCboCol.FlatStyle = FlatStyle.Flat
-            assignedToCboCol.AutoComplete = True
-            assignedToCboCol.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
-            assignedToCboCol.Items.AddRange(personnelNames.ToArray())
-
-            ' Insert ComboBox column safely (index bounded)
-            Dim insertIndex As Integer = Math.Min(2, Math.Max(0, allunitsdgv.Columns.Count))
-            allunitsdgv.Columns.Insert(insertIndex, assignedToCboCol)
-
-            ' --- Fix column order: Unit Name | Device No | Assigned To | Created At | Updated At ---
+            ' 6) Fix column order
             Dim fixedOrder As String() = {"Unit Name", "Device No", "Assigned To", "Created At", "Updated At"}
             For i As Integer = 0 To fixedOrder.Length - 1
                 If allunitsdgv.Columns.Contains(fixedOrder(i)) Then
-                    ' clamp the display index to available columns
-                    Dim safeIndex As Integer = Math.Min(i, Math.Max(0, allunitsdgv.Columns.Count - 1))
+                    Dim safeIndex As Integer = Math.Min(i, allunitsdgv.Columns.Count - 1)
                     allunitsdgv.Columns(fixedOrder(i)).DisplayIndex = safeIndex
                 End If
             Next
 
-            ' Add Edit/View buttons at the far right
-            If Not allunitsdgv.Columns.Contains("Edit") Then
-                Dim editBtn As New DataGridViewButtonColumn() With {
+            ' 7) Ensure our selection column & header checkbox exist
+            EnsureSelectColumn()
+
+            ' 8) Apply read-only rules (bulk editing vs normal)
+            ApplyReadOnlyState()
+
+            UpdatePaginationControls(allFilteredRows.Count)
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading units: " & ex.Message)
+        Finally
+            allunitsdgv.ResumeLayout()
+        End Try
+    End Sub
+
+    Private Sub filtertxt_TextChanged(sender As Object, e As EventArgs) Handles filtertxt.TextChanged
+        ' fast: only filtering the cached DataTable
+        LoadAllUnits(filtertxt.Text, reloadFromDb:=False)
+    End Sub
+
+
+    ' ---------- One-time setup of Assigned To combobox column ----------
+    Private Sub InitializeAssignedToColumn()
+        ' Load personnel names ONCE
+        Dim dtAssignments As DataTable = mdl.GetAssignments()
+        personnelNames = dtAssignments.AsEnumerable().
+                     Select(Function(r) r("Full name").ToString()).
+                     ToList()
+
+        ' Remove text column if it exists
+        If allunitsdgv.Columns.Contains("Assigned To") Then
+            allunitsdgv.Columns.Remove("Assigned To")
+        End If
+
+        assignedToCboCol = New DataGridViewComboBoxColumn() With {
+            .HeaderText = "Assigned To",
+            .Name = "Assigned To",
+            .DataPropertyName = "Assigned To",
+            .DropDownWidth = 200,
+            .FlatStyle = FlatStyle.Flat,
+            .AutoComplete = True,
+            .DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox
+        }
+        assignedToCboCol.Items.AddRange(personnelNames.ToArray())
+
+        Dim insertIndex As Integer = Math.Min(2, Math.Max(0, allunitsdgv.Columns.Count))
+        allunitsdgv.Columns.Insert(insertIndex, assignedToCboCol)
+    End Sub
+
+    ' ---------- One-time setup of Edit/View button columns ----------
+    Private Sub InitializeEditViewColumns()
+        If Not allunitsdgv.Columns.Contains("Edit") Then
+            Dim editBtn As New DataGridViewButtonColumn() With {
                 .HeaderText = "",
                 .Name = "Edit",
                 .Text = "Edit",
                 .UseColumnTextForButtonValue = True,
                 .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
             }
-                allunitsdgv.Columns.Add(editBtn)
-            End If
-            If Not allunitsdgv.Columns.Contains("View") Then
-                Dim viewBtn As New DataGridViewButtonColumn() With {
+            allunitsdgv.Columns.Add(editBtn)
+        End If
+
+        If Not allunitsdgv.Columns.Contains("View") Then
+            Dim viewBtn As New DataGridViewButtonColumn() With {
                 .HeaderText = "",
                 .Name = "View",
                 .Text = "View",
                 .UseColumnTextForButtonValue = True,
                 .AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
             }
-                allunitsdgv.Columns.Add(viewBtn)
-            End If
-
-            UpdatePaginationControls(allFilteredRows.Count)
-
-        Catch ex As Exception
-            MessageBox.Show("Error loading units: " & ex.Message)
-        End Try
+            allunitsdgv.Columns.Add(viewBtn)
+        End If
     End Sub
 
 
@@ -164,11 +238,8 @@ Public Class Units
         End If
 
         ' Reset bulk edit mode when switching panels
-        allunitsdgv.ReadOnly = True
         savedgvbtn.Visible = False
-        For Each col As DataGridViewColumn In allunitsdgv.Columns
-            col.ReadOnly = True
-        Next
+        ApplyReadOnlyState()
     End Sub
 
 
@@ -188,13 +259,10 @@ Public Class Units
 
     ' ----------------- Load/Show Panels -----------------
     Private Sub Units_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        LoadAllUnits()
+        LoadAllUnits(reloadFromDb:=True)   ' first time: hit DB and cache
         isLoading = False
-
-        ' 🔁 start auto-refresh
         refreshTimer.Start()
     End Sub
-
 
     Private Sub unitaddbtn_Click(sender As Object, e As EventArgs) Handles unitaddbtn.Click
         unitpnl.Visible = True
@@ -206,30 +274,36 @@ Public Class Units
         addUnitControl.unit2pnl.Visible = True
 
         ' Reset bulk edit
-        allunitsdgv.ReadOnly = True
         savedgvbtn.Visible = False
-        For Each col As DataGridViewColumn In allunitsdgv.Columns
-            col.ReadOnly = True
-        Next
+        ApplyReadOnlyState()
     End Sub
 
     Private Sub refreshTimer_Tick(sender As Object, e As EventArgs) Handles refreshTimer.Tick
-        ' ❌ don't refresh while user is editing or in edit/add/view panels
+        ' don’t refresh while user is editing, in panels, or using the select column
         If savedgvbtn.Visible Then Exit Sub
-        If unitpnl.Visible OrElse unitpnl.Visible Then Exit Sub
+        If unitpnl.Visible Then Exit Sub
 
-        ' keep current search text
+        ' skip refresh while user is working with the checkbox column
+        If allunitsdgv.Columns.Contains(selectColumnName) Then
+            If allunitsdgv.CurrentCell IsNot Nothing AndAlso
+               allunitsdgv.CurrentCell.OwningColumn.Name = selectColumnName Then
+                Exit Sub
+            End If
+
+            If selectAllCheckBox IsNot Nothing AndAlso selectAllCheckBox.Focused Then
+                Exit Sub
+            End If
+        End If
+
         Dim searchText As String = ""
         If Not (filtertxt.ForeColor = Color.Gray AndAlso filtertxt.Text = "Search") Then
             searchText = filtertxt.Text.Trim()
         End If
 
-        ' 🔁 this will:
-        ' - re-query mdl.GetUnitsSummary()
-        ' - re-apply search
-        ' - re-bind allunitsdgv
-        LoadAllUnits(searchText)
+        ' Reload from DB (in case there are new changes) but still apply current search
+        LoadAllUnits(searchText, reloadFromDb:=True)
     End Sub
+
 
     Private Sub addbtn_Click(sender As Object, e As EventArgs) Handles addbtn.Click
         unitpnl.Visible = True
@@ -245,11 +319,8 @@ Public Class Units
                                              End Sub
 
         ' Reset bulk edit
-        allunitsdgv.ReadOnly = True
         savedgvbtn.Visible = False
-        For Each col As DataGridViewColumn In allunitsdgv.Columns
-            col.ReadOnly = True
-        Next
+        ApplyReadOnlyState()
     End Sub
 
     ' ----------------- Bulk Edit Toggle -----------------
@@ -261,24 +332,13 @@ Public Class Units
             allunitsdgv.EndEdit()
         End If
 
-        ' Toggle saved button visibility
+        ' Toggle saved button visibility (this is our "bulk edit ON/OFF" flag)
         savedgvbtn.Visible = Not savedgvbtn.Visible
 
-        ' Toggle ReadOnly state
-        allunitsdgv.ReadOnly = Not savedgvbtn.Visible
-
-        ' Set editable columns
-        For Each col As DataGridViewColumn In allunitsdgv.Columns
-            If col.Name = "Unit Name" OrElse col.Name = "Assigned To" Then
-                col.ReadOnly = Not savedgvbtn.Visible
-            Else
-                col.ReadOnly = True
-            End If
-        Next
+        ' Apply rules: checkbox column always editable, others depend on bulk mode
+        ApplyReadOnlyState()
     End Sub
 
-    ' ----------------- Save Bulk -----------------
-    ' ----------------- Save Bulk -----------------
     ' ----------------- Save Bulk -----------------
     Private Sub savedgvbtn_Click(sender As Object, e As EventArgs) Handles savedgvbtn.Click
         Try
@@ -291,23 +351,23 @@ Public Class Units
             ' 1) CHECK DUPLICATES INSIDE GRID
             ' ================================
             Dim unitNames = dt.AsEnumerable().
-            Select(Function(r) If(r("Unit Name") IsNot DBNull.Value, r("Unit Name").ToString().Trim(), "")).
-            ToList()
+                Select(Function(r) If(r("Unit Name") IsNot DBNull.Value, r("Unit Name").ToString().Trim(), "")).
+                ToList()
 
             Dim duplicates = unitNames.
-            GroupBy(Function(n) n).
-            Where(Function(g) g.Count() > 1 AndAlso g.Key <> "").
-            Select(Function(g) g.Key).
-            ToList()
+                GroupBy(Function(n) n).
+                Where(Function(g) g.Count() > 1 AndAlso g.Key <> "").
+                Select(Function(g) g.Key).
+                ToList()
 
             If duplicates.Any() Then
                 MessageBox.Show(
-        "Duplicate Unit Names detected in the grid: " & String.Join(", ", duplicates) & vbCrLf &
-        "Please ensure each Unit Name is unique before saving.",
-        "Duplicate Unit Names",
-        MessageBoxButtons.OK,
-        MessageBoxIcon.Warning
-    )
+                    "Duplicate Unit Names detected in the grid: " & String.Join(", ", duplicates) & vbCrLf &
+                    "Please ensure each Unit Name is unique before saving.",
+                    "Duplicate Unit Names",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                )
 
                 ' 🔁 RESET ALL CHANGES IN THE DATATABLE + GRID
                 dt.RejectChanges()
@@ -319,8 +379,6 @@ Public Class Units
 
             ' ============================================
             ' 2) CHECK AGAINST DATABASE (GLOBAL UNIQUENESS)
-            '    - allow original name for the same row
-            '    - RESET edited name back to original if duplicate
             ' ============================================
             Dim existingDupes As New List(Of String)()
 
@@ -342,21 +400,20 @@ Public Class Units
                 If Not String.Equals(newName, origName, StringComparison.OrdinalIgnoreCase) Then
                     If mdl.IsUnitNameExists(newName) Then
 
-                        ' ✅ RESET DataRow value back to original (or "" if you want it cleared)
-                        row("Unit Name") = origName   ' or "" if you prefer to clear
+                        ' RESET DataRow value back to original
+                        row("Unit Name") = origName
 
-                        ' ✅ ALSO RESET THE GRID CELL so you see it immediately
+                        ' RESET THE GRID CELL so you see it immediately
                         For Each gridRow As DataGridViewRow In allunitsdgv.Rows
                             If gridRow.IsNewRow Then Continue For
                             If CInt(gridRow.Cells("unit_id").Value) = unitId Then
-                                gridRow.Cells("Unit Name").Value = origName  ' or "" to clear
-                                ' Optional: focus that cell
+                                gridRow.Cells("Unit Name").Value = origName
                                 allunitsdgv.CurrentCell = gridRow.Cells("Unit Name")
                                 Exit For
                             End If
                         Next
 
-                        ' track duplicate name (avoid duplicates in message list)
+                        ' track duplicate name
                         If Not existingDupes.Any(Function(x) String.Equals(x, newName, StringComparison.OrdinalIgnoreCase)) Then
                             existingDupes.Add(newName)
                         End If
@@ -368,18 +425,16 @@ Public Class Units
                 allunitsdgv.Refresh()
 
                 MessageBox.Show(
-        "The following Unit Name(s) already exist in the database: " &
-        String.Join(", ", existingDupes) & vbCrLf &
-        "The grid will be reset to the last saved data.",
-        "Existing Unit Names",
-        MessageBoxButtons.OK,
-        MessageBoxIcon.Warning
-    )
+                    "The following Unit Name(s) already exist in the database: " &
+                    String.Join(", ", existingDupes) & vbCrLf &
+                    "The grid will be reset to the last saved data.",
+                    "Existing Unit Names",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                )
 
-                ' 🔁 RESET ALL CHANGES IN THE DATATABLE + GRID
                 dt.RejectChanges()
-                allunitsdgv.DataSource = dt   ' optional but explicit
-
+                allunitsdgv.DataSource = dt
                 Return
             End If
 
@@ -405,7 +460,6 @@ Public Class Units
                         changes.Add($"Assigned To: '{origAssigned}' → '{newAssigned}'")
                     End If
 
-                    ' If there are any changes, show them under the unit
                     If changes.Any() Then
                         summary.AppendLine($"Unit '{origRow("Unit Name")}': " & String.Join(", ", changes))
                     End If
@@ -421,13 +475,13 @@ Public Class Units
             ' 4) CONFIRM + SAVE
             ' ================================
             Dim result = MessageBox.Show(
-            "The following changes will be made:" & vbCrLf &
-            summary.ToString() & vbCrLf & vbCrLf &
-            "Proceed?",
-            "Confirm Save",
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Question
-        )
+                "The following changes will be made:" & vbCrLf &
+                summary.ToString() & vbCrLf & vbCrLf &
+                "Proceed?",
+                "Confirm Save",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            )
             If result <> DialogResult.Yes Then
                 Return
             End If
@@ -439,8 +493,8 @@ Public Class Units
             MessageBox.Show(saveSummary, "Update Summary", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
             ' Reset grid
-            allunitsdgv.ReadOnly = True
             savedgvbtn.Visible = False
+            ApplyReadOnlyState()
             LoadAllUnits()
 
         Catch ex As Exception
@@ -450,13 +504,10 @@ Public Class Units
 
 
 
-
-
-
-
     ' ----------------- Set ComboBox style for Assigned To -----------------
     Private Sub allunitsdgv_EditingControlShowing(sender As Object, e As DataGridViewEditingControlShowingEventArgs) Handles allunitsdgv.EditingControlShowing
-        If allunitsdgv.CurrentCell.ColumnIndex = allunitsdgv.Columns("Assigned To").Index Then
+        If allunitsdgv.CurrentCell IsNot Nothing AndAlso
+           allunitsdgv.CurrentCell.ColumnIndex = allunitsdgv.Columns("Assigned To").Index Then
             Dim combo As ComboBox = TryCast(e.Control, ComboBox)
             If combo IsNot Nothing Then
                 combo.DropDownStyle = ComboBoxStyle.DropDown
@@ -499,7 +550,6 @@ Public Class Units
         Next
 
         If matchedName Is Nothing Then
-            ' ❌ invalid → your original behaviour
             MessageBox.Show($"Assigned personnel '{inputName}' does not exist in the database.",
                             "Invalid Personnel",
                             MessageBoxButtons.OK,
@@ -507,10 +557,224 @@ Public Class Units
             allunitsdgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = String.Empty
             e.Cancel = True
         Else
-            ' ✅ IMPORTANT: set the cell value to the *real* item from the ComboBox list
             allunitsdgv.Rows(e.RowIndex).Cells(e.ColumnIndex).Value = matchedName
-            ' no need to cancel, validation passes
         End If
     End Sub
+
+
+    ' ============================================================
+    '   selection column + header checkbox logic
+    ' ============================================================
+    Private Sub EnsureSelectColumn()
+        ' --- 1. add column if needed ---
+        If Not allunitsdgv.Columns.Contains(selectColumnName) Then
+            Dim chkCol As New DataGridViewCheckBoxColumn() With {
+            .Name = selectColumnName,
+            .HeaderText = "Select All",
+            .ReadOnly = False,
+            .Width = 110,
+            .MinimumWidth = 110,
+            .AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+        }
+
+            ' left-align header text so checkbox can sit to the right of it
+            chkCol.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft
+
+            Dim insertIndex As Integer = 0
+            If allunitsdgv.Columns.Contains("Unit Name") Then
+                insertIndex = allunitsdgv.Columns("Unit Name").Index
+            End If
+
+            allunitsdgv.Columns.Insert(insertIndex, chkCol)
+        End If
+
+
+        ' --- 2. Force it to be BEFORE "Unit Name" visually ---
+        If allunitsdgv.Columns.Contains("Unit Name") Then
+            Dim unitDisp As Integer = allunitsdgv.Columns("Unit Name").DisplayIndex
+            Dim selCol As DataGridViewColumn = allunitsdgv.Columns(selectColumnName)
+
+            selCol.DisplayIndex = unitDisp
+            allunitsdgv.Columns("Unit Name").DisplayIndex = unitDisp + 1
+        End If
+
+        ' --- 3. header checkbox (select all) ---
+        If selectAllCheckBox Is Nothing Then
+            selectAllCheckBox = New CheckBox() With {
+                .Name = "chkSelectAll",
+                .BackColor = Color.Transparent,
+                .Size = New Size(15, 15)
+            }
+            AddHandler selectAllCheckBox.CheckedChanged, AddressOf SelectAllCheckBox_CheckedChanged
+            allunitsdgv.Controls.Add(selectAllCheckBox)
+        End If
+
+        RepositionHeaderCheckBox()
+    End Sub
+
+    Private Sub ApplyReadOnlyState()
+        ' We control per-column ReadOnly instead of full grid
+        allunitsdgv.ReadOnly = False
+
+        For Each col As DataGridViewColumn In allunitsdgv.Columns
+            If col.Name = selectColumnName Then
+                ' checkbox column ALWAYS editable
+                col.ReadOnly = False
+            ElseIf savedgvbtn.Visible AndAlso
+                   (col.Name = "Unit Name" OrElse col.Name = "Assigned To") Then
+                ' Bulk editing ON → Unit Name + Assigned To editable
+                col.ReadOnly = False
+            Else
+                col.ReadOnly = True
+            End If
+        Next
+    End Sub
+
+    Private Sub SelectAllCheckBox_CheckedChanged(sender As Object, e As EventArgs)
+        If Not allunitsdgv.Columns.Contains(selectColumnName) Then Return
+
+        allunitsdgv.EndEdit()
+
+        For Each row As DataGridViewRow In allunitsdgv.Rows
+            If row.IsNewRow Then Continue For
+            row.Cells(selectColumnName).Value = CType(sender, CheckBox).Checked
+        Next
+    End Sub
+
+    Private Sub RepositionHeaderCheckBox()
+        If selectAllCheckBox Is Nothing Then Return
+        If Not allunitsdgv.Columns.Contains(selectColumnName) Then Return
+
+        Dim dispIndex As Integer = allunitsdgv.Columns(selectColumnName).DisplayIndex
+        Dim headerRect As Rectangle = allunitsdgv.GetCellDisplayRectangle(dispIndex, -1, True)
+
+        ' measure the "Select All" text width in the header font
+        Dim txt As String = allunitsdgv.Columns(selectColumnName).HeaderText
+        Dim fnt As Font = If(allunitsdgv.ColumnHeadersDefaultCellStyle.Font, allunitsdgv.Font)
+        Dim textSize As Size = TextRenderer.MeasureText(txt, fnt)
+
+        ' X = left edge + text width + small padding
+        Dim x As Integer = headerRect.X + textSize.Width + 4
+        ' clamp so checkbox never goes outside the header cell
+        If x + selectAllCheckBox.Width > headerRect.Right - 2 Then
+            x = headerRect.Right - selectAllCheckBox.Width - 2
+        End If
+
+        Dim y As Integer = headerRect.Y + (headerRect.Height - selectAllCheckBox.Height) \ 2
+
+        selectAllCheckBox.Location = New Point(x, y)
+    End Sub
+
+
+
+    ' keep header checkbox aligned
+    Private Sub allunitsdgv_Scroll(sender As Object, e As ScrollEventArgs) Handles allunitsdgv.Scroll
+        RepositionHeaderCheckBox()
+    End Sub
+
+    Private Sub allunitsdgv_ColumnWidthChanged(sender As Object, e As DataGridViewColumnEventArgs) Handles allunitsdgv.ColumnWidthChanged
+        RepositionHeaderCheckBox()
+    End Sub
+
+    Private Sub allunitsdgv_SizeChanged(sender As Object, e As EventArgs) Handles allunitsdgv.SizeChanged
+        RepositionHeaderCheckBox()
+    End Sub
+
+
+
+    ' ============================================================
+    '   QR GENERATION FROM CHECKED ROWS (MULTI-SELECT, MULTI-PAGE)
+    ' ============================================================
+    Private Sub qrbtngenerate_Click(sender As Object, e As EventArgs) Handles qrbtngenerate.Click
+        If allunitsdgv.DataSource Is Nothing Then
+            MessageBox.Show("No units loaded.", "QR", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        If Not allunitsdgv.Columns.Contains(selectColumnName) Then
+            MessageBox.Show("Selection column not found.", "QR", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        ' make sure checkbox edits are committed
+        allunitsdgv.EndEdit()
+
+        Dim selectedUnitIds As New List(Of Integer)()
+        Dim collectionNames As New List(Of String)()
+
+        For Each row As DataGridViewRow In allunitsdgv.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim cellValue = row.Cells(selectColumnName).Value
+            Dim isChecked As Boolean = False
+
+            If TypeOf cellValue Is Boolean Then
+                isChecked = CBool(cellValue)
+            ElseIf cellValue IsNot Nothing Then
+                Boolean.TryParse(cellValue.ToString(), isChecked)
+            End If
+
+            If isChecked Then
+                Dim idObj = row.Cells("unit_id").Value
+                If idObj IsNot Nothing AndAlso IsNumeric(idObj) Then
+                    Dim uid As Integer = CInt(idObj)
+                    selectedUnitIds.Add(uid)
+
+                    Dim collName As String = ""
+                    If row.Cells("Unit Name").Value IsNot Nothing Then
+                        collName = row.Cells("Unit Name").Value.ToString()
+                    End If
+                    collectionNames.Add(collName)
+                End If
+            End If
+        Next
+
+        If selectedUnitIds.Count = 0 Then
+            MessageBox.Show("Please check at least one unit to generate QR stickers.",
+                            "QR", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' --- generate QR for each selected unit ---
+        Dim qrBitmaps As New List(Of Bitmap)()
+        Dim encStrings As New List(Of String)()
+
+        For i As Integer = 0 To selectedUnitIds.Count - 1
+            Dim unitId As Integer = selectedUnitIds(i)
+
+            Dim qrBmp As Bitmap = Nothing
+            Dim enc As String = ""
+
+            GenerateUnitQr(unitId, qrBmp, enc)
+
+            If qrBmp IsNot Nothing Then
+                qrBitmaps.Add(qrBmp)
+                encStrings.Add(enc)
+            End If
+        Next
+
+        If qrBitmaps.Count = 0 Then
+            MessageBox.Show("No QR images were generated.", "QR", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        ' --- send to QRPrintView for multi-page preview (6 per page) ---
+        Dim qrPrint As New QRPrintView()
+        qrPrint.LoadStickerBatch(qrBitmaps, encStrings, collectionNames)
+        qrPrint.ShowStickerPreview()
+    End Sub
+
+    ' === uses your QRGenerator + Encrypt ===
+    Private Sub GenerateUnitQr(unitId As Integer, ByRef qrBmp As Bitmap, ByRef enc As String)
+        Try
+            enc = ""
+            qrBmp = QRGenerator.GenerateUnitQR(unitId, enc)
+        Catch ex As Exception
+            MessageBox.Show("Error generating QR for unit " & unitId & ": " & ex.Message,
+                            "QR Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            qrBmp = Nothing
+        End Try
+    End Sub
+
 
 End Class

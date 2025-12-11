@@ -7,8 +7,6 @@ Imports System.Windows.Forms
 Imports QRCoder
 Imports System.Security.Cryptography
 
-
-
 Public Class ViewUnit
 
     Private mdl As New model()
@@ -17,6 +15,8 @@ Public Class ViewUnit
     Private deviceFullSpecs As New Dictionary(Of Integer, String)
     Private currentUnitId As Integer = 0
 
+    ' 🔹 Status per device (pointer → status string)
+    Private deviceStatuses As New Dictionary(Of Integer, String)
 
     ' Specs table
     Private specsTable As New TableLayoutPanel With {
@@ -121,10 +121,27 @@ Public Class ViewUnit
         currentDevices.Clear()
         deviceDisplayNames.Clear()
         deviceFullSpecs.Clear()
+        deviceStatuses.Clear()
 
         ' Loop through devices and populate panels
         For Each dr As DataRow In devices.Rows
             Dim devId As Integer = CInt(dr("DeviceID"))
+
+            ' 🔹 Get device status (prefer column, fallback to model lookup)
+            Dim devStatus As String = ""
+            If devices.Columns.Contains("status") Then
+                devStatus = SafeStr(dr, "status")
+            Else
+                Try
+                    Dim dev = mdl.GetDeviceByPointer(devId)
+                    If dev IsNot Nothing AndAlso dev.Pointer > 0 Then
+                        devStatus = If(dev.Status, "").ToString().Trim()
+                    End If
+                Catch ex As Exception
+                    devStatus = ""
+                End Try
+            End If
+            deviceStatuses(devId) = devStatus
 
             ' ============================
             ' 🔹 Build display text:
@@ -188,7 +205,6 @@ Public Class ViewUnit
 
     End Sub
 
-
     ' ========================
     ' READ-ONLY DEVICE PANEL
     ' ========================
@@ -209,7 +225,7 @@ Public Class ViewUnit
             .AutoEllipsis = True
         }
 
-        AddHandler btn.Click, Sub() ShowSpecsReadOnly(fullSpecs)
+        AddHandler btn.Click, Sub() ShowSpecsReadOnly(deviceId, fullSpecs)
 
         container.Controls.Add(btn)
         deviceflowpnl.Controls.Add(container)
@@ -218,13 +234,117 @@ Public Class ViewUnit
     ' ========================
     ' DISPLAY SPECS AS LABELS
     ' ========================
-    Private Sub ShowSpecsReadOnly(fullSpecs As String)
+    Private Sub ShowSpecsReadOnly(deviceId As Integer, fullSpecs As String)
         specsTable.Controls.Clear()
         specsTable.RowCount = 0
 
+        ' 🔹 1) Show STATUS first (if available)
+        Dim statusText As String = ""
+        If deviceStatuses.ContainsKey(deviceId) Then
+            statusText = deviceStatuses(deviceId)
+        End If
+
+        If Not String.IsNullOrWhiteSpace(statusText) Then
+            specsTable.RowCount += 1
+
+            Dim statusLbl As New Label With {
+                .Text = "Status:",
+                .Width = 120,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+            }
+
+            Dim statusValLbl As New Label With {
+                .Text = statusText,
+                .Width = 300,
+                .Dock = DockStyle.Fill,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .BackColor = Color.White,
+                .BorderStyle = BorderStyle.FixedSingle
+            }
+
+            specsTable.Controls.Add(statusLbl, 0, specsTable.RowCount - 1)
+            specsTable.Controls.Add(statusValLbl, 1, specsTable.RowCount - 1)
+        End If
+
+        ' 🔹 2) Parse and order the rest:
+        '     NSOC Name → Property No → others
         Dim dict As Dictionary(Of String, String) = ParseSpecs(fullSpecs)
 
+        Dim nsocVal As String = Nothing
+        Dim propVal As String = Nothing
+        Dim others As New Dictionary(Of String, String)
+
         For Each kvp In dict
+            Dim key As String = kvp.Key.Trim()
+
+            If key.Equals("NSOC Name", StringComparison.OrdinalIgnoreCase) Then
+                nsocVal = kvp.Value
+            ElseIf key.Equals("Property No", StringComparison.OrdinalIgnoreCase) Then
+                propVal = kvp.Value
+            Else
+                If Not others.ContainsKey(key) Then
+                    others.Add(key, kvp.Value)
+                End If
+            End If
+        Next
+
+        ' 🔹 2a) NSOC Name (immediately under Status)
+        If nsocVal IsNot Nothing Then
+            specsTable.RowCount += 1
+
+            Dim keyLbl As New Label With {
+                .Text = "NSOC Name:",
+                .Width = 120,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+            }
+
+            Dim valLbl As New Label With {
+                .Text = nsocVal,
+                .Width = 300,
+                .Dock = DockStyle.Fill,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .BackColor = Color.White,
+                .BorderStyle = BorderStyle.FixedSingle
+            }
+
+            specsTable.Controls.Add(keyLbl, 0, specsTable.RowCount - 1)
+            specsTable.Controls.Add(valLbl, 1, specsTable.RowCount - 1)
+        End If
+
+        ' 🔹 2b) Property No (after NSOC)
+        If propVal IsNot Nothing Then
+            specsTable.RowCount += 1
+
+            Dim keyLbl As New Label With {
+                .Text = "Property No:",
+                .Width = 120,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+            }
+
+            Dim valLbl As New Label With {
+                .Text = propVal,
+                .Width = 300,
+                .Dock = DockStyle.Fill,
+                .AutoSize = False,
+                .TextAlign = ContentAlignment.MiddleLeft,
+                .BackColor = Color.White,
+                .BorderStyle = BorderStyle.FixedSingle
+            }
+
+            specsTable.Controls.Add(keyLbl, 0, specsTable.RowCount - 1)
+            specsTable.Controls.Add(valLbl, 1, specsTable.RowCount - 1)
+        End If
+
+        ' 🔹 2c) Other specs
+        For Each kvp In others
             specsTable.RowCount += 1
 
             Dim keyLbl As New Label With {
@@ -314,7 +434,6 @@ Public Class ViewUnit
         Return String.Join(" - ", parts.Skip(3)).Trim()
     End Function
 
-
     Private Function CleanSpecs(rawSpecs As String) As String
         If String.IsNullOrWhiteSpace(rawSpecs) Then Return ""
         Dim cleaned As String = System.Text.RegularExpressions.Regex.Replace(rawSpecs, "(?i)\s*NSOC\s*[:=][^;]+", "")
@@ -360,14 +479,11 @@ Public Class ViewUnit
         mainpanelqr.BringToFront()
     End Sub
 
-
     ' ✅ Safely get a trimmed string from a DataRow (handles DBNull / missing column)
     Private Function SafeStr(row As DataRow, colName As String) As String
         If Not row.Table.Columns.Contains(colName) Then Return ""
         If IsDBNull(row(colName)) OrElse row(colName) Is Nothing Then Return ""
         Return row(colName).ToString().Trim()
     End Function
-
-
 
 End Class
