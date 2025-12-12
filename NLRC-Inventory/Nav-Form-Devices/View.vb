@@ -92,8 +92,9 @@ Public Class View
 
         ' CATEGORY COMBOBOX (display only)
         If catcb.Items.Count > 0 Then
-            catcb.SelectedValue = If(device.DevCategoryPointer.HasValue, device.DevCategoryPointer.Value, -1)
+            catcb.SelectedValue = device.DevCategoryPointer
         End If
+
         catcb.DropDownStyle = ComboBoxStyle.DropDownList
         catcb.Enabled = False
 

@@ -88,8 +88,8 @@ Partial Class Reports
         ' 
         ' exportbtn
         ' 
-        exportbtn.BackColor = Color.CornflowerBlue
-        exportbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        exportbtn.BackColor = Color.SlateGray
+        exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         exportbtn.ForeColor = Color.White
         exportbtn.Location = New Point(1366, 10)
         exportbtn.Margin = New Padding(3, 2, 3, 2)
@@ -113,7 +113,7 @@ Partial Class Reports
         ' 
         multibtn.Anchor = AnchorStyles.None
         multibtn.BackColor = Color.CornflowerBlue
-        multibtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         multibtn.ForeColor = Color.White
         multibtn.Location = New Point(1681, -7)
         multibtn.Margin = New Padding(3, 2, 3, 2)
@@ -127,7 +127,7 @@ Partial Class Reports
         ' 
         unitaddbtn.Anchor = AnchorStyles.Top
         unitaddbtn.BackColor = Color.CornflowerBlue
-        unitaddbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
         unitaddbtn.Location = New Point(1878, 8)
         unitaddbtn.Margin = New Padding(3, 2, 3, 2)
@@ -141,7 +141,7 @@ Partial Class Reports
         ' 
         addbtn.Anchor = AnchorStyles.Top
         addbtn.BackColor = Color.CornflowerBlue
-        addbtn.Font = New Font("Segoe UI", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
         addbtn.Location = New Point(2029, 8)
         addbtn.Margin = New Padding(3, 2, 3, 2)
@@ -166,7 +166,7 @@ Partial Class Reports
         ' 
         btnPrev.Anchor = AnchorStyles.Bottom
         btnPrev.AutoSize = True
-        btnPrev.BackColor = Color.CornflowerBlue
+        btnPrev.BackColor = Color.SlateGray
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
         btnPrev.Location = New Point(673, 818)
@@ -181,7 +181,7 @@ Partial Class Reports
         ' 
         lblPageInfo.Anchor = AnchorStyles.Bottom
         lblPageInfo.AutoSize = True
-        lblPageInfo.Font = New Font("Segoe UI Semibold", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        lblPageInfo.Font = New Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         lblPageInfo.Location = New Point(766, 832)
         lblPageInfo.Name = "lblPageInfo"
         lblPageInfo.Size = New Size(86, 21)
@@ -192,7 +192,7 @@ Partial Class Reports
         ' 
         btnNext.Anchor = AnchorStyles.Bottom
         btnNext.AutoSize = True
-        btnNext.BackColor = Color.CornflowerBlue
+        btnNext.BackColor = Color.SlateGray
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
         btnNext.Location = New Point(866, 819)
@@ -221,7 +221,7 @@ Partial Class Reports
         allunitsdgv.AllowUserToResizeRows = False
         DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
         DataGridViewCellStyle1.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle1.Font = New Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         DataGridViewCellStyle1.ForeColor = Color.White
         DataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight
         DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
@@ -230,7 +230,7 @@ Partial Class Reports
         allunitsdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
         DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
         DataGridViewCellStyle2.BackColor = SystemColors.Window
-        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9.0F)
+        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
         DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
         DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
         DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
@@ -252,7 +252,7 @@ Partial Class Reports
         ' 
         ' Reports
         ' 
-        AutoScaleDimensions = New SizeF(7.0F, 15.0F)
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         Controls.Add(Panel2)
         Controls.Add(btnPrev)

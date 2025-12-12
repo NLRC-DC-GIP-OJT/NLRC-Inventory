@@ -91,14 +91,16 @@ Partial Class View
         ' 
         ' cancelbtn
         ' 
+        cancelbtn.BackColor = Color.SlateGray
         cancelbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        cancelbtn.Location = New Point(302, 241)
+        cancelbtn.ForeColor = Color.White
+        cancelbtn.Location = New Point(294, 241)
         cancelbtn.Margin = New Padding(3, 2, 3, 2)
         cancelbtn.Name = "cancelbtn"
-        cancelbtn.Size = New Size(109, 36)
+        cancelbtn.Size = New Size(109, 42)
         cancelbtn.TabIndex = 14
         cancelbtn.Text = "Close"
-        cancelbtn.UseVisualStyleBackColor = True
+        cancelbtn.UseVisualStyleBackColor = False
         ' 
         ' Label5
         ' 

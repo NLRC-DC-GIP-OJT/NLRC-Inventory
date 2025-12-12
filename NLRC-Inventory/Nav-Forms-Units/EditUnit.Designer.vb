@@ -45,6 +45,9 @@ Partial Class EditUnit
         remarkstxt = New TextBox()
         assignbtn = New Button()
         Panel5 = New Panel()
+        disposalbtn = New Button()
+        Label5 = New Label()
+        statuscombo = New ComboBox()
         Panel1.SuspendLayout()
         Panel3.SuspendLayout()
         Panel4.SuspendLayout()
@@ -125,7 +128,7 @@ Partial Class EditUnit
         deviceflowpnl.Location = New Point(0, 0)
         deviceflowpnl.Margin = New Padding(3, 2, 3, 2)
         deviceflowpnl.Name = "deviceflowpnl"
-        deviceflowpnl.Size = New Size(432, 326)
+        deviceflowpnl.Size = New Size(432, 298)
         deviceflowpnl.TabIndex = 18
         deviceflowpnl.WrapContents = False
         ' 
@@ -139,7 +142,7 @@ Partial Class EditUnit
         specsflowpnl.Location = New Point(0, 0)
         specsflowpnl.Margin = New Padding(3, 2, 3, 2)
         specsflowpnl.Name = "specsflowpnl"
-        specsflowpnl.Size = New Size(495, 211)
+        specsflowpnl.Size = New Size(495, 236)
         specsflowpnl.TabIndex = 19
         specsflowpnl.WrapContents = False
         ' 
@@ -169,7 +172,7 @@ Partial Class EditUnit
         Panel3.Location = New Point(23, 178)
         Panel3.Margin = New Padding(3, 2, 3, 2)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(432, 326)
+        Panel3.Size = New Size(432, 298)
         Panel3.TabIndex = 22
         ' 
         ' devicecb
@@ -199,7 +202,7 @@ Partial Class EditUnit
         ' 
         savebtn.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         savebtn.AutoSize = True
-        savebtn.BackColor = Color.MediumBlue
+        savebtn.BackColor = Color.SlateGray
         savebtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         savebtn.ForeColor = Color.White
         savebtn.Location = New Point(354, 282)
@@ -226,7 +229,7 @@ Partial Class EditUnit
         savespecsbtn.FlatAppearance.BorderSize = 2
         savespecsbtn.FlatStyle = FlatStyle.Flat
         savespecsbtn.Font = New Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        savespecsbtn.Location = New Point(131, 221)
+        savespecsbtn.Location = New Point(139, 245)
         savespecsbtn.Margin = New Padding(3, 2, 3, 2)
         savespecsbtn.Name = "savespecsbtn"
         savespecsbtn.Size = New Size(261, 33)
@@ -290,6 +293,9 @@ Partial Class EditUnit
         ' 
         ' Panel5
         ' 
+        Panel5.Controls.Add(statuscombo)
+        Panel5.Controls.Add(Label5)
+        Panel5.Controls.Add(disposalbtn)
         Panel5.Controls.Add(remarkstxt)
         Panel5.Controls.Add(assignbtn)
         Panel5.Controls.Add(Label6)
@@ -307,6 +313,39 @@ Partial Class EditUnit
         Panel5.Name = "Panel5"
         Panel5.Size = New Size(1009, 557)
         Panel5.TabIndex = 34
+        ' 
+        ' disposalbtn
+        ' 
+        disposalbtn.BackColor = Color.SlateGray
+        disposalbtn.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        disposalbtn.ForeColor = Color.White
+        disposalbtn.Location = New Point(23, 485)
+        disposalbtn.Margin = New Padding(3, 2, 3, 2)
+        disposalbtn.Name = "disposalbtn"
+        disposalbtn.Size = New Size(138, 44)
+        disposalbtn.TabIndex = 34
+        disposalbtn.Text = "For Disposal"
+        disposalbtn.UseVisualStyleBackColor = False
+        ' 
+        ' Label5
+        ' 
+        Label5.AutoSize = True
+        Label5.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label5.Location = New Point(23, 139)
+        Label5.Name = "Label5"
+        Label5.Size = New Size(65, 18)
+        Label5.TabIndex = 35
+        Label5.Text = "Status:"
+        ' 
+        ' statuscombo
+        ' 
+        statuscombo.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        statuscombo.FormattingEnabled = True
+        statuscombo.Location = New Point(103, 136)
+        statuscombo.Margin = New Padding(3, 2, 3, 2)
+        statuscombo.Name = "statuscombo"
+        statuscombo.Size = New Size(196, 26)
+        statuscombo.TabIndex = 36
         ' 
         ' EditUnit
         ' 
@@ -352,5 +391,8 @@ Partial Class EditUnit
     Friend WithEvents assignbtn As Button
     Friend WithEvents Panel5 As Panel
     Friend WithEvents Panel2 As Panel
+    Friend WithEvents disposalbtn As Button
+    Friend WithEvents statuscombo As ComboBox
+    Friend WithEvents Label5 As Label
 
 End Class

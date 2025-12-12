@@ -96,7 +96,7 @@ Partial Class devices
         ' 
         ' addbtn
         ' 
-        addbtn.BackColor = Color.CornflowerBlue
+        addbtn.BackColor = Color.SlateGray
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
         addbtn.Location = New Point(1414, 10)
@@ -149,7 +149,7 @@ Partial Class devices
         ' 
         ' exportbtn
         ' 
-        exportbtn.BackColor = Color.CornflowerBlue
+        exportbtn.BackColor = Color.SlateGray
         exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         exportbtn.ForeColor = Color.White
         exportbtn.Location = New Point(1278, 10)
@@ -204,7 +204,7 @@ Partial Class devices
         ' btnPrev
         ' 
         btnPrev.Anchor = AnchorStyles.Bottom
-        btnPrev.BackColor = Color.CornflowerBlue
+        btnPrev.BackColor = Color.SlateGray
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
         btnPrev.Location = New Point(631, 818)
@@ -218,7 +218,7 @@ Partial Class devices
         ' btnNext
         ' 
         btnNext.Anchor = AnchorStyles.Bottom
-        btnNext.BackColor = Color.CornflowerBlue
+        btnNext.BackColor = Color.SlateGray
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
         btnNext.Location = New Point(836, 819)

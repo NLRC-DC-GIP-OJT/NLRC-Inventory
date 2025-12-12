@@ -268,15 +268,38 @@ Public Class Units
         unitpnl.Visible = True
         unitpnl.BringToFront()
         unitpnl.Controls.Clear()
+
         Dim addUnitControl As New AddNew
         addUnitControl.Dock = DockStyle.Fill
         unitpnl.Controls.Add(addUnitControl)
         addUnitControl.unit2pnl.Visible = True
 
-        ' Reset bulk edit
+        ' ✅ refresh allunitsdgv IMMEDIATELY after AddNew successful save
+        AddHandler addUnitControl.UnitSaved, Sub()
+
+                                                 ' close panel so you can see the refreshed grid
+                                                 unitpnl.Visible = False
+
+                                                 ' OPTIONAL: balik page 1 para mas kita agad bagong add
+                                                 currentPage = 1
+
+                                                 ' keep current search text
+                                                 Dim searchText As String = ""
+                                                 If Not (filtertxt.ForeColor = Color.Gray AndAlso filtertxt.Text = "Search") Then
+                                                     searchText = filtertxt.Text.Trim()
+                                                 End If
+
+                                                 ' ✅ IMPORTANT: clear cache + re-init columns then reload from DB
+                                                 allUnitsTable = Nothing
+                                                 columnsInitialized = False
+
+                                                 LoadAllUnits(searchText, reloadFromDb:=True)
+                                             End Sub
+
         savedgvbtn.Visible = False
         ApplyReadOnlyState()
     End Sub
+
 
     Private Sub refreshTimer_Tick(sender As Object, e As EventArgs) Handles refreshTimer.Tick
         ' don’t refresh while user is editing, in panels, or using the select column
@@ -309,19 +332,40 @@ Public Class Units
         unitpnl.Visible = True
         unitpnl.BringToFront()
         unitpnl.Controls.Clear()
+
         Dim addUnitControl As New AddUnits()
         addUnitControl.Dock = DockStyle.Fill
         unitpnl.Controls.Add(addUnitControl)
         addUnitControl.unit1pnl.Visible = True
+
         AddHandler addUnitControl.UnitSaved, Sub()
-                                                 LoadAllUnits()
+                                                 ' close panel so you can see the grid
                                                  unitpnl.Visible = False
+
+                                                 ' optional: show newest by going to first page
+                                                 currentPage = 1
+
+                                                 ' clear cached table so it will reload from DB
+                                                 allUnitsTable = Nothing
+
+                                                 ' re-init dynamic columns after rebinding
+                                                 columnsInitialized = False
+
+                                                 ' keep current search
+                                                 Dim searchText As String = ""
+                                                 If Not (filtertxt.ForeColor = Color.Gray AndAlso filtertxt.Text = "Search") Then
+                                                     searchText = filtertxt.Text.Trim()
+                                                 End If
+
+                                                 ' ✅ force reload from DB so new unit appears immediately
+                                                 LoadAllUnits(searchText, reloadFromDb:=True)
                                              End Sub
 
         ' Reset bulk edit
         savedgvbtn.Visible = False
         ApplyReadOnlyState()
     End Sub
+
 
     ' ----------------- Bulk Edit Toggle -----------------
     Private Sub multibtn_Click(sender As Object, e As EventArgs) Handles multibtn.Click
@@ -369,7 +413,7 @@ Public Class Units
                     MessageBoxIcon.Warning
                 )
 
-                ' 🔁 RESET ALL CHANGES IN THE DATATABLE + GRID
+                ' RESET ALL CHANGES IN THE DATATABLE + GRID
                 dt.RejectChanges()
                 allunitsdgv.DataSource = dt   ' optional; often not needed but safe
 

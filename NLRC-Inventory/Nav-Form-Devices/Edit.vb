@@ -94,10 +94,10 @@ Public Class Edit
         LoadCategories()
         LoadSpecs()
         BuildDynamicFields()
-
+        
         ' CATEGORY COMBOBOX (disabled but keeps value)
         If catcb.Items.Count > 0 Then
-            catcb.SelectedValue = If(device.DevCategoryPointer, -1)
+            catcb.SelectedValue = device.DevCategoryPointer
         End If
         catcb.DropDownStyle = ComboBoxStyle.DropDownList
         catcb.Enabled = False

@@ -131,25 +131,29 @@ Partial Class Edit
         ' 
         ' cancelbtn
         ' 
+        cancelbtn.BackColor = Color.SlateGray
         cancelbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        cancelbtn.Location = New Point(134, 244)
+        cancelbtn.ForeColor = Color.White
+        cancelbtn.Location = New Point(134, 239)
         cancelbtn.Margin = New Padding(3, 2, 3, 2)
         cancelbtn.Name = "cancelbtn"
-        cancelbtn.Size = New Size(109, 36)
+        cancelbtn.Size = New Size(109, 46)
         cancelbtn.TabIndex = 14
         cancelbtn.Text = "Cancel"
-        cancelbtn.UseVisualStyleBackColor = True
+        cancelbtn.UseVisualStyleBackColor = False
         ' 
         ' savebtn
         ' 
+        savebtn.BackColor = Color.SlateGray
         savebtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        savebtn.Location = New Point(258, 244)
+        savebtn.ForeColor = Color.White
+        savebtn.Location = New Point(258, 239)
         savebtn.Margin = New Padding(3, 2, 3, 2)
         savebtn.Name = "savebtn"
-        savebtn.Size = New Size(109, 36)
+        savebtn.Size = New Size(109, 46)
         savebtn.TabIndex = 13
         savebtn.Text = "Update"
-        savebtn.UseVisualStyleBackColor = True
+        savebtn.UseVisualStyleBackColor = False
         ' 
         ' Label5
         ' 

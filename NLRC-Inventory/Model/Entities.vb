@@ -2,7 +2,7 @@
 
 Public Class InvDevice
     Public Property Pointer As Integer
-    Public Property DevCategoryPointer As Integer?
+    Public Property DevCategoryPointer As Integer
     Public Property BrandPointer As Integer?
     Public Property Model As String
     Public Property Specs As String

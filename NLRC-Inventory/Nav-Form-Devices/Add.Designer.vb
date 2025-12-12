@@ -228,25 +228,29 @@ Partial Class Add
         ' 
         ' Button4
         ' 
+        Button4.BackColor = Color.SlateGray
         Button4.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Button4.Location = New Point(472, 107)
+        Button4.ForeColor = Color.White
+        Button4.Location = New Point(472, 103)
         Button4.Margin = New Padding(3, 2, 3, 2)
         Button4.Name = "Button4"
-        Button4.Size = New Size(109, 36)
+        Button4.Size = New Size(109, 40)
         Button4.TabIndex = 14
         Button4.Text = "CANCEL"
-        Button4.UseVisualStyleBackColor = True
+        Button4.UseVisualStyleBackColor = False
         ' 
         ' addsbtn
         ' 
+        addsbtn.BackColor = Color.SlateGray
         addsbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        addsbtn.Location = New Point(603, 107)
+        addsbtn.ForeColor = Color.White
+        addsbtn.Location = New Point(604, 103)
         addsbtn.Margin = New Padding(3, 2, 3, 2)
         addsbtn.Name = "addsbtn"
-        addsbtn.Size = New Size(109, 36)
+        addsbtn.Size = New Size(109, 40)
         addsbtn.TabIndex = 13
         addsbtn.Text = "ADD"
-        addsbtn.UseVisualStyleBackColor = True
+        addsbtn.UseVisualStyleBackColor = False
         ' 
         ' plusBtn
         ' 

@@ -8,13 +8,6 @@ Public Class DashboardControl
     Private LoggedUser As String
     Private model As New model()
 
-    ' ========================
-    ' AUTO-RESIZE FIELDS
-    ' ========================
-    Private originalSize As Size
-    Private originalBounds As New Dictionary(Of Control, Rectangle)
-    Private layoutInitialized As Boolean = False
-    Private isCatGridReady As Boolean = False
 
 
     ' ========================
@@ -29,75 +22,7 @@ Public Class DashboardControl
         LoggedUser = user
     End Sub
 
-    ' ========================
-    ' AUTO-RESIZE SUPPORT
-    ' ========================
-    Private Sub InitializeLayoutScaling()
-        If layoutInitialized Then Return
-        If Me.DesignMode Then Return   ' don’t run inside designer
 
-        ' Remember the original size of the dashboard
-        originalSize = Me.Size
-
-        ' Remember original bounds of every child control
-        originalBounds.Clear()
-        StoreOriginalBounds(Me)
-
-        layoutInitialized = True
-    End Sub
-
-    Private Sub StoreOriginalBounds(parent As Control)
-        For Each ctrl As Control In parent.Controls
-            If Not originalBounds.ContainsKey(ctrl) Then
-                originalBounds.Add(ctrl, ctrl.Bounds)
-            End If
-
-            If ctrl.HasChildren Then
-                StoreOriginalBounds(ctrl)
-            End If
-        Next
-    End Sub
-
-    Private Sub ApplyScale(scaleX As Single, scaleY As Single)
-        Me.SuspendLayout()
-
-        For Each kvp As KeyValuePair(Of Control, Rectangle) In originalBounds
-            Dim ctrl As Control = kvp.Key
-            If ctrl Is Nothing OrElse ctrl.IsDisposed Then Continue For
-
-            Dim r As Rectangle = kvp.Value
-
-            ctrl.Bounds = New Rectangle(
-                CInt(r.X * scaleX),
-                CInt(r.Y * scaleY),
-                CInt(r.Width * scaleX),
-                CInt(r.Height * scaleY)
-            )
-
-            ' Optional: scale fonts a bit
-            If ctrl.Font IsNot Nothing Then
-                Dim f As Font = ctrl.Font
-                Dim newSize As Single = f.SizeInPoints * Math.Min(scaleX, scaleY)
-                If newSize > 4 Then
-                    ctrl.Font = New Font(f.FontFamily, newSize, f.Style)
-                End If
-            End If
-        Next
-
-        Me.ResumeLayout()
-    End Sub
-
-    Protected Overrides Sub OnResize(e As EventArgs)
-        MyBase.OnResize(e)
-
-        If Not layoutInitialized Then Return
-        If originalSize.Width = 0 OrElse originalSize.Height = 0 Then Return
-
-        Dim scaleX As Single = CSng(Me.Width) / originalSize.Width
-        Dim scaleY As Single = CSng(Me.Height) / originalSize.Height
-
-        ApplyScale(scaleX, scaleY)
-    End Sub
 
     ' ========================
     ' Dashboard Load
@@ -106,9 +31,6 @@ Public Class DashboardControl
         ' Make the dashboard fill its parent form / container
         Me.Dock = DockStyle.Fill
 
-        ' Initialize scaling based on the designer layout
-        InitializeLayoutScaling()
-
         ' Timer for auto-refreshing charts
         Timer2.Interval = 30000 ' every 30 seconds
         Timer2.Start()
@@ -116,6 +38,8 @@ Public Class DashboardControl
         ' Defer drawing until after layout is finished
         Me.BeginInvoke(New Action(AddressOf InitializeDashboard))
     End Sub
+
+
 
     ' Draw everything once (first load)
     Private Sub InitializeDashboard()

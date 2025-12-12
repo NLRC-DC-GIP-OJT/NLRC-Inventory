@@ -26,6 +26,7 @@ Partial Class Units
         Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel1 = New Panel()
+        qrbtngenerate = New Button()
         multibtn = New Button()
         unitaddbtn = New Button()
         filtertxt = New TextBox()
@@ -39,7 +40,6 @@ Partial Class Units
         lblPageInfo = New Label()
         Panel3 = New Panel()
         savedgvbtn = New Button()
-        qrbtngenerate = New Button()
         Panel1.SuspendLayout()
         Panel2.SuspendLayout()
         CType(allunitsdgv, ComponentModel.ISupportInitialize).BeginInit()
@@ -64,10 +64,24 @@ Partial Class Units
         Panel1.Size = New Size(1567, 75)
         Panel1.TabIndex = 0
         ' 
+        ' qrbtngenerate
+        ' 
+        qrbtngenerate.Anchor = AnchorStyles.None
+        qrbtngenerate.BackColor = Color.SlateGray
+        qrbtngenerate.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        qrbtngenerate.ForeColor = Color.White
+        qrbtngenerate.Location = New Point(837, 11)
+        qrbtngenerate.Margin = New Padding(3, 2, 3, 2)
+        qrbtngenerate.Name = "qrbtngenerate"
+        qrbtngenerate.Size = New Size(184, 50)
+        qrbtngenerate.TabIndex = 23
+        qrbtngenerate.Text = "Generate QR"
+        qrbtngenerate.UseVisualStyleBackColor = False
+        ' 
         ' multibtn
         ' 
         multibtn.Anchor = AnchorStyles.None
-        multibtn.BackColor = Color.CornflowerBlue
+        multibtn.BackColor = Color.SlateGray
         multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         multibtn.ForeColor = Color.White
         multibtn.Location = New Point(1036, 10)
@@ -81,7 +95,7 @@ Partial Class Units
         ' unitaddbtn
         ' 
         unitaddbtn.Anchor = AnchorStyles.Top
-        unitaddbtn.BackColor = Color.CornflowerBlue
+        unitaddbtn.BackColor = Color.SlateGray
         unitaddbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         unitaddbtn.ForeColor = Color.White
         unitaddbtn.Location = New Point(1233, 10)
@@ -191,7 +205,7 @@ Partial Class Units
         ' 
         btnNext.Anchor = AnchorStyles.Bottom
         btnNext.AutoSize = True
-        btnNext.BackColor = Color.CornflowerBlue
+        btnNext.BackColor = Color.SlateGray
         btnNext.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnNext.ForeColor = Color.White
         btnNext.Location = New Point(878, 815)
@@ -206,7 +220,7 @@ Partial Class Units
         ' 
         btnPrev.Anchor = AnchorStyles.Bottom
         btnPrev.AutoSize = True
-        btnPrev.BackColor = Color.CornflowerBlue
+        btnPrev.BackColor = Color.SlateGray
         btnPrev.Font = New Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnPrev.ForeColor = Color.White
         btnPrev.Location = New Point(681, 815)
@@ -260,20 +274,6 @@ Partial Class Units
         savedgvbtn.Text = "Save"
         savedgvbtn.UseVisualStyleBackColor = False
         savedgvbtn.Visible = False
-        ' 
-        ' qrbtngenerate
-        ' 
-        qrbtngenerate.Anchor = AnchorStyles.None
-        qrbtngenerate.BackColor = Color.CornflowerBlue
-        qrbtngenerate.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        qrbtngenerate.ForeColor = Color.White
-        qrbtngenerate.Location = New Point(837, 11)
-        qrbtngenerate.Margin = New Padding(3, 2, 3, 2)
-        qrbtngenerate.Name = "qrbtngenerate"
-        qrbtngenerate.Size = New Size(184, 50)
-        qrbtngenerate.TabIndex = 23
-        qrbtngenerate.Text = "Generate QR"
-        qrbtngenerate.UseVisualStyleBackColor = False
         ' 
         ' Units
         ' 

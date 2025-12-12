@@ -23,18 +23,24 @@ Partial Class DashboardControl
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
         components = New ComponentModel.Container()
-        Dim DataGridViewCellStyle12 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle13 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle14 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle15 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle16 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle17 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle18 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle19 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle20 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle21 As DataGridViewCellStyle = New DataGridViewCellStyle()
-        Dim DataGridViewCellStyle22 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle2 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle4 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle5 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle6 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle7 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle8 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle9 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle10 As DataGridViewCellStyle = New DataGridViewCellStyle()
+        Dim DataGridViewCellStyle11 As DataGridViewCellStyle = New DataGridViewCellStyle()
         Panel17 = New Panel()
+        Panel2 = New Panel()
+        activitydgv = New DataGridView()
+        Label14 = New Label()
+        Panel1 = New Panel()
+        recentdgv = New DataGridView()
+        Label13 = New Label()
         Panel3 = New Panel()
         Panel16 = New Panel()
         Label1 = New Label()
@@ -60,16 +66,12 @@ Partial Class DashboardControl
         Panel15 = New Panel()
         Panel8 = New Panel()
         Label11 = New Label()
-        Panel12 = New Panel()
-        Panel1 = New Panel()
-        recentdgv = New DataGridView()
-        Label13 = New Label()
-        Panel9 = New Panel()
-        Panel2 = New Panel()
-        activitydgv = New DataGridView()
-        Label14 = New Label()
         Timer2 = New Timer(components)
         Panel17.SuspendLayout()
+        Panel2.SuspendLayout()
+        CType(activitydgv, ComponentModel.ISupportInitialize).BeginInit()
+        Panel1.SuspendLayout()
+        CType(recentdgv, ComponentModel.ISupportInitialize).BeginInit()
         Panel3.SuspendLayout()
         Panel13.SuspendLayout()
         Panel14.SuspendLayout()
@@ -81,17 +83,13 @@ Partial Class DashboardControl
         Panel6.SuspendLayout()
         Panel7.SuspendLayout()
         Panel15.SuspendLayout()
-        Panel12.SuspendLayout()
-        Panel1.SuspendLayout()
-        CType(recentdgv, ComponentModel.ISupportInitialize).BeginInit()
-        Panel9.SuspendLayout()
-        Panel2.SuspendLayout()
-        CType(activitydgv, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' Panel17
         ' 
         Panel17.BackColor = Color.White
+        Panel17.Controls.Add(Panel2)
+        Panel17.Controls.Add(Panel1)
         Panel17.Controls.Add(Panel3)
         Panel17.Controls.Add(Panel13)
         Panel17.Controls.Add(Panel11)
@@ -101,13 +99,123 @@ Partial Class DashboardControl
         Panel17.Controls.Add(Panel7)
         Panel17.Controls.Add(Label3)
         Panel17.Controls.Add(Panel15)
-        Panel17.Controls.Add(Panel12)
-        Panel17.Controls.Add(Panel9)
         Panel17.Dock = DockStyle.Fill
         Panel17.Location = New Point(0, 0)
         Panel17.Name = "Panel17"
         Panel17.Size = New Size(1567, 882)
         Panel17.TabIndex = 17
+        ' 
+        ' Panel2
+        ' 
+        Panel2.BorderStyle = BorderStyle.FixedSingle
+        Panel2.Controls.Add(activitydgv)
+        Panel2.Controls.Add(Label14)
+        Panel2.Location = New Point(730, 510)
+        Panel2.Name = "Panel2"
+        Panel2.Size = New Size(811, 305)
+        Panel2.TabIndex = 26
+        ' 
+        ' activitydgv
+        ' 
+        activitydgv.AllowUserToAddRows = False
+        activitydgv.AllowUserToDeleteRows = False
+        activitydgv.AllowUserToResizeColumns = False
+        activitydgv.AllowUserToResizeRows = False
+        DataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle1.BackColor = Color.SkyBlue
+        DataGridViewCellStyle1.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle1.ForeColor = Color.White
+        DataGridViewCellStyle1.SelectionBackColor = Color.Transparent
+        DataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle1.WrapMode = DataGridViewTriState.True
+        activitydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle1
+        activitydgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        DataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle2.BackColor = SystemColors.Window
+        DataGridViewCellStyle2.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle2.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle2.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle2.WrapMode = DataGridViewTriState.False
+        activitydgv.DefaultCellStyle = DataGridViewCellStyle2
+        activitydgv.Location = New Point(3, 27)
+        activitydgv.Margin = New Padding(3, 2, 3, 2)
+        activitydgv.Name = "activitydgv"
+        activitydgv.ReadOnly = True
+        activitydgv.RowHeadersVisible = False
+        activitydgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
+        DataGridViewCellStyle3.BackColor = Color.AliceBlue
+        DataGridViewCellStyle3.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle3.ForeColor = Color.Black
+        activitydgv.RowsDefaultCellStyle = DataGridViewCellStyle3
+        activitydgv.Size = New Size(803, 276)
+        activitydgv.TabIndex = 9
+        ' 
+        ' Label14
+        ' 
+        Label14.AutoSize = True
+        Label14.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label14.Location = New Point(325, 5)
+        Label14.Name = "Label14"
+        Label14.Size = New Size(172, 18)
+        Label14.TabIndex = 7
+        Label14.Text = "RECENT ACTIVITIES"
+        ' 
+        ' Panel1
+        ' 
+        Panel1.BorderStyle = BorderStyle.FixedSingle
+        Panel1.Controls.Add(recentdgv)
+        Panel1.Controls.Add(Label13)
+        Panel1.Location = New Point(18, 510)
+        Panel1.Name = "Panel1"
+        Panel1.Size = New Size(708, 305)
+        Panel1.TabIndex = 25
+        ' 
+        ' recentdgv
+        ' 
+        recentdgv.AllowUserToAddRows = False
+        recentdgv.AllowUserToDeleteRows = False
+        recentdgv.AllowUserToResizeColumns = False
+        recentdgv.AllowUserToResizeRows = False
+        DataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle4.BackColor = Color.Transparent
+        DataGridViewCellStyle4.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle4.ForeColor = Color.White
+        DataGridViewCellStyle4.SelectionBackColor = Color.Transparent
+        DataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle4.WrapMode = DataGridViewTriState.True
+        recentdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle4
+        recentdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        DataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle5.BackColor = Color.SkyBlue
+        DataGridViewCellStyle5.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle5.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle5.SelectionBackColor = Color.Transparent
+        DataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle5.WrapMode = DataGridViewTriState.False
+        recentdgv.DefaultCellStyle = DataGridViewCellStyle5
+        recentdgv.Location = New Point(3, 29)
+        recentdgv.Margin = New Padding(3, 2, 3, 2)
+        recentdgv.Name = "recentdgv"
+        recentdgv.ReadOnly = True
+        recentdgv.RowHeadersVisible = False
+        recentdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
+        DataGridViewCellStyle6.BackColor = Color.AliceBlue
+        DataGridViewCellStyle6.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle6.ForeColor = Color.Black
+        recentdgv.RowsDefaultCellStyle = DataGridViewCellStyle6
+        recentdgv.Size = New Size(702, 273)
+        recentdgv.TabIndex = 9
+        ' 
+        ' Label13
+        ' 
+        Label13.AutoSize = True
+        Label13.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        Label13.Location = New Point(214, 5)
+        Label13.Name = "Label13"
+        Label13.Size = New Size(312, 18)
+        Label13.TabIndex = 7
+        Label13.Text = "RECENT UNIT ASSIGNMENT ACTIVITY"
         ' 
         ' Panel3
         ' 
@@ -115,9 +223,9 @@ Partial Class DashboardControl
         Panel3.BorderStyle = BorderStyle.FixedSingle
         Panel3.Controls.Add(Panel16)
         Panel3.Controls.Add(Label1)
-        Panel3.Location = New Point(506, 204)
+        Panel3.Location = New Point(506, 200)
         Panel3.Name = "Panel3"
-        Panel3.Size = New Size(336, 335)
+        Panel3.Size = New Size(336, 305)
         Panel3.TabIndex = 23
         ' 
         ' Panel16
@@ -125,7 +233,7 @@ Partial Class DashboardControl
         Panel16.AutoSize = True
         Panel16.Location = New Point(3, 35)
         Panel16.Name = "Panel16"
-        Panel16.Size = New Size(328, 292)
+        Panel16.Size = New Size(328, 265)
         Panel16.TabIndex = 13
         ' 
         ' Label1
@@ -144,39 +252,39 @@ Partial Class DashboardControl
         Panel13.BorderStyle = BorderStyle.FixedSingle
         Panel13.Controls.Add(Panel14)
         Panel13.Controls.Add(Label15)
-        Panel13.Location = New Point(18, 204)
+        Panel13.Location = New Point(18, 199)
         Panel13.Name = "Panel13"
-        Panel13.Size = New Size(482, 335)
+        Panel13.Size = New Size(482, 305)
         Panel13.TabIndex = 20
         ' 
         ' Panel14
         ' 
         Panel14.Anchor = AnchorStyles.None
         Panel14.Controls.Add(historydgv)
-        Panel14.Location = New Point(4, 35)
+        Panel14.Location = New Point(4, 31)
         Panel14.Name = "Panel14"
-        Panel14.Size = New Size(473, 295)
+        Panel14.Size = New Size(473, 269)
         Panel14.TabIndex = 11
         ' 
         ' historydgv
         ' 
-        DataGridViewCellStyle12.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle12.BackColor = SystemColors.HighlightText
-        DataGridViewCellStyle12.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle12.ForeColor = SystemColors.WindowText
-        DataGridViewCellStyle12.SelectionBackColor = SystemColors.HighlightText
-        DataGridViewCellStyle12.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle12.WrapMode = DataGridViewTriState.True
-        historydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle12
+        DataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle7.BackColor = SystemColors.HighlightText
+        DataGridViewCellStyle7.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle7.ForeColor = SystemColors.WindowText
+        DataGridViewCellStyle7.SelectionBackColor = SystemColors.HighlightText
+        DataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle7.WrapMode = DataGridViewTriState.True
+        historydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle7
         historydgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle13.Alignment = DataGridViewContentAlignment.MiddleLeft
-        DataGridViewCellStyle13.BackColor = SystemColors.Window
-        DataGridViewCellStyle13.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle13.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle13.SelectionBackColor = SystemColors.HighlightText
-        DataGridViewCellStyle13.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle13.WrapMode = DataGridViewTriState.False
-        historydgv.DefaultCellStyle = DataGridViewCellStyle13
+        DataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft
+        DataGridViewCellStyle8.BackColor = SystemColors.Window
+        DataGridViewCellStyle8.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle8.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle8.SelectionBackColor = SystemColors.HighlightText
+        DataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle8.WrapMode = DataGridViewTriState.False
+        historydgv.DefaultCellStyle = DataGridViewCellStyle8
         historydgv.Dock = DockStyle.Fill
         historydgv.Location = New Point(0, 0)
         historydgv.Margin = New Padding(3, 2, 3, 2)
@@ -184,7 +292,7 @@ Partial Class DashboardControl
         historydgv.ReadOnly = True
         historydgv.RowHeadersVisible = False
         historydgv.RowHeadersWidth = 51
-        historydgv.Size = New Size(473, 295)
+        historydgv.Size = New Size(473, 269)
         historydgv.TabIndex = 23
         ' 
         ' Label15
@@ -205,7 +313,7 @@ Partial Class DashboardControl
         Panel11.Controls.Add(Label12)
         Panel11.Location = New Point(1113, 63)
         Panel11.Name = "Panel11"
-        Panel11.Size = New Size(410, 476)
+        Panel11.Size = New Size(428, 442)
         Panel11.TabIndex = 22
         ' 
         ' catdgv
@@ -214,41 +322,41 @@ Partial Class DashboardControl
         catdgv.AllowUserToDeleteRows = False
         catdgv.AllowUserToResizeColumns = False
         catdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle14.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle14.BackColor = Color.CornflowerBlue
-        DataGridViewCellStyle14.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle14.ForeColor = Color.White
-        DataGridViewCellStyle14.SelectionBackColor = SystemColors.Highlight
-        DataGridViewCellStyle14.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle14.WrapMode = DataGridViewTriState.True
-        catdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle14
+        DataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle9.BackColor = Color.CornflowerBlue
+        DataGridViewCellStyle9.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle9.ForeColor = Color.White
+        DataGridViewCellStyle9.SelectionBackColor = SystemColors.Highlight
+        DataGridViewCellStyle9.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle9.WrapMode = DataGridViewTriState.True
+        catdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle9
         catdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle15.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle15.BackColor = SystemColors.Window
-        DataGridViewCellStyle15.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle15.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle15.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle15.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle15.WrapMode = DataGridViewTriState.False
-        catdgv.DefaultCellStyle = DataGridViewCellStyle15
-        catdgv.Location = New Point(3, 35)
+        DataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle10.BackColor = SystemColors.Window
+        DataGridViewCellStyle10.Font = New Font("Segoe UI", 9F)
+        DataGridViewCellStyle10.ForeColor = SystemColors.ControlText
+        DataGridViewCellStyle10.SelectionBackColor = Color.SkyBlue
+        DataGridViewCellStyle10.SelectionForeColor = SystemColors.HighlightText
+        DataGridViewCellStyle10.WrapMode = DataGridViewTriState.False
+        catdgv.DefaultCellStyle = DataGridViewCellStyle10
+        catdgv.Location = New Point(2, 26)
         catdgv.Margin = New Padding(3, 2, 3, 2)
         catdgv.Name = "catdgv"
         catdgv.ReadOnly = True
         catdgv.RowHeadersVisible = False
         catdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle16.BackColor = Color.AliceBlue
-        DataGridViewCellStyle16.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle16.ForeColor = Color.Black
-        catdgv.RowsDefaultCellStyle = DataGridViewCellStyle16
-        catdgv.Size = New Size(399, 433)
+        DataGridViewCellStyle11.BackColor = Color.AliceBlue
+        DataGridViewCellStyle11.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
+        DataGridViewCellStyle11.ForeColor = Color.Black
+        catdgv.RowsDefaultCellStyle = DataGridViewCellStyle11
+        catdgv.Size = New Size(421, 410)
         catdgv.TabIndex = 8
         ' 
         ' Label12
         ' 
         Label12.AutoSize = True
         Label12.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label12.Location = New Point(98, 8)
+        Label12.Location = New Point(133, 4)
         Label12.Name = "Label12"
         Label12.Size = New Size(204, 18)
         Label12.TabIndex = 7
@@ -396,7 +504,7 @@ Partial Class DashboardControl
         Panel15.Controls.Add(Label11)
         Panel15.Location = New Point(848, 241)
         Panel15.Name = "Panel15"
-        Panel15.Size = New Size(262, 298)
+        Panel15.Size = New Size(262, 264)
         Panel15.TabIndex = 21
         ' 
         ' Panel8
@@ -404,7 +512,7 @@ Partial Class DashboardControl
         Panel8.AutoSize = True
         Panel8.Location = New Point(3, 35)
         Panel8.Name = "Panel8"
-        Panel8.Size = New Size(254, 258)
+        Panel8.Size = New Size(254, 224)
         Panel8.TabIndex = 13
         ' 
         ' Label11
@@ -416,142 +524,6 @@ Partial Class DashboardControl
         Label11.Size = New Size(188, 18)
         Label11.TabIndex = 7
         Label11.Text = "ASSIGNMENT STATUS"
-        ' 
-        ' Panel12
-        ' 
-        Panel12.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
-        Panel12.BorderStyle = BorderStyle.FixedSingle
-        Panel12.Controls.Add(Panel1)
-        Panel12.Controls.Add(Label13)
-        Panel12.Location = New Point(18, 551)
-        Panel12.Name = "Panel12"
-        Panel12.Size = New Size(708, 306)
-        Panel12.TabIndex = 14
-        ' 
-        ' Panel1
-        ' 
-        Panel1.Controls.Add(recentdgv)
-        Panel1.Location = New Point(-1, 26)
-        Panel1.Margin = New Padding(3, 2, 3, 2)
-        Panel1.Name = "Panel1"
-        Panel1.Size = New Size(704, 273)
-        Panel1.TabIndex = 8
-        ' 
-        ' recentdgv
-        ' 
-        recentdgv.AllowUserToAddRows = False
-        recentdgv.AllowUserToDeleteRows = False
-        recentdgv.AllowUserToResizeColumns = False
-        recentdgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle17.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle17.BackColor = Color.Transparent
-        DataGridViewCellStyle17.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle17.ForeColor = Color.White
-        DataGridViewCellStyle17.SelectionBackColor = Color.Transparent
-        DataGridViewCellStyle17.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle17.WrapMode = DataGridViewTriState.True
-        recentdgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle17
-        recentdgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle18.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle18.BackColor = Color.SkyBlue
-        DataGridViewCellStyle18.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle18.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle18.SelectionBackColor = Color.Transparent
-        DataGridViewCellStyle18.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle18.WrapMode = DataGridViewTriState.False
-        recentdgv.DefaultCellStyle = DataGridViewCellStyle18
-        recentdgv.Dock = DockStyle.Fill
-        recentdgv.Location = New Point(0, 0)
-        recentdgv.Margin = New Padding(3, 2, 3, 2)
-        recentdgv.Name = "recentdgv"
-        recentdgv.ReadOnly = True
-        recentdgv.RowHeadersVisible = False
-        recentdgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle19.BackColor = Color.AliceBlue
-        DataGridViewCellStyle19.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle19.ForeColor = Color.Black
-        recentdgv.RowsDefaultCellStyle = DataGridViewCellStyle19
-        recentdgv.Size = New Size(704, 273)
-        recentdgv.TabIndex = 9
-        ' 
-        ' Label13
-        ' 
-        Label13.AutoSize = True
-        Label13.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label13.Location = New Point(123, 4)
-        Label13.Name = "Label13"
-        Label13.Size = New Size(312, 18)
-        Label13.TabIndex = 7
-        Label13.Text = "RECENT UNIT ASSIGNMENT ACTIVITY"
-        ' 
-        ' Panel9
-        ' 
-        Panel9.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
-        Panel9.AutoSize = True
-        Panel9.BorderStyle = BorderStyle.FixedSingle
-        Panel9.Controls.Add(Panel2)
-        Panel9.Controls.Add(Label14)
-        Panel9.Location = New Point(741, 551)
-        Panel9.Name = "Panel9"
-        Panel9.Size = New Size(793, 306)
-        Panel9.TabIndex = 10
-        ' 
-        ' Panel2
-        ' 
-        Panel2.AutoSize = True
-        Panel2.Controls.Add(activitydgv)
-        Panel2.Location = New Point(-1, 26)
-        Panel2.Margin = New Padding(3, 2, 3, 2)
-        Panel2.Name = "Panel2"
-        Panel2.Size = New Size(789, 276)
-        Panel2.TabIndex = 8
-        ' 
-        ' activitydgv
-        ' 
-        activitydgv.AllowUserToAddRows = False
-        activitydgv.AllowUserToDeleteRows = False
-        activitydgv.AllowUserToResizeColumns = False
-        activitydgv.AllowUserToResizeRows = False
-        DataGridViewCellStyle20.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle20.BackColor = Color.SkyBlue
-        DataGridViewCellStyle20.Font = New Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle20.ForeColor = Color.White
-        DataGridViewCellStyle20.SelectionBackColor = Color.Transparent
-        DataGridViewCellStyle20.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle20.WrapMode = DataGridViewTriState.True
-        activitydgv.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle20
-        activitydgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridViewCellStyle21.Alignment = DataGridViewContentAlignment.MiddleCenter
-        DataGridViewCellStyle21.BackColor = SystemColors.Window
-        DataGridViewCellStyle21.Font = New Font("Segoe UI", 9F)
-        DataGridViewCellStyle21.ForeColor = SystemColors.ControlText
-        DataGridViewCellStyle21.SelectionBackColor = Color.SkyBlue
-        DataGridViewCellStyle21.SelectionForeColor = SystemColors.HighlightText
-        DataGridViewCellStyle21.WrapMode = DataGridViewTriState.False
-        activitydgv.DefaultCellStyle = DataGridViewCellStyle21
-        activitydgv.Dock = DockStyle.Fill
-        activitydgv.Location = New Point(0, 0)
-        activitydgv.Margin = New Padding(3, 2, 3, 2)
-        activitydgv.Name = "activitydgv"
-        activitydgv.ReadOnly = True
-        activitydgv.RowHeadersVisible = False
-        activitydgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders
-        DataGridViewCellStyle22.BackColor = Color.AliceBlue
-        DataGridViewCellStyle22.Font = New Font("Arial", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        DataGridViewCellStyle22.ForeColor = Color.Black
-        activitydgv.RowsDefaultCellStyle = DataGridViewCellStyle22
-        activitydgv.Size = New Size(789, 276)
-        activitydgv.TabIndex = 9
-        ' 
-        ' Label14
-        ' 
-        Label14.AutoSize = True
-        Label14.Font = New Font("Arial Rounded MT Bold", 12F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label14.Location = New Point(317, 5)
-        Label14.Name = "Label14"
-        Label14.Size = New Size(172, 18)
-        Label14.TabIndex = 7
-        Label14.Text = "RECENT ACTIVITIES"
         ' 
         ' Timer2
         ' 
@@ -566,6 +538,12 @@ Partial Class DashboardControl
         Size = New Size(1567, 882)
         Panel17.ResumeLayout(False)
         Panel17.PerformLayout()
+        Panel2.ResumeLayout(False)
+        Panel2.PerformLayout()
+        CType(activitydgv, ComponentModel.ISupportInitialize).EndInit()
+        Panel1.ResumeLayout(False)
+        Panel1.PerformLayout()
+        CType(recentdgv, ComponentModel.ISupportInitialize).EndInit()
         Panel3.ResumeLayout(False)
         Panel3.PerformLayout()
         Panel13.ResumeLayout(False)
@@ -585,24 +563,12 @@ Partial Class DashboardControl
         Panel7.PerformLayout()
         Panel15.ResumeLayout(False)
         Panel15.PerformLayout()
-        Panel12.ResumeLayout(False)
-        Panel12.PerformLayout()
-        Panel1.ResumeLayout(False)
-        CType(recentdgv, ComponentModel.ISupportInitialize).EndInit()
-        Panel9.ResumeLayout(False)
-        Panel9.PerformLayout()
-        Panel2.ResumeLayout(False)
-        CType(activitydgv, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
     Friend WithEvents Timer2 As Timer
     Friend WithEvents Panel17 As Panel
-    Friend WithEvents Panel12 As Panel
-    Friend WithEvents Panel1 As Panel
     Friend WithEvents recentdgv As DataGridView
     Friend WithEvents Label13 As Label
-    Friend WithEvents Panel9 As Panel
-    Friend WithEvents Panel2 As Panel
     Friend WithEvents activitydgv As DataGridView
     Friend WithEvents Label14 As Label
     Friend WithEvents Panel3 As Panel
@@ -630,5 +596,7 @@ Partial Class DashboardControl
     Friend WithEvents Panel15 As Panel
     Friend WithEvents Panel8 As Panel
     Friend WithEvents Label11 As Label
+    Friend WithEvents Panel2 As Panel
+    Friend WithEvents Panel1 As Panel
 
 End Class

@@ -112,7 +112,7 @@ Partial Class AddNew
         ' 
         ' addbtn1
         ' 
-        addbtn1.BackColor = Color.CornflowerBlue
+        addbtn1.BackColor = Color.SlateGray
         addbtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn1.ForeColor = Color.White
         addbtn1.Location = New Point(881, 69)
@@ -325,7 +325,7 @@ Partial Class AddNew
         ' 
         ' savebtn1
         ' 
-        savebtn1.BackColor = Color.CornflowerBlue
+        savebtn1.BackColor = Color.SlateGray
         savebtn1.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         savebtn1.ForeColor = Color.White
         savebtn1.Location = New Point(881, 14)
