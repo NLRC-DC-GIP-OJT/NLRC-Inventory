@@ -41,7 +41,7 @@ Public Class model
 
                 Dim query As String = "
                         SELECT pointer
-                        FROM m_useraccounts
+                        FROM M_UserAccounts
                         WHERE UAUsername = @username
                           AND UAPassword = @password
                           AND UAActive = 1
@@ -70,7 +70,7 @@ Public Class model
                 conn.Open()
                 Dim query As String = "
                         SELECT UAModule
-                        FROM m_useraccounts
+                        FROM M_UserAccounts
                         WHERE pointer = @pointer
                         LIMIT 1;"
                 Using cmd As New MySqlCommand(query, conn)
@@ -2939,7 +2939,7 @@ Public Class model
                 FROM inv_devices d
                 LEFT JOIN inv_device_category dc ON d.dev_category_pointer = dc.pointer
                 LEFT JOIN inv_brands b ON d.brands = b.pointer
-                LEFT JOIN m_useraccounts u ON d.created_by = u.pointer
+                LEFT JOIN M_UserAccounts u ON d.created_by = u.pointer
 
                 UNION ALL
 
@@ -2948,7 +2948,7 @@ Public Class model
                        u.created_at AS DateAdded,
                        ua.UAUsername AS CreatedBy
                 FROM inv_units u
-                LEFT JOIN m_useraccounts ua ON u.created_by = ua.pointer
+                LEFT JOIN M_UserAccounts ua ON u.created_by = ua.pointer
 
                 ORDER BY DateAdded DESC
                 LIMIT @TopCount;
@@ -2982,7 +2982,7 @@ Public Class model
                             DATE_FORMAT(u.created_at, '%Y-%m-%d %H:%i:%s') AS `Created At`
                         FROM inv_units AS u
                         LEFT JOIN db_nlrc_intranet.user_info AS i ON u.assigned_personnel = i.user_id
-                        LEFT JOIN m_useraccounts AS c ON u.created_by = c.pointer
+                        LEFT JOIN M_UserAccounts AS c ON u.created_by = c.pointer
                         ORDER BY u.pointer DESC
                     "
 
@@ -3637,7 +3637,7 @@ Public Class model
                                 h.date,
                                 u.UAUsername AS updated_by_name
                          FROM inv_device_history h
-                         LEFT JOIN m_useraccounts u
+                         LEFT JOIN M_UserAccounts u
                                 ON u.pointer = h.updated_by
                          WHERE h.device_pointer = @dev
                          ORDER BY h.date DESC, h.pointer DESC;"
@@ -3676,7 +3676,7 @@ Public Class model
                        ON d.pointer = h.device_pointer
                 LEFT JOIN inv_device_category c 
                        ON c.pointer = d.dev_category_pointer
-                LEFT JOIN m_useraccounts u
+                LEFT JOIN M_UserAccounts u
                        ON u.pointer = h.updated_by
                 ORDER BY h.date DESC, h.pointer DESC
                 LIMIT 10;"
@@ -4054,6 +4054,97 @@ Public Class model
         End Try
     End Sub
 
+
+
+    Public Function UpdateDevicesBulk(changes As List(Of Tuple(Of Integer, String, String, String, String)),
+                                  userId As Integer) As Integer
+
+        Dim updated As Integer = 0
+
+        Try
+            Using conn As MySqlConnection = Database.GetConnection()
+                conn.Open()
+
+                Using tx = conn.BeginTransaction()
+                    Try
+                        ' 1) UPDATE DEVICE
+                        Dim sqlUpdate As String =
+                        "UPDATE inv_devices " &
+                        "SET nsoc_name=@nsoc, property_number=@prop, updated_by=@uid, updated_at=NOW() " &
+                        "WHERE pointer=@id;"
+
+                        Using cmdUpd As New MySqlCommand(sqlUpdate, conn, tx)
+                            cmdUpd.Parameters.Add("@nsoc", MySqlDbType.VarChar)
+                            cmdUpd.Parameters.Add("@prop", MySqlDbType.VarChar)
+                            cmdUpd.Parameters.Add("@uid", MySqlDbType.Int32)
+                            cmdUpd.Parameters.Add("@id", MySqlDbType.Int32)
+
+                            For Each ch In changes
+                                Dim id As Integer = ch.Item1
+                                Dim oldNsoc As String = If(ch.Item2, "")
+                                Dim newNsoc As String = If(ch.Item3, "")
+                                Dim oldProp As String = If(ch.Item4, "")
+                                Dim newProp As String = If(ch.Item5, "")
+
+                                cmdUpd.Parameters("@nsoc").Value = If(String.IsNullOrWhiteSpace(newNsoc), CType(DBNull.Value, Object), newNsoc)
+                                cmdUpd.Parameters("@prop").Value = If(String.IsNullOrWhiteSpace(newProp), CType(DBNull.Value, Object), newProp)
+                                cmdUpd.Parameters("@uid").Value = userId
+                                cmdUpd.Parameters("@id").Value = id
+
+                                Dim aff = cmdUpd.ExecuteNonQuery()
+                                If aff > 0 Then updated += 1
+
+                                ' 2) HISTORY (insert per field changed)
+                                If Not String.Equals(oldNsoc.Trim(), newNsoc.Trim(), StringComparison.Ordinal) Then
+                                    InsertDeviceHistory(conn, tx, id, "NSOC Name", oldNsoc, newNsoc, userId)
+                                End If
+
+                                If Not String.Equals(oldProp.Trim(), newProp.Trim(), StringComparison.Ordinal) Then
+                                    InsertDeviceHistory(conn, tx, id, "Property Number", oldProp, newProp, userId)
+                                End If
+                            Next
+                        End Using
+
+                        tx.Commit()
+
+                    Catch
+                        tx.Rollback()
+                        Throw
+                    End Try
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Bulk update error: " & ex.Message)
+        End Try
+
+        Return updated
+    End Function
+
+
+    ' ✅ inserts into inv_device_history
+    Private Sub InsertDeviceHistory(conn As MySqlConnection,
+                                tx As MySqlTransaction,
+                                devicePointer As Integer,
+                                remarks As String,
+                                updatedFrom As String,
+                                updatedTo As String,
+                                userId As Integer)
+
+        Dim sqlHist As String =
+        "INSERT INTO inv_device_history " &
+        "(device_pointer, updated_from, updated_to, remarks, updated_by, `date`) " &
+        "VALUES (@dev, @from, @to, @remarks, @by, NOW());"
+
+        Using cmd As New MySqlCommand(sqlHist, conn, tx)
+            cmd.Parameters.AddWithValue("@dev", devicePointer)
+            cmd.Parameters.AddWithValue("@from", If(updatedFrom, ""))
+            cmd.Parameters.AddWithValue("@to", If(updatedTo, ""))
+            cmd.Parameters.AddWithValue("@remarks", remarks)
+            cmd.Parameters.AddWithValue("@by", userId)
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
 
 
 

@@ -3,6 +3,8 @@ Imports System.Text
 Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports MySql.Data.MySqlClient
+
 
 
 
@@ -30,6 +32,19 @@ Public Class devices
     Private Const BaseRowHeight As Integer = 35
     Private Const BaseHeaderHeight As Integer = 32
     Private Const ActionsColWidth As Integer = 80   ' narrow Edit/View column
+
+    ' ✅ BULK EDIT FLAG
+    Private bulkEditMode As Boolean = False
+    Private allDevicesTable As DataTable   ' baseline values from DB
+
+    ' === button highlight support ===
+    Private multibtnOrigBack As Color
+    Private multibtnOrigFore As Color
+    Private multibtnOrigFlat As FlatStyle
+    Private multibtnStyleSaved As Boolean = False
+
+
+
 
     ' ========================
     ' 🔁 AUTO-RESIZE SUPPORT
@@ -169,6 +184,7 @@ Public Class devices
                         Optional search As String = "")
         Try
             Dim dt As DataTable = mdl.GetDevices()
+            allDevicesTable = dt.Copy()
             devicesdgv.RowTemplate.Height = BaseRowHeight
 
             If dt Is Nothing OrElse dt.Rows.Count = 0 Then
@@ -196,9 +212,11 @@ Public Class devices
             End If
 
             allFilteredRows = filtered.ToList()
-            totalPages = Math.Ceiling(allFilteredRows.Count / pageSize)
+            totalPages = CInt(Math.Ceiling(allFilteredRows.Count / pageSize))
+            If totalPages < 1 Then totalPages = 1
             If currentPage > totalPages Then currentPage = totalPages
             If currentPage < 1 Then currentPage = 1
+
 
             Dim pageRows = allFilteredRows.Skip((currentPage - 1) * pageSize).Take(pageSize)
             If pageRows.Any() Then
@@ -296,6 +314,8 @@ Public Class devices
 
             ' 🔧 adjust row/header heights to current resolution
             AdjustDevicesGridLayout()
+            ApplyReadOnlyStateDevices()
+
 
         Catch ex As Exception
             MessageBox.Show("Error loading devices: " & ex.Message)
@@ -343,6 +363,12 @@ Public Class devices
     Private Sub devicesdgv_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles devicesdgv.CellContentClick
         If e.RowIndex < 0 Then Return
         If devicesdgv.Columns(e.ColumnIndex).Name <> "Actions" Then Return
+
+        If bulkEditMode Then
+            MessageBox.Show("Finish bulk edit first (click DONE EDIT).", "Bulk Edit", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
 
         Dim cellRect As Rectangle = devicesdgv.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, True)
         Dim x As Integer = devicesdgv.PointToClient(Cursor.Position).X - cellRect.X
@@ -396,6 +422,12 @@ Public Class devices
     ' 🕒 Timer Tick event for auto refresh
     Private Sub refreshTimer_Tick(sender As Object, e As EventArgs) Handles refreshTimer.Tick
         Try
+            ' ✅ don’t refresh while bulk edit is ON
+            If bulkEditMode Then Exit Sub
+
+            ' ✅ don’t refresh while user is typing in a cell
+            If devicesdgv IsNot Nothing AndAlso devicesdgv.IsCurrentCellInEditMode Then Exit Sub
+
             Dim dt As DataTable = mdl.GetDevices()
             Dim newHash As String = ComputeDeviceHash(dt)
             If newHash <> lastDeviceHash Then
@@ -406,6 +438,7 @@ Public Class devices
             Console.WriteLine("Auto-refresh error: " & ex.Message)
         End Try
     End Sub
+
 
     ' DLL imports
     <DllImport("user32.dll", SetLastError:=True)>
@@ -615,7 +648,158 @@ Public Class devices
         End Try
     End Sub
 
-    Private Sub importbtn_Click(sender As Object, e As EventArgs)
+    ' ✅ only allow editing for NSOC Name + Property Number when bulkEditMode = True
+    Private Sub ApplyReadOnlyStateDevices()
+        If devicesdgv Is Nothing OrElse devicesdgv.Columns.Count = 0 Then Return
 
+        devicesdgv.ReadOnly = False
+
+        For Each col As DataGridViewColumn In devicesdgv.Columns
+
+            ' actions is always read-only
+            If col.Name = "Actions" Then
+                col.ReadOnly = True
+
+                ' bulk edit ON: only 2 columns editable
+            ElseIf bulkEditMode AndAlso (col.Name = "NSOC Name" OrElse col.Name = "Property Number") Then
+                col.ReadOnly = False
+
+                ' everything else read-only
+            Else
+                col.ReadOnly = True
+            End If
+        Next
     End Sub
+
+
+    Private Sub multibtn_Click(sender As Object, e As EventArgs) Handles multibtn.Click
+        If devicesdgv.DataSource Is Nothing Then Return
+        If devicesdgv.IsCurrentCellInEditMode Then devicesdgv.EndEdit()
+
+        bulkEditMode = Not bulkEditMode
+        ApplyReadOnlyStateDevices()
+
+        ' show/hide save button
+        multieditsavebtn.Visible = bulkEditMode
+
+        ' highlight button when bulk edit is ON
+        UpdateMultiBtnHighlight()
+    End Sub
+
+
+
+
+    Private Sub multieditsavebtn_Click(sender As Object, e As EventArgs) Handles multieditsavebtn.Click
+        If devicesdgv.DataSource Is Nothing Then Return
+
+        ' commit current edits
+        devicesdgv.EndEdit()
+
+        Dim changes As New List(Of Tuple(Of Integer, String, String, String, String))()
+        Dim summary As New StringBuilder()
+
+        For Each row As DataGridViewRow In devicesdgv.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim idObj = row.Cells("DevicePointer").Value
+            Dim id As Integer
+            If idObj Is Nothing OrElse Not Integer.TryParse(idObj.ToString(), id) Then Continue For
+
+            ' NEW values from grid
+            Dim newNsoc As String = If(row.Cells("NSOC Name").Value, "").ToString().Trim()
+            Dim newProp As String = If(row.Cells("Property Number").Value, "").ToString().Trim()
+
+            ' OLD values from baseline table
+            Dim oldRow = allDevicesTable.AsEnumerable().
+            FirstOrDefault(Function(r) CInt(r("DevicePointer")) = id)
+
+            Dim oldNsoc As String = If(oldRow IsNot Nothing, SafeStr(oldRow, "NSOC Name"), "")
+            Dim oldProp As String = If(oldRow IsNot Nothing, SafeStr(oldRow, "Property Number"), "")
+
+            ' add only if changed
+            If oldNsoc <> newNsoc OrElse oldProp <> newProp Then
+
+                changes.Add(Tuple.Create(id, oldNsoc, newNsoc, oldProp, newProp))
+
+                ' ✅ use DEVICE column for summary (instead of ID)
+                Dim deviceName As String = If(row.Cells("Device").Value, "").ToString().Trim()
+                If deviceName = "" Then deviceName = $"ID {id}" ' fallback
+
+                ' ===== build per-row summary =====
+                summary.AppendLine($"Device: {deviceName}")
+
+                If oldNsoc <> newNsoc Then
+                    summary.AppendLine($"   NSOC Name: '{oldNsoc}'  →  '{newNsoc}'")
+                End If
+
+                If oldProp <> newProp Then
+                    summary.AppendLine($"   Property Number: '{oldProp}'  →  '{newProp}'")
+                End If
+
+                summary.AppendLine()
+            End If
+        Next
+
+        If changes.Count = 0 Then
+            MessageBox.Show("No changes detected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        ' ✅ show full summary BEFORE saving
+        Dim res = MessageBox.Show(
+        "The following changes will be saved:" & vbCrLf & vbCrLf &
+        summary.ToString() &
+        "Proceed?",
+        "Confirm Bulk Save",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Question
+    )
+
+        If res <> DialogResult.Yes Then Return
+
+        Dim updatedCount As Integer = mdl.UpdateDevicesBulk(changes, Session.LoggedInUserPointer)
+
+        MessageBox.Show($"Updated: {updatedCount}", "Bulk Save", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+        ' optional: exit bulk mode after save
+        bulkEditMode = False
+        multieditsavebtn.Visible = False
+        ApplyReadOnlyStateDevices()
+
+        ' reload
+        LoadDevices(catecb.Text, brandscb.Text, statuscb.Text, filtertxt.Text)
+    End Sub
+
+
+    Private Sub UpdateMultiBtnHighlight()
+        ' save original style once
+        If Not multibtnStyleSaved Then
+            multibtnOrigBack = multibtn.BackColor
+            multibtnOrigFore = multibtn.ForeColor
+            multibtnOrigFlat = multibtn.FlatStyle
+            multibtnStyleSaved = True
+        End If
+
+        If bulkEditMode Then
+            multibtn.FlatStyle = FlatStyle.Flat
+            multibtn.FlatAppearance.BorderSize = 0
+            multibtn.BackColor = ColorTranslator.FromHtml("#5596D5")
+            multibtn.ForeColor = Color.White
+        Else
+            multibtn.FlatStyle = multibtnOrigFlat
+            multibtn.BackColor = multibtnOrigBack
+            multibtn.ForeColor = multibtnOrigFore
+        End If
+    End Sub
+
+
+
+    Private Function SafeStr(r As DataRow, col As String) As String
+        If r Is Nothing Then Return ""
+        If r.Table Is Nothing OrElse Not r.Table.Columns.Contains(col) Then Return ""
+        If IsDBNull(r(col)) Then Return ""
+        Return r(col).ToString().Trim()
+    End Function
+
+
 End Class

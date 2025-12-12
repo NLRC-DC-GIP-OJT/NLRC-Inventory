@@ -32,6 +32,7 @@ Partial Class devices
         filtertxt = New TextBox()
         statuscb = New ComboBox()
         Panel2 = New Panel()
+        multibtn = New Button()
         exportbtn = New Button()
         catecb = New ComboBox()
         brandscb = New ComboBox()
@@ -41,6 +42,7 @@ Partial Class devices
         btnNext = New Button()
         addpnl = New Panel()
         Panel3 = New Panel()
+        multieditsavebtn = New Button()
         Panel1.SuspendLayout()
         CType(devicesdgv, ComponentModel.ISupportInitialize).BeginInit()
         Panel2.SuspendLayout()
@@ -133,6 +135,7 @@ Partial Class devices
         Panel2.BackgroundImage = CType(resources.GetObject("Panel2.BackgroundImage"), Image)
         Panel2.BackgroundImageLayout = ImageLayout.Stretch
         Panel2.BorderStyle = BorderStyle.FixedSingle
+        Panel2.Controls.Add(multibtn)
         Panel2.Controls.Add(exportbtn)
         Panel2.Controls.Add(addbtn)
         Panel2.Controls.Add(filtertxt)
@@ -147,12 +150,25 @@ Partial Class devices
         Panel2.Size = New Size(1567, 75)
         Panel2.TabIndex = 13
         ' 
+        ' multibtn
+        ' 
+        multibtn.BackColor = Color.SlateGray
+        multibtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        multibtn.ForeColor = Color.White
+        multibtn.Location = New Point(1140, 10)
+        multibtn.Margin = New Padding(3, 2, 3, 2)
+        multibtn.Name = "multibtn"
+        multibtn.Size = New Size(138, 54)
+        multibtn.TabIndex = 16
+        multibtn.Text = "Multiple Editing"
+        multibtn.UseVisualStyleBackColor = False
+        ' 
         ' exportbtn
         ' 
         exportbtn.BackColor = Color.SlateGray
         exportbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         exportbtn.ForeColor = Color.White
-        exportbtn.Location = New Point(1278, 10)
+        exportbtn.Location = New Point(1291, 10)
         exportbtn.Margin = New Padding(3, 2, 3, 2)
         exportbtn.Name = "exportbtn"
         exportbtn.Size = New Size(114, 54)
@@ -241,6 +257,7 @@ Partial Class devices
         ' 
         ' Panel3
         ' 
+        Panel3.Controls.Add(multieditsavebtn)
         Panel3.Controls.Add(addpnl)
         Panel3.Controls.Add(Panel2)
         Panel3.Controls.Add(btnPrev)
@@ -253,6 +270,20 @@ Partial Class devices
         Panel3.Name = "Panel3"
         Panel3.Size = New Size(1567, 882)
         Panel3.TabIndex = 18
+        ' 
+        ' multieditsavebtn
+        ' 
+        multieditsavebtn.BackColor = Color.SlateGray
+        multieditsavebtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        multieditsavebtn.ForeColor = Color.White
+        multieditsavebtn.Location = New Point(1391, 818)
+        multieditsavebtn.Margin = New Padding(3, 2, 3, 2)
+        multieditsavebtn.Name = "multieditsavebtn"
+        multieditsavebtn.Size = New Size(138, 54)
+        multieditsavebtn.TabIndex = 17
+        multieditsavebtn.Text = "Save"
+        multieditsavebtn.UseVisualStyleBackColor = False
+        multieditsavebtn.Visible = False
         ' 
         ' devices
         ' 
@@ -289,5 +320,7 @@ Partial Class devices
     Friend WithEvents Label3 As Label
     Friend WithEvents Panel3 As Panel
     Friend WithEvents exportbtn As Button
+    Friend WithEvents multibtn As Button
+    Friend WithEvents multieditsavebtn As Button
 
 End Class

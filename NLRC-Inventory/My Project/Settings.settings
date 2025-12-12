@@ -5,16 +5,16 @@
     <Setting Name="Main" Type="(Connection string)" Scope="Application">
       <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-  &lt;ConnectionString&gt;Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;&lt;/ConnectionString&gt;
+  &lt;ConnectionString&gt;Server=4.193.204.42;Port=3306;Database=main_nlrc_db;Uid=nlrc_dbremote;Pwd=f@&amp;amp;LRY43uSVLw@cqw9st;&lt;/ConnectionString&gt;
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
-      <Value Profile="(Default)">Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;</Value>
+      <Value Profile="(Default)">Server=4.193.204.42;Port=3306;Database=main_nlrc_db;Uid=nlrc_dbremote;Pwd=f@&amp;LRY43uSVLw@cqw9st;</Value>
     </Setting>
     <Setting Name="Intranet" Type="(Connection string)" Scope="Application">
       <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;SerializableConnectionString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-  &lt;ConnectionString&gt;Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;&lt;/ConnectionString&gt;
+  &lt;ConnectionString&gt;Server=4.193.204.42;Port=3306;Database=db_nlrc_intranet;Uid=nlrc_dbremote;Pwd=f@&amp;amp;LRY43uSVLw@cqw9st;&lt;/ConnectionString&gt;
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
-      <Value Profile="(Default)">Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;</Value>
+      <Value Profile="(Default)">Server=4.193.204.42;Port=3306;Database=db_nlrc_intranet;Uid=nlrc_dbremote;Pwd=f@&amp;LRY43uSVLw@cqw9st;</Value>
     </Setting>
   </Settings>
 </SettingsFile>

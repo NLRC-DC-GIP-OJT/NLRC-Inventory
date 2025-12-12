@@ -20,6 +20,12 @@ Public Class Units
     Private selectColumnName As String = "SelectQR"
     Private selectAllCheckBox As CheckBox
     ' ===============================================
+    ' === multibtn highlight support ===
+    Private multibtnOrigBack As Color
+    Private multibtnOrigFore As Color
+    Private multibtnOrigFlat As FlatStyle
+    Private multibtnStyleSaved As Boolean = False
+
 
 
     ' ----------------- Load Units (FAST, cached) -----------------
@@ -371,17 +377,17 @@ Public Class Units
     Private Sub multibtn_Click(sender As Object, e As EventArgs) Handles multibtn.Click
         If allunitsdgv.DataSource Is Nothing Then Return
 
-        ' Commit any current cell edit to prevent InvalidOperationException
         If allunitsdgv.IsCurrentCellInEditMode Then
             allunitsdgv.EndEdit()
         End If
 
-        ' Toggle saved button visibility (this is our "bulk edit ON/OFF" flag)
         savedgvbtn.Visible = Not savedgvbtn.Visible
-
-        ' Apply rules: checkbox column always editable, others depend on bulk mode
         ApplyReadOnlyState()
+
+        ' ✅ highlight multibtn when bulk edit is ON
+        UpdateMultiBtnHighlight()
     End Sub
+
 
     ' ----------------- Save Bulk -----------------
     Private Sub savedgvbtn_Click(sender As Object, e As EventArgs) Handles savedgvbtn.Click
@@ -539,6 +545,7 @@ Public Class Units
             ' Reset grid
             savedgvbtn.Visible = False
             ApplyReadOnlyState()
+            UpdateMultiBtnHighlight()
             LoadAllUnits()
 
         Catch ex As Exception
@@ -818,6 +825,27 @@ Public Class Units
                             "QR Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             qrBmp = Nothing
         End Try
+    End Sub
+
+    Private Sub UpdateMultiBtnHighlight()
+        ' save original style once
+        If Not multibtnStyleSaved Then
+            multibtnOrigBack = multibtn.BackColor
+            multibtnOrigFore = multibtn.ForeColor
+            multibtnOrigFlat = multibtn.FlatStyle
+            multibtnStyleSaved = True
+        End If
+
+        If savedgvbtn.Visible Then
+            multibtn.FlatStyle = FlatStyle.Flat
+            multibtn.FlatAppearance.BorderSize = 0
+            multibtn.BackColor = ColorTranslator.FromHtml("#5596D5")
+            multibtn.ForeColor = Color.White
+        Else
+            multibtn.FlatStyle = multibtnOrigFlat
+            multibtn.BackColor = multibtnOrigBack
+            multibtn.ForeColor = multibtnOrigFore
+        End If
     End Sub
 
 

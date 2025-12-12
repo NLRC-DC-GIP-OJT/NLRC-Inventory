@@ -57,7 +57,8 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Server=127.0.0.1;Port=3307;Database=main_nlrc_db;Uid=root;Pwd=;")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Server=4.193.204.42;Port=3306;Database=main_nlrc_db;Uid=nlrc_dbremote;Pwd=f@&LRY4"& _ 
+            "3uSVLw@cqw9st;")>  _
         Public ReadOnly Property Main() As String
             Get
                 Return CType(Me("Main"),String)
@@ -67,7 +68,8 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.ConnectionString),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Server=127.0.0.1;Port=3307;Database=db_nlrc_intranet;Uid=root;Pwd=;")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Server=4.193.204.42;Port=3306;Database=db_nlrc_intranet;Uid=nlrc_dbremote;Pwd=f@&"& _ 
+            "LRY43uSVLw@cqw9st;")>  _
         Public ReadOnly Property Intranet() As String
             Get
                 Return CType(Me("Intranet"),String)
