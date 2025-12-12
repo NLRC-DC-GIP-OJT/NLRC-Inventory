@@ -119,7 +119,7 @@ Partial Class Units
         ' addbtn
         ' 
         addbtn.Anchor = AnchorStyles.Top
-        addbtn.BackColor = Color.CornflowerBlue
+        addbtn.BackColor = Color.SlateGray
         addbtn.Font = New Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         addbtn.ForeColor = Color.White
         addbtn.Location = New Point(1384, 11)

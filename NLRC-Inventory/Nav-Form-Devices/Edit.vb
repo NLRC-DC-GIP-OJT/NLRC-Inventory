@@ -632,7 +632,9 @@ Public Class Edit
         End If
     End Sub
 
-    Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs)
+
+
+    Private Sub specscb_SelectedIndexChanged(sender As Object, e As EventArgs) Handles specscb.SelectedIndexChanged
         specsflowpnl.Controls.Clear()
 
         Dim selectedSpec = TryCast(specscb.SelectedItem, DeviceSpecification)
@@ -924,5 +926,72 @@ Public Class Edit
 
         Return True
     End Function
+
+    Private Sub RefreshSpecsFlowFromCombo()
+        If specscb.SelectedIndex < 0 OrElse specscb.SelectedItem Is Nothing Then Return
+
+        Dim specsText As String = GetSelectedSpecsText()
+        If String.IsNullOrWhiteSpace(specsText) Then Return
+
+        specsflowpnl.SuspendLayout()
+        specsflowpnl.Controls.Clear()
+
+        For Each spec In specsText.Split(";"c)
+            Dim one As String = spec.Trim()
+            If one = "" Then Continue For
+
+            Dim parts = one.Split(":"c)
+            Dim labelName As String = parts(0).Trim()
+            Dim fieldValue As String = If(parts.Length > 1, parts(1).Trim(), "")
+
+            Dim rowPanel As New Panel With {
+            .Width = specsflowpnl.ClientSize.Width - 2,
+            .Height = 32,
+            .Margin = New Padding(0, 0, 0, 4)
+        }
+
+            Dim lbl As New Label With {
+            .Text = labelName & ":",
+            .AutoSize = False,
+            .Width = 140
+        }
+
+            Dim txt As New TextBox With {
+            .Text = fieldValue,
+            .Tag = labelName,
+            .BorderStyle = BorderStyle.FixedSingle
+        }
+
+            rowPanel.Controls.Add(lbl)
+            rowPanel.Controls.Add(txt)
+            specsflowpnl.Controls.Add(rowPanel)
+        Next
+
+        specsflowpnl.ResumeLayout()
+        LayoutSpecsRows()
+    End Sub
+
+    Private Function GetSelectedSpecsText() As String
+        ' 1) If your datasource is List(Of DeviceSpecification)
+        Dim ds As DeviceSpecification = TryCast(specscb.SelectedItem, DeviceSpecification)
+        If ds IsNot Nothing Then
+            ' If SpecName already contains "CPU: ...; RAM: ..." OK na ito.
+            Return If(ds.SpecName, "").Trim()
+        End If
+
+        ' 2) If your datasource is DataTable (SelectedItem = DataRowView)
+        Dim drv As DataRowView = TryCast(specscb.SelectedItem, DataRowView)
+        If drv IsNot Nothing Then
+            ' try common column names (adjust to your real column)
+            For Each col In New String() {"specs_text", "SpecsText", "specs", "Specs", "SpecName", "spec_name"}
+                If drv.DataView.Table.Columns.Contains(col) Then
+                    Return If(drv(col), "").ToString().Trim()
+                End If
+            Next
+        End If
+
+        Return ""
+    End Function
+
 
 End Class
